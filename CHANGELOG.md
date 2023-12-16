@@ -1,0 +1,1 @@
+https://github.com/slushman/now-hiring/blob/master/admin/class-now-hiring-admin.php
