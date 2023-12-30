@@ -202,7 +202,7 @@ class Pdc_Connector_Admin
 			'label' 	=> 'Print',
 			'priority' 	=> 60,
 			'target'  =>  'pdc_product_data_tab',
-			'class'    => array('show_if_simple'),
+			'class'    => array('show_if_simple', 'show_if_variable'),
 		);
 
 		return $tabs;
@@ -541,5 +541,27 @@ class Pdc_Connector_Admin
 		$arr[] = 'pdc-connector_order_status';
 		$arr[] = 'pdc-connector_order_item_number';
 		return $arr;
+	}
+
+
+	public function render_variation_data_fields(int $index, array $variation_data, WP_Post $variation)
+	{
+		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-variation_data.php');
+	}
+	
+	public function save_variation_data_fields( $variation_id, $i ) {
+		$fieldname_sku = $this->plugin_name . '_sku';
+		$fieldname_preset_id = $this->plugin_name . '_preset_id';
+		$fieldname_file_url = $this->plugin_name . '_file_url';
+
+		$this->save_variation_data_field($variation_id, $fieldname_sku);
+		$this->save_variation_data_field($variation_id, $fieldname_preset_id);
+		$this->save_variation_data_field($variation_id, $fieldname_file_url);
+	}
+	private function save_variation_data_field($variation_id, $fieldname)
+	{
+		if (isset($_POST[$fieldname])) :
+			update_post_meta($variation_id, $fieldname, $_POST[$fieldname]);
+		endif;
 	}
 }

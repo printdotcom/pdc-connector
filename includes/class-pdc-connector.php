@@ -164,6 +164,8 @@ class Pdc_Connector
 		$this->loader->add_action('admin_init', $plugin_admin, 'register_fields');
 		$this->loader->add_filter('woocommerce_product_data_tabs', $plugin_admin, 'add_product_data_tab');
 		$this->loader->add_action('woocommerce_product_data_panels', $plugin_admin, 'render_product_data_tab');
+		$this->loader->add_action('woocommerce_variation_options', $plugin_admin, 'render_variation_data_fields', 10, 3);
+		$this->loader->add_action('woocommerce_save_product_variation', $plugin_admin, 'save_variation_data_fields', 10, 2);
 		$this->loader->add_action('woocommerce_process_product_meta_simple', $plugin_admin, 'save_product_data_fields', 10);
 		$this->loader->add_action('woocommerce_process_product_meta_variable', $plugin_admin, 'save_product_data_fields', 10);
 		$this->loader->add_action('add_meta_boxes', $plugin_admin, 'pdc_order_meta_box');
