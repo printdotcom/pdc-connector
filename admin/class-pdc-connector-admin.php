@@ -338,6 +338,16 @@ class Pdc_Connector_Admin
 				return current_user_can('manage_options');
 			}
 		));
+		register_rest_route('pdc/v1', '/orders/webhook', array(
+			'methods' => 'POST',
+			'callback' => array($this, 'pdc_order_webhook'),
+		));
+	}
+
+	public function pdc_order_webhook(WP_REST_Request $request) {
+		error_log($request->get_body());
+		// {"created_at":"2023-12-16T21:27:48.289Z","event_type":"ORDER_PLACED","payload":{"order_id":"49729"}}
+		return;
 	}
 
 	public function pdc_attach_pdf(WP_REST_Request $request)
@@ -390,9 +400,11 @@ class Pdc_Connector_Admin
 		$preset = json_decode($result);
 		$item_options = $preset->configuration;
 		$item_options->copies = $order_item->get_quantity();
+		$restapi_url = esc_url_raw(rest_url());
 		$order_request = array(
 			"billingAddress" => $address,
 			"customerReference" => $order->get_order_number() . '-' . $order_item_id,
+			"webhookUrl" => $restapi_url . "pdc/v1/orders/webhook",
 			"items" => [[
 				"sku" => $preset->sku,
 				"fileUrl" => $pdc_pdf_url,
