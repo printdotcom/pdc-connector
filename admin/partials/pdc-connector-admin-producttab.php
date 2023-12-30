@@ -10,18 +10,6 @@
             'label' => __('Connected Preset'),
             'required'      => true
         )); ?>
-        <?php woocommerce_wp_textarea_input(array(
-            'id' => $this->plugin_name . '_template_json',
-            'label' => __('The template for the product', 'pdc_connector'),
-            'rows' => 10,
-            'cols' => 40,
-            'required'      => true
-        )); ?>
-        <?php woocommerce_wp_checkbox(array(
-            'id'         => $this->plugin_name . '_editable',
-            'label'     => __('Show editor', 'pdc_connector'),
-            'disabled' => true,
-        )); ?>
 
         <?php include __DIR__ . '/html-input-mediaupload.php'; ?>
     </div>

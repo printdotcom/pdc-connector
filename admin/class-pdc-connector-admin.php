@@ -219,9 +219,7 @@ class Pdc_Connector_Admin
 	{
 		$this->save_text_field($post_id, $this->plugin_name . '_sku');
 		$this->save_text_field($post_id, $this->plugin_name . '_preset_id');
-		$this->save_text_field($post_id, $this->plugin_name . '_template_json');
 		$this->save_text_field($post_id, $this->plugin_name . '_file_url');
-		$this->save_checkbox_field($post_id, $this->plugin_name . '_editable');
 	}
 
 	public function pdc_meta_box($post)
