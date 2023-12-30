@@ -201,7 +201,8 @@ class Pdc_Connector_Admin
 		$tabs['pdc_printtab'] = array(
 			'label' 	=> 'Print',
 			'priority' 	=> 60,
-			'target'  =>  'pdc_product_data_tab'
+			'target'  =>  'pdc_product_data_tab',
+			'class'    => array('show_if_simple'),
 		);
 
 		return $tabs;
@@ -237,12 +238,6 @@ class Pdc_Connector_Admin
 			'normal',
 			'core'
 		);
-	}
-
-	private function save_checkbox_field($post_id, $fieldname)
-	{
-		$value = isset($_POST[$fieldname]) ? 'yes' : 'no';
-		update_post_meta($post_id, $fieldname, $value);
 	}
 
 	private function save_text_field($post_id, $fieldname)
@@ -342,7 +337,8 @@ class Pdc_Connector_Admin
 		));
 	}
 
-	public function pdc_order_webhook(WP_REST_Request $request) {
+	public function pdc_order_webhook(WP_REST_Request $request)
+	{
 		error_log($request->get_body());
 		// {"created_at":"2023-12-16T21:27:48.289Z","event_type":"ORDER_PLACED","payload":{"order_id":"49729"}}
 		return;
@@ -450,18 +446,19 @@ class Pdc_Connector_Admin
 		$order = wc_get_order($order_id);
 
 		$note = __("Item purchased at Print.com with order number: $pdc_order->orderNumber.");
-		$order->add_order_note( $note );
+		$order->add_order_note($note);
 
 		$this->insert_pdc_order($pdc_order, $order, $order_item);
 
 		return $pdc_order;
 	}
 
-	private function insert_pdc_order($pdc_order, WC_Order $order , WC_Order_Item_Product $order_item) {
+	private function insert_pdc_order($pdc_order, WC_Order $order, WC_Order_Item_Product $order_item)
+	{
 		global $wpdb;
 
 		$table_name = $wpdb->prefix . 'pdc_orders';
-	
+
 		$wpdb->insert(
 			$table_name,
 			array(
