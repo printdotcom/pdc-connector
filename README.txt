@@ -1,5 +1,5 @@
-=== Print.com Connector ===
-Contributors: (this should be a list of wordpress.org userid's)
+=== Print.com Print on Demand ===
+Contributors: tijmenbruggeman
 Donate link: https://print.com
 Tags: woocommerce
 Requires at least: 3.0.1
