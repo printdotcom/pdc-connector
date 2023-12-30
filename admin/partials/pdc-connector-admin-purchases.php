@@ -9,8 +9,8 @@ class PDCOrders_List_Table extends WP_List_Table
     {
         $columns = array(
             'cb'            => '<input type="checkbox" />',
-            'id'          => "ID",
-            'created_at'          => "Order number",
+            'id'                    => "ID",
+            'created_at'            => "Order date",
             'pdc_ordernumber'          => "Order number",
             'wp_order_id'         => 'Related Order',
             'pdc_status'   => "Status"
@@ -47,11 +47,14 @@ class PDCOrders_List_Table extends WP_List_Table
     function column_default($item, $column_name)
     {
         switch ($column_name) {
+            case 'wp_order_id':
+                $order_id = $item[$column_name];
+                $edit_link = admin_url('post.php?post=' . absint($order_id) . '&action=edit');
+                return sprintf('<a href="%s">%s</a>', esc_url($edit_link), esc_html($order_id));
             case 'id':
             case 'created_at':
             case 'pdc_ordernumber':
             case 'pdc_status':
-            case 'wp_order_id':
             default:
                 return $item[$column_name];
         }

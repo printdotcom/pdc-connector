@@ -38,7 +38,8 @@ class Pdc_Connector_Activator
 		$charset_collate = $wpdb->get_charset_collate();
 		$sql = "CREATE TABLE $table_name (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
 			pdc_ordernumber varchar(55) DEFAULT '' NOT NULL,
 			pdc_status varchar(55) DEFAULT '' NOT NULL,
 			wp_order_id mediumint(9) NOT NULL,
