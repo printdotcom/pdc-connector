@@ -76,22 +76,26 @@ class Pdc_Connector_Public
 	 */
 	public function capture_cart_item_data($cart_item_data, $product_id)
 	{
-		
-		if (isset($_REQUEST[$this->plugin_name . '_pdf_url'])) {
-			$cart_item_data[$this->plugin_name . '_pdf_url'] = sanitize_text_field($_REQUEST[$this->plugin_name . '_pdf_url']);
-		}
+		$cart_item_data[$this->plugin_name . '_pdf_url'] = $this->capture_cart_item_pdf_url();
 		return $cart_item_data;
 	}
 
-	public function display_pdc_values_checkout($item_data, $cart_item)
+	private function capture_cart_item_pdf_url()
 	{
-		if (isset($cart_item[$this->plugin_name . '_pdf_url'])) {
-			$item_data[] = array(
-				'key' => __('File', $this->plugin_name),
-				'value' => basename($cart_item[$this->plugin_name . '_pdf_url'])
-			);
+		$pdc_pdf_url = $_REQUEST[$this->plugin_name . '_pdf_url'];
+		if (isset($pdc_pdf_url) && !empty($pdc_pdf_url)) {
+			// When a static PDC file is configured, we just use that.
+			return $pdc_pdf_url;
 		}
-		return $item_data;
+
+		$pitchprint_data = $_REQUEST['_w2p_set_option'];
+		if (isset($pitchprint_data) && !empty($pitchprint_data)) {
+			// When a file is configured via pitch print, we use that.
+			$decoded_data = json_decode(urldecode($pitchprint_data));
+			return "https://pdf.pitchprint.com/" . $decoded_data->projectId;
+		}
+
+		return "";
 	}
 
 	public function save_pdc_values_order_meta(WC_Order_Item_Product $item, $cart_item_key, $values, WC_Order $order)
@@ -99,13 +103,16 @@ class Pdc_Connector_Public
 		$product_id = $values['product_id'];
 		$pdc_preset_id = get_post_meta($product_id, $this->plugin_name . '_preset_id', true);
 		$pdf_in_request = $values[$this->plugin_name . '_pdf_url'];
+		var_dump($pdf_in_request);
 		if (isset($pdf_in_request)) {
+			// Check if the request contains a pdf url configured via the product page
 			$item->add_meta_data($this->plugin_name . '_pdf_url', $values[$this->plugin_name . "_pdf_url"]);
 		} else {
+			// Check if product has a preconfigured pdf url
 			$pdc_pdf_url = get_post_meta($product_id, $this->plugin_name . '_file_url', true);
 			$item->add_meta_data($this->plugin_name . '_pdf_url', $pdc_pdf_url);
 		}
-		
+
 		if ($pdc_preset_id) {
 			$item->add_meta_data($this->plugin_name . '_preset_id', $pdc_preset_id);
 		}
