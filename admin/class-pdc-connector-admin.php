@@ -339,9 +339,99 @@ class Pdc_Connector_Admin
 
 	public function pdc_order_webhook(WP_REST_Request $request)
 	{
-		error_log($request->get_body());
-		// {"created_at":"2023-12-16T21:27:48.289Z","event_type":"ORDER_PLACED","payload":{"order_id":"49729"}}
+		$body = json_decode($request->get_body());
+		$event_type = $body->event_type;
+
+		if ($event_type === 'ORDER_STATUS_CHANGED') {
+			$order_id = $request->get_param('order_id');
+			$order_item_id = $request->get_param('order_item_id');
+			$payload = $body->payload;
+
+			if ($payload->status === 'ACCEPTEDBYSUPPLIER') {
+				$this->on_webhook_in_production($order_id, $order_item_id);
+			}
+			if ($payload->status === 'SHIPPED') {
+				$this->on_webhook_shipped($order_id, $order_item_id);
+			}
+		}
 		return;
+	}
+
+	private function on_webhook_in_production(string $order_id, string $order_item_id)
+	{
+		$order_item = new WC_Order_Item_Product($order_item_id);
+		$order_item->update_meta_data($this->plugin_name . "_order_item_status", "production");
+		$order_item->save();
+
+		$order = wc_get_order($order_id);
+		$note = __("Item is being produced at Print.com.");
+		$order->add_order_note($note);
+		$order->save();
+	}
+
+	private function on_webhook_shipped(string $order_id, string $order_item_id)
+	{
+		$order = wc_get_order($order_id);
+		$order_item = new WC_Order_Item_Product($order_item_id);
+		$order_item_number = $order_item->get_meta($this->plugin_name . '_order_item_number');
+		$retrieve_pdc_order_result = $this->retrieve_pdc_order($order_item_number);
+
+		if (is_wp_error($retrieve_pdc_order_result)) {
+			error_log($retrieve_pdc_order_result->get_error_message());
+			return;
+		}
+
+		$pdc_shipment = null;
+		foreach ($retrieve_pdc_order_result->shipments as $order_shipment) {
+			if (in_array($order_item_number, $order_shipment->orderItemNumbers)) {
+				$pdc_shipment = $order_shipment;
+				break;
+			}
+		}
+		if (!$pdc_shipment) {
+			error_log("No shipment found for order item number $order_item_number");
+			return;
+		}
+
+		$tracking_url = null;
+		foreach ($pdc_shipment->tracks as $track) {
+			if (strpos($track->reference, $order_item_number) !== false) {
+				$tracking_url = $track->trackUrl;
+				break;
+			}
+		}
+
+
+		if ($tracking_url) {
+			$order_item->update_meta_data($this->plugin_name . "_order_item_tnt_url", $tracking_url);
+			$note = __("Item has been shipped by Print.com. Track & Trace code: <a href=\"$tracking_url.\">$tracking_url</a>.");
+			$order->add_order_note($note);
+		}
+
+
+		$order_item->update_meta_data($this->plugin_name . "_order_item_status", "shipped");
+		$order_item->save();
+
+		$order->save();
+	}
+
+	private function retrieve_pdc_order(string $order_item_number)
+	{
+		$order_number = substr($order_item_number, 0, strpos($order_item_number, '-'));
+		$baseUrl = get_option($this->plugin_name . '-env_baseurl');
+		$token = $this->getToken();
+		$result = $this->performHttpRequest('GET', $baseUrl . 'orders/' . urlencode($order_number), NULL, $token);
+
+		if (is_wp_error($result)) {
+			return $result;
+		}
+		if (empty($result)) {
+			return new WP_Error('no_order', 'No order found', array('order_number' => $order_number));
+		}
+
+		$decoded = json_decode($result);
+
+		return $decoded->order;
 	}
 
 	public function pdc_attach_pdf(WP_REST_Request $request)
@@ -398,7 +488,7 @@ class Pdc_Connector_Admin
 		$order_request = array(
 			"billingAddress" => $address,
 			"customerReference" => $order->get_order_number() . '-' . $order_item_id,
-			"webhookUrl" => $restapi_url . "pdc/v1/orders/webhook",
+			"webhookUrl" => $restapi_url . "pdc/v1/orders/webhook?order_item_id=" . $order_item_id . "&order_id=" . $order_id,
 			"items" => [[
 				"sku" => $preset->sku,
 				"fileUrl" => $pdc_pdf_url,
@@ -474,6 +564,9 @@ class Pdc_Connector_Admin
 	{
 		if ($this->pdc_access_token) return $this->pdc_access_token;
 
+		$transient_token = get_transient($this->plugin_name . '-token');
+		if ($transient_token) return $transient_token;
+
 		$username = get_option($this->plugin_name . '-user');
 		$password = get_option($this->plugin_name . '-pw');
 		$baseUrl = get_option($this->plugin_name . '-env_baseurl');
@@ -484,6 +577,7 @@ class Pdc_Connector_Admin
 			]
 		], '');
 		$parsedToken = str_replace('"', "", $token);
+		set_transient($this->plugin_name . '-token', $parsedToken, 60 * 60 * 24); // 1 day
 		$this->pdc_access_token = $parsedToken;
 		return $parsedToken;
 	}
@@ -509,7 +603,6 @@ class Pdc_Connector_Admin
 		}
 		curl_setopt_array($curl, $params);
 
-		// Execute
 		$response = curl_exec($curl);
 		$err = curl_error($curl);
 		$httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
@@ -519,9 +612,7 @@ class Pdc_Connector_Admin
 			return new WP_Error($httpcode, $response);
 		}
 
-		// Check for cURL errors
 		if ($err) {
-			echo "cURL Error: " . $err . "\n";
 			return new WP_Error($httpcode, $err);
 		}
 		return $response;
@@ -548,8 +639,9 @@ class Pdc_Connector_Admin
 	{
 		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-variation_data.php');
 	}
-	
-	public function save_variation_data_fields( $variation_id, $i ) {
+
+	public function save_variation_data_fields($variation_id, $i)
+	{
 		$fieldname_sku = $this->plugin_name . '_sku';
 		$fieldname_preset_id = $this->plugin_name . '_preset_id';
 		$fieldname_file_url = $this->plugin_name . '_file_url';
