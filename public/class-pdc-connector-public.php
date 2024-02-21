@@ -63,9 +63,6 @@ class Pdc_Connector_Public
 	 */
 	public function enqueue_app_assets()
 	{
-		wp_enqueue_style('pdc-app-style', plugin_dir_url(__FILE__) . 'app/index.css', array(), $this->version, 'all');
-		wp_enqueue_script('pdc-app-script', plugin_dir_url(__FILE__) . 'app/index.js', array('jquery'), $this->version, true);
-		wp_enqueue_script('pdc-app-trigger', plugin_dir_url(__FILE__) . 'js/pdc-connector-trigger.js', array('pdc-app-script'), $this->version, true);
 	}
 
 

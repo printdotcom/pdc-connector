@@ -118,6 +118,19 @@ class Pdc_Connector_Admin
 			'plugin_name' => $this->plugin_name,
 			'pdc_url' => get_option($this->plugin_name . '-env_baseurl'),
 		));
+		wp_enqueue_script(
+			$this->plugin_name . '-autocomplete-search',
+			plugin_dir_url(__FILE__) . 'js/pdc-connector-autocomplete.js',
+			['jquery', 'jquery-ui-autocomplete'],
+			null,
+			true
+		);
+		wp_localize_script($this->plugin_name . '-autocomplete-search', 'pdcAdminApi', array(
+			'root' => esc_url_raw(rest_url()),
+			'nonce' => wp_create_nonce('wp_rest'),
+			'plugin_name' => $this->plugin_name,
+			'pdc_url' => get_option($this->plugin_name . '-env_baseurl'),
+		));
 	}
 
 	/**
@@ -149,8 +162,6 @@ class Pdc_Connector_Admin
 
 	public function register_settings()
 	{
-
-		// register_setting( $option_group, $option_name, $sanitize_callback );
 
 		register_setting(
 			$this->plugin_name . '-options',
@@ -219,7 +230,9 @@ class Pdc_Connector_Admin
 	public function save_product_data_fields($post_id)
 	{
 		$this->save_text_field($post_id, $this->plugin_name . '_sku');
+		$this->save_text_field($post_id, $this->plugin_name . '_sku_title');
 		$this->save_text_field($post_id, $this->plugin_name . '_preset_id');
+		$this->save_text_field($post_id, $this->plugin_name . '_preset_name');
 		$this->save_text_field($post_id, $this->plugin_name . '_file_url');
 	}
 
@@ -335,6 +348,14 @@ class Pdc_Connector_Admin
 			'methods' => 'POST',
 			'callback' => array($this, 'pdc_order_webhook'),
 		));
+		register_rest_route('pdc/v1', '/products', array(
+			'methods' => 'GET',
+			'callback' => array($this, 'pdc_list_products'),
+		));
+		register_rest_route('pdc/v1', '/products/(?P<sku>[a-zA-Z0-9_-]+)/presets', array(
+			'methods' => 'GET',
+			'callback' => array($this, 'pdc_list_presets'),
+		));
 	}
 
 	public function pdc_order_webhook(WP_REST_Request $request)
@@ -442,6 +463,75 @@ class Pdc_Connector_Admin
 		$order_item->update_meta_data($this->plugin_name . '_pdf_url', $pdf_url);
 		$order_item->save_meta_data();
 		return $pdf_url;
+	}
+
+	public function pdc_list_products(WP_REST_Request $request)
+	{
+		$searchterm = $request->get_param('term');
+		if (empty($searchterm)) {
+			return new WP_Error('no_searchterm', 'No search term provided', array('term' => $searchterm));
+		}
+
+		$products = get_transient($this->plugin_name . '-products');
+		if (!$products) {
+			$baseUrl = get_option($this->plugin_name . '-env_baseurl');
+			$token = $this->getToken();
+			$result = $this->performHttpRequest('GET', $baseUrl . 'products', NULL, $token);
+			$decoded_result = json_decode($result);
+			$sku_list = array_map(function ($product) {
+				return array(
+					'sku' => $product->sku,
+					'title' => $product->titlePlural,
+				);
+			}, $decoded_result);
+			$encoded = json_encode($sku_list);
+			set_transient($this->plugin_name . '-products', $encoded, 60 * 60 * 24); // 1 day
+			$products = $encoded;
+		}
+
+		$decoded = json_decode($products);
+		usort($decoded, function ($a, $b) use ($searchterm) {
+			$searchterm_lower = strtolower($searchterm);
+			$titleA = strtolower($a->title);
+			$titleB = strtolower($b->title);
+
+			// Check for prefix match and give it the highest priority
+			$startsWithA = strpos($titleA, $searchterm_lower) === 0 ? 1 : 0;
+			$startsWithB = strpos($titleB, $searchterm_lower) === 0 ? 1 : 0;
+			if ($startsWithA !== $startsWithB) {
+				return $startsWithB <=> $startsWithA;
+			}
+			$similarityA = similar_text($searchterm_lower, $titleA);
+			$similarityB = similar_text($searchterm_lower, $titleB);
+		
+			// Sort in descending order of similarity
+			return $similarityB <=> $similarityA;
+		});
+		$filtered = array_slice($decoded, 0, 5);
+
+		return $filtered;
+	}
+
+	/**
+	* Implementation of API method attached to GET /products/:sku/presets
+	* Will list the presets for a given product for each selection.
+	*
+	* @since      1.0.0
+	* @param      WP_Rest_Request    $request       Request object
+	*/
+	public function pdc_list_presets(WP_REST_Request $request) {
+		$sku = $request->get_param('sku');
+		$baseUrl = get_option($this->plugin_name . '-env_baseurl');
+		$token = $this->getToken();
+		$result = $this->performHttpRequest('GET', $baseUrl . "presets/" . $sku, NULL, $token);
+		$decoded_result = json_decode($result);
+		$preset_list = array_map(function ($preset) {
+			return array(
+				'preset_id' => $preset->id,
+				'title' => $preset->title->en,
+			);
+		}, $decoded_result->items);
+		return $preset_list;
 	}
 
 	public function pdc_purchase_order_item(WP_REST_Request $request)
@@ -643,11 +733,15 @@ class Pdc_Connector_Admin
 	public function save_variation_data_fields($variation_id, $i)
 	{
 		$fieldname_sku = $this->plugin_name . '_sku';
+		$fieldname_sku_title = $this->plugin_name . '_sku_title';
 		$fieldname_preset_id = $this->plugin_name . '_preset_id';
+		$fieldname_preset_name = $this->plugin_name . '_preset_name';
 		$fieldname_file_url = $this->plugin_name . '_file_url';
 
 		$this->save_variation_data_field($variation_id, $fieldname_sku);
+		$this->save_variation_data_field($variation_id, $fieldname_sku_title);
 		$this->save_variation_data_field($variation_id, $fieldname_preset_id);
+		$this->save_variation_data_field($variation_id, $fieldname_preset_name);
 		$this->save_variation_data_field($variation_id, $fieldname_file_url);
 	}
 	private function save_variation_data_field($variation_id, $fieldname)
