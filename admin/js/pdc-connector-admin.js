@@ -49,11 +49,15 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
   function orderItemAttachPdf(e) {
     e.preventDefault();
     const orderItemId = e.target.getAttribute('data-order-item-id');
-    
+
     var frame = wp.media({
       title: 'Select or Upload a Custom File',
       button: {
         text: 'Use this file',
+      },
+      library: {
+        type: 'document',
+        post_mime_type: ['application/pdf'],
       },
       multiple: false,
     });
@@ -75,13 +79,24 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
           },
           {}
         );
+        await refreshOrderItem(orderItemId);
+        $('#_pdc_pdf_url').val(attachment.url);
       } catch (err) {
-        console.log(err);
+        $('#js-pdc-request-response').text(err.responseJSON.message);
       }
-      $('#_pdc_pdf_url').val(attachment.url);
     });
 
     frame.open();
+  }
+
+  function refreshOrderItem(orderItemId) {
+    const orderItemRow = $(`#pdc_order_item_${orderItemId}`);
+    if (!orderItemRow.length) return;
+    return new Promise((resolve) => {
+      orderItemRow.load(`${document.URL} #pdc_order_item_${orderItemId}_inner`, function () {
+        resolve();
+      });
+    });
   }
 
   // On order item detail page, will purchase
@@ -92,8 +107,8 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
     if (loading) return;
     loading = true;
     $('#pdc-order').addClass('button-disabled');
-    $("#js-pdc-action-spinner").addClass('is-active');
-    $("#js-pdc-request-response").text('');
+    $('#js-pdc-action-spinner').addClass('is-active');
+    $('#js-pdc-request-response').text('');
     const orderItemId = e.target.getAttribute('data-order-item-id');
     try {
       await $.ajax(
@@ -106,15 +121,17 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
           data: {
             orderItemId,
           },
+          success: function () {},
         },
         {}
       );
+      await refreshOrderItem(orderItemId);
     } catch (err) {
-      $("#js-pdc-request-response").text(err.responseJSON.message);
+      $('#js-pdc-request-response').text(err.responseJSON.message);
     } finally {
       loading = false;
       $('#pdc-order').removeClass('button-disabled');
-      $("#js-pdc-action-spinner").removeClass('is-active');
+      $('#js-pdc-action-spinner').removeClass('is-active');
     }
   }
 

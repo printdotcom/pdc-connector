@@ -85,6 +85,7 @@ class Pdc_Connector_Admin
 		 */
 
 		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/pdc-connector-admin.css', array(), $this->version, 'all');
+		// wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/pdc-connector-admin.css', array(), time(), 'all');
 	}
 
 	/**
@@ -116,6 +117,7 @@ class Pdc_Connector_Admin
 			'root' => esc_url_raw(rest_url()),
 			'nonce' => wp_create_nonce('wp_rest'),
 			'plugin_name' => $this->plugin_name,
+			'ajax_url' => admin_url('admin-ajax.php'),
 			'pdc_url' => get_option($this->plugin_name . '-env_baseurl'),
 		));
 		wp_enqueue_script(
@@ -210,7 +212,7 @@ class Pdc_Connector_Admin
 	public function add_product_data_tab($tabs)
 	{
 		$tabs['pdc_printtab'] = array(
-			'label' 	=> 'Print',
+			'label' 	=> 'Print.com',
 			'priority' 	=> 60,
 			'target'  =>  'pdc_product_data_tab',
 			'class'    => array('show_if_simple', 'show_if_variable'),
@@ -460,7 +462,7 @@ class Pdc_Connector_Admin
 		$order_item_id = $request->get_param('orderItemId');
 		$pdf_url = $request->get_param('pdfUrl');
 		$order_item = new WC_Order_Item_Product($order_item_id);
-		$order_item->update_meta_data($this->plugin_name . '_pdf_url', $pdf_url);
+		$order_item->update_meta_data("_{$this->plugin_name}_pdf_url", $pdf_url);
 		$order_item->save_meta_data();
 		return $pdf_url;
 	}
@@ -503,7 +505,6 @@ class Pdc_Connector_Admin
 			}
 			$similarityA = similar_text($searchterm_lower, $titleA);
 			$similarityB = similar_text($searchterm_lower, $titleB);
-		
 			// Sort in descending order of similarity
 			return $similarityB <=> $similarityA;
 		});
@@ -513,25 +514,42 @@ class Pdc_Connector_Admin
 	}
 
 	/**
-	* Implementation of API method attached to GET /products/:sku/presets
-	* Will list the presets for a given product for each selection.
-	*
-	* @since      1.0.0
-	* @param      WP_Rest_Request    $request       Request object
-	*/
-	public function pdc_list_presets(WP_REST_Request $request) {
+	 * Implementation of API method attached to GET /products/:sku/presets
+	 * Will list the presets for a given product for each selection.
+	 *
+	 * @since      1.0.0
+	 * @param      WP_Rest_Request    $request       Request object
+	 */
+	public function pdc_list_presets(WP_REST_Request $request)
+	{
 		$sku = $request->get_param('sku');
-		$baseUrl = get_option($this->plugin_name . '-env_baseurl');
-		$token = $this->getToken();
-		$result = $this->performHttpRequest('GET', $baseUrl . "presets/" . $sku, NULL, $token);
-		$decoded_result = json_decode($result);
-		$preset_list = array_map(function ($preset) {
-			return array(
-				'preset_id' => $preset->id,
-				'title' => $preset->title->en,
-			);
-		}, $decoded_result->items);
-		return $preset_list;
+		return $this->getCustomerPresetsBySKU($sku);
+	}
+
+	private function getCustomerPresetsBySKU(string $sku)
+	{
+		$presets = get_transient($this->plugin_name . '-customerpresets');
+		if (!$presets) {
+			$baseUrl = get_option($this->plugin_name . '-env_baseurl');
+			$token = $this->getToken();
+			$result = $this->performHttpRequest('GET', $baseUrl . "customerpresets", NULL, $token);
+			$decoded_result = json_decode($result);
+			$presets = array_map(function ($preset) {
+				return array(
+					'sku' => $preset->sku,
+					'preset_id' => $preset->id,
+					'title' => $preset->title->en,
+				);
+			}, $decoded_result->items);
+			$encoded = json_encode($presets);
+			set_transient($this->plugin_name . '-customerpresets', $encoded, 60 * 10); // 1 minutes
+		} else {
+			$presets = json_decode($presets);
+		}
+		$filteredBySku = array_filter($presets, function ($preset) use ($sku) {
+			return $preset->sku === $sku;
+		});
+		return $filteredBySku;
 	}
 
 	public function pdc_purchase_order_item(WP_REST_Request $request)
@@ -548,8 +566,8 @@ class Pdc_Connector_Admin
 			return new WP_Error('no_shipping_address', 'No shipping address found', array('order' => $order));
 		}
 
-		$pdc_preset_id = wc_get_order_item_meta($order_item_id, $this->plugin_name . '_preset_id', true);
-		$pdc_pdf_url = wc_get_order_item_meta($order_item_id, $this->plugin_name . '_pdf_url', true);
+		$pdc_preset_id = wc_get_order_item_meta($order_item_id, "_{$this->plugin_name}_preset_id", true);
+		$pdc_pdf_url = wc_get_order_item_meta($order_item_id, "_{$this->plugin_name}_pdf_url", true);
 		$token = $this->getToken();
 		$result = $this->performHttpRequest('GET', $baseUrl . 'customerpresets/' . urlencode($pdc_preset_id), NULL, $token);
 
@@ -574,6 +592,12 @@ class Pdc_Connector_Admin
 		$preset = json_decode($result);
 		$item_options = $preset->configuration;
 		$item_options->copies = $order_item->get_quantity();
+
+		// remove unwanted options
+		unset($item_options->_accessories);
+		unset($item_options->variants);
+		unset($item_options->deliveryPromise);
+
 		$restapi_url = esc_url_raw(rest_url());
 		$order_request = array(
 			"billingAddress" => $address,
@@ -710,8 +734,8 @@ class Pdc_Connector_Admin
 
 	public function hide_order_item_meta($arr)
 	{
-		$arr[] = 'pdc-connector_pdf_url';
-		$arr[] = 'pdc-connector_preset_id';
+		$arr[] = '_pdc-connector_pdf_url';
+		$arr[] = '_pdc-connector_preset_id';
 		$arr[] = 'pdc-connector_order_item__delivery_date';
 		$arr[] = 'pdc-connector_order_item__delivery_method';
 		$arr[] = 'pdc-connector_order_item_status';
@@ -721,6 +745,7 @@ class Pdc_Connector_Admin
 		$arr[] = 'pdc-connector_grand_total';
 		$arr[] = 'pdc-connector_order_status';
 		$arr[] = 'pdc-connector_order_item_number';
+		$arr[] = 'pdc-connector_order_item_tnt_url';
 		return $arr;
 	}
 

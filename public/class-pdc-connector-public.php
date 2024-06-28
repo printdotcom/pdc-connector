@@ -100,18 +100,17 @@ class Pdc_Connector_Public
 		$product_id = $values['product_id'];
 		$pdc_preset_id = get_post_meta($product_id, $this->plugin_name . '_preset_id', true);
 		$pdf_in_request = $values[$this->plugin_name . '_pdf_url'];
-		var_dump($pdf_in_request);
 		if (isset($pdf_in_request)) {
 			// Check if the request contains a pdf url configured via the product page
-			$item->add_meta_data($this->plugin_name . '_pdf_url', $values[$this->plugin_name . "_pdf_url"]);
+			$item->add_meta_data('_' . $this->plugin_name . '_pdf_url', $values[$this->plugin_name . "_pdf_url"]);
 		} else {
 			// Check if product has a preconfigured pdf url
 			$pdc_pdf_url = get_post_meta($product_id, $this->plugin_name . '_file_url', true);
-			$item->add_meta_data($this->plugin_name . '_pdf_url', $pdc_pdf_url);
+			$item->add_meta_data('_' . $this->plugin_name . '_pdf_url', $pdc_pdf_url);
 		}
 
 		if ($pdc_preset_id) {
-			$item->add_meta_data($this->plugin_name . '_preset_id', $pdc_preset_id);
+			$item->add_meta_data('_' . $this->plugin_name . '_preset_id', $pdc_preset_id);
 		}
 	}
 
