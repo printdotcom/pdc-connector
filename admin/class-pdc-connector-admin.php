@@ -373,10 +373,12 @@ class Pdc_Connector_Admin
 			if ($payload->status === 'ACCEPTEDBYSUPPLIER') {
 				$this->on_webhook_in_production($order_id, $order_item_id);
 			}
-			if ($payload->status === 'SHIPPED') {
-				$this->on_webhook_shipped($order_id, $order_item_id);
-			}
 		}
+
+		if ($event_type === 'SHIPMENT_CREATED') {
+			$this->on_webhook_shipped($order_id, $order_item_id, $payload->tracking_code);
+		}
+
 		return;
 	}
 
@@ -392,49 +394,15 @@ class Pdc_Connector_Admin
 		$order->save();
 	}
 
-	private function on_webhook_shipped(string $order_id, string $order_item_id)
+	private function on_webhook_shipped(string $order_id, string $order_item_id, string $tracking_url)
 	{
 		$order = wc_get_order($order_id);
 		$order_item = new WC_Order_Item_Product($order_item_id);
-		$order_item_number = $order_item->get_meta($this->plugin_name . '_order_item_number');
-		$retrieve_pdc_order_result = $this->retrieve_pdc_order($order_item_number);
-
-		if (is_wp_error($retrieve_pdc_order_result)) {
-			error_log($retrieve_pdc_order_result->get_error_message());
-			return;
-		}
-
-		$pdc_shipment = null;
-		foreach ($retrieve_pdc_order_result->shipments as $order_shipment) {
-			if (in_array($order_item_number, $order_shipment->orderItemNumbers)) {
-				$pdc_shipment = $order_shipment;
-				break;
-			}
-		}
-		if (!$pdc_shipment) {
-			error_log("No shipment found for order item number $order_item_number");
-			return;
-		}
-
-		$tracking_url = null;
-		foreach ($pdc_shipment->tracks as $track) {
-			if (strpos($track->reference, $order_item_number) !== false) {
-				$tracking_url = $track->trackUrl;
-				break;
-			}
-		}
-
-
-		if ($tracking_url) {
-			$order_item->update_meta_data($this->plugin_name . "_order_item_tnt_url", $tracking_url);
-			$note = __("Item has been shipped by Print.com. Track & Trace code: <a href=\"$tracking_url.\">$tracking_url</a>.");
-			$order->add_order_note($note);
-		}
-
-
+		$order_item->update_meta_data($this->plugin_name . "_order_item_tnt_url", $tracking_url);
+		$note = __("Item has been shipped by Print.com. Track & Trace code: <a href=\"$tracking_url.\">$tracking_url</a>.");
+		$order->add_order_note($note);
 		$order_item->update_meta_data($this->plugin_name . "_order_item_status", "shipped");
 		$order_item->save();
-
 		$order->save();
 	}
 
@@ -590,6 +558,12 @@ class Pdc_Connector_Admin
 			"telephone" => "0613762125"
 		];
 		$preset = json_decode($result);
+
+		// remove unwanted options from preset
+		unset($preset->configuration->variants);
+		unset($preset->configuration->_accessories);
+		unset($preset->configuration->deliveryPromise);
+
 		$item_options = $preset->configuration;
 		$item_options->copies = $order_item->get_quantity();
 
@@ -608,6 +582,7 @@ class Pdc_Connector_Admin
 				"fileUrl" => $pdc_pdf_url,
 				"options" => $item_options,
 				"senderAddress" => $address,
+				"approveDesign" => true,
 				"shipments" => [[
 					"address" => [
 						"city" => $shipping_address['city'],
