@@ -68,6 +68,8 @@ class Pdc_Connector_Public
 
 	/**
 	 * Adds additional values to the cart item
+	 * Filter cart item data for add to cart requests.
+	 * Hooks into woocommerce_add_cart_item_data
 	 *
 	 * @since    1.0.0
 	 */
@@ -85,6 +87,7 @@ class Pdc_Connector_Public
 			return $pdc_pdf_url;
 		}
 
+		// This was the old method of getting pitch print data
 		$pitchprint_data = $_REQUEST['_w2p_set_option'];
 		if (isset($pitchprint_data) && !empty($pitchprint_data)) {
 			// When a file is configured via pitch print, we use that.
@@ -95,22 +98,38 @@ class Pdc_Connector_Public
 		return "";
 	}
 
-	public function save_pdc_values_order_meta(WC_Order_Item_Product $item, $cart_item_key, $values, WC_Order $order)
+	/**
+	 * Saves the PDC values on the order item
+	 * Action hook to adjust item before save. 
+	 * Hooks into woocommerce_checkout_create_order_line_item
+	 *
+	 * @since 		1.0.0
+	 * @return 		void
+	 */
+	public function save_pdc_values_order_meta(WC_Order_Item_Product $order_item, $cart_item_key, $values, WC_Order $order)
 	{
 		$product_id = $values['product_id'];
-		$pdc_preset_id = get_post_meta($product_id, $this->plugin_name . '_preset_id', true);
-		$pdf_in_request = $values[$this->plugin_name . '_pdf_url'];
-		if (isset($pdf_in_request)) {
-			// Check if the request contains a pdf url configured via the product page
-			$item->add_meta_data('_' . $this->plugin_name . '_pdf_url', $values[$this->plugin_name . "_pdf_url"]);
-		} else {
-			// Check if product has a preconfigured pdf url
+
+		// Check if the cart item contains a pdf url
+		$pdc_pdf_url = $values[$this->plugin_name . '_pdf_url'];
+
+		// if not, check if product has a preconfigured pdf url
+		if (empty($pdc_pdf_url)) {
 			$pdc_pdf_url = get_post_meta($product_id, $this->plugin_name . '_file_url', true);
-			$item->add_meta_data('_' . $this->plugin_name . '_pdf_url', $pdc_pdf_url);
 		}
 
+		// if not, check if the cart item contains pitch print data
+		if (empty($pdc_pdf_url)) {
+			$cart_item = WC()->cart->get_cart_item($cart_item_key);
+			$pitchprint_data = $cart_item['_pda_w2p_set_option'];
+			$decoded_data = json_decode(urldecode($pitchprint_data));
+			$pdc_pdf_url = "https://pdf.print.app/" . $decoded_data->projectId;
+		}
+		$order_item->add_meta_data('_' . $this->plugin_name . '_pdf_url', $pdc_pdf_url);
+
+		$pdc_preset_id = get_post_meta($product_id, $this->plugin_name . '_preset_id', true);
 		if ($pdc_preset_id) {
-			$item->add_meta_data('_' . $this->plugin_name . '_preset_id', $pdc_preset_id);
+			$order_item->add_meta_data('_' . $this->plugin_name . '_preset_id', $pdc_preset_id);
 		}
 	}
 

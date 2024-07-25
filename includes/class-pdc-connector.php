@@ -190,7 +190,7 @@ class Pdc_Connector
 		$this->loader->add_action('woocommerce_before_single_product_summary', $plugin_public, 'render_canvas');
 		$this->loader->add_action('woocommerce_before_add_to_cart_button', $plugin_public, 'set_pdf_input');
 		$this->loader->add_filter('woocommerce_add_cart_item_data', $plugin_public, 'capture_cart_item_data', 10, 2);
-		$this->loader->add_filter('woocommerce_checkout_create_order_line_item', $plugin_public, 'save_pdc_values_order_meta', 10, 4);
+		$this->loader->add_filter('woocommerce_checkout_create_order_line_item', $plugin_public, 'save_pdc_values_order_meta', 80, 4);
 	}
 
 	/**
