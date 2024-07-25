@@ -376,7 +376,7 @@ class Pdc_Connector_Admin
 		}
 
 		if ($event_type === 'SHIPMENT_CREATED') {
-			$this->on_webhook_shipped($order_id, $order_item_id, $payload->tracking_code);
+			$this->on_webhook_shipped($order_item_id, $payload->tracking_code);
 		}
 
 		return;
@@ -394,15 +394,16 @@ class Pdc_Connector_Admin
 		$order->save();
 	}
 
-	private function on_webhook_shipped(string $order_id, string $order_item_id, string $tracking_url)
+	private function on_webhook_shipped(string $order_item_id, string $tracking_url)
 	{
-		$order = wc_get_order($order_id);
 		$order_item = new WC_Order_Item_Product($order_item_id);
 		$order_item->update_meta_data($this->plugin_name . "_order_item_tnt_url", $tracking_url);
-		$note = __("Item has been shipped by Print.com. Track & Trace code: <a href=\"$tracking_url.\">$tracking_url</a>.");
-		$order->add_order_note($note);
 		$order_item->update_meta_data($this->plugin_name . "_order_item_status", "shipped");
 		$order_item->save();
+
+		$order = wc_get_order(get_post_meta($order_item_id, '_order_id', true));
+		$note = __("Item has been shipped by Print.com. Track & Trace code: <a href=\"$tracking_url.\">$tracking_url</a>.");
+		$order->add_order_note($note);
 		$order->save();
 	}
 
@@ -496,7 +497,7 @@ class Pdc_Connector_Admin
 
 	private function getCustomerPresetsBySKU(string $sku)
 	{
-		$presets = get_transient($this->plugin_name . '-customerpresets');
+		$presets = get_transient($this->plugin_name . '-customerpreset');
 		if (!$presets) {
 			$baseUrl = get_option($this->plugin_name . '-env_baseurl');
 			$token = $this->getToken();
@@ -510,7 +511,7 @@ class Pdc_Connector_Admin
 				);
 			}, $decoded_result->items);
 			$encoded = json_encode($presets);
-			set_transient($this->plugin_name . '-customerpresets', $encoded, 60 * 10); // 1 minutes
+			set_transient($this->plugin_name . '-customerpreset', $encoded, 60); // 1 minute
 		} else {
 			$presets = json_decode($presets);
 		}
