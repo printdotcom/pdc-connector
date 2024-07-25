@@ -364,11 +364,11 @@ class Pdc_Connector_Admin
 	{
 		$body = json_decode($request->get_body());
 		$event_type = $body->event_type;
+		$payload = $body->payload;
 
 		if ($event_type === 'ORDER_STATUS_CHANGED') {
 			$order_id = $request->get_param('order_id');
 			$order_item_id = $request->get_param('order_item_id');
-			$payload = $body->payload;
 
 			if ($payload->status === 'ACCEPTEDBYSUPPLIER') {
 				$this->on_webhook_in_production($order_id, $order_item_id);
@@ -376,7 +376,7 @@ class Pdc_Connector_Admin
 		}
 
 		if ($event_type === 'SHIPMENT_CREATED') {
-			$this->on_webhook_shipped($order_item_id, $payload->tracking_code);
+			$this->on_webhook_shipped($payload->order_item_number, $payload->tracking_code);
 		}
 
 		return;
@@ -394,36 +394,19 @@ class Pdc_Connector_Admin
 		$order->save();
 	}
 
-	private function on_webhook_shipped(string $order_item_id, string $tracking_url)
+	private function on_webhook_shipped(string $order_item_number, string $tracking_url)
 	{
-		$order_item = new WC_Order_Item_Product($order_item_id);
+		$pdc_order = $this->get_pdc_order_by_order_item_number($order_item_number);
+		
+		$order_item = new WC_Order_Item_Product($pdc_order['wp_order_item_id']);
 		$order_item->update_meta_data($this->plugin_name . "_order_item_tnt_url", $tracking_url);
 		$order_item->update_meta_data($this->plugin_name . "_order_item_status", "shipped");
 		$order_item->save();
 
-		$order = wc_get_order(get_post_meta($order_item_id, '_order_id', true));
+		$order = wc_get_order($pdc_order['wp_order_id']);
 		$note = __("Item has been shipped by Print.com. Track & Trace code: <a href=\"$tracking_url.\">$tracking_url</a>.");
 		$order->add_order_note($note);
 		$order->save();
-	}
-
-	private function retrieve_pdc_order(string $order_item_number)
-	{
-		$order_number = substr($order_item_number, 0, strpos($order_item_number, '-'));
-		$baseUrl = get_option($this->plugin_name . '-env_baseurl');
-		$token = $this->getToken();
-		$result = $this->performHttpRequest('GET', $baseUrl . 'orders/' . urlencode($order_number), NULL, $token);
-
-		if (is_wp_error($result)) {
-			return $result;
-		}
-		if (empty($result)) {
-			return new WP_Error('no_order', 'No order found', array('order_number' => $order_number));
-		}
-
-		$decoded = json_decode($result);
-
-		return $decoded->order;
 	}
 
 	public function pdc_attach_pdf(WP_REST_Request $request)
@@ -642,12 +625,29 @@ class Pdc_Connector_Admin
 		$wpdb->insert(
 			$table_name,
 			array(
-				'pdc_ordernumber' => $pdc_order->orderNumber,
-				'wp_order_id' => $order->get_ID(),
+				'pdc_order_number' => $pdc_order->orderNumber,
 				'pdc_price'  => $pdc_order->grandTotal,
+				'pdc_order_item_number' => $pdc_order->items[0]->orderItemNumber,
 				'pdc_status' => $pdc_order->status,
+				'wp_order_id' => $order->get_ID(),
+				'wp_order_item_id' => $order_item->get_id(),
 			)
 		);
+	}
+
+	private function get_pdc_order_by_order_item_number(string $order_item_number)
+	{
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'pdc_orders';
+		$result = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM $table_name WHERE pdc_order_item_number = %s",
+				$order_item_number
+			),
+			ARRAY_A
+		);
+		return $result;
 	}
 
 	private function getToken()
