@@ -397,7 +397,7 @@ class Pdc_Connector_Admin
 	private function on_webhook_shipped(string $order_item_number, string $tracking_url)
 	{
 		$pdc_order = $this->get_pdc_order_by_order_item_number($order_item_number);
-		
+
 		$order_item = new WC_Order_Item_Product($pdc_order['wp_order_item_id']);
 		$order_item->update_meta_data($this->plugin_name . "_order_item_tnt_url", $tracking_url);
 		$order_item->update_meta_data($this->plugin_name . "_order_item_status", "shipped");
@@ -530,16 +530,19 @@ class Pdc_Connector_Admin
 			return new WP_Error('no_preset', 'No preset found', array('preset_id' => $pdc_preset_id));
 		}
 
-		$address = [
-			"city" => "Wierden",
-			"country" => "NL",
-			"email" => "tijmen@print.com",
-			"firstName" => "Tijmen",
-			"houseNumber" => "9",
-			"lastName" => "Bruggeman",
-			"postcode" => "7641AG",
-			"fullstreet" => "Weusteweg 9",
-			"telephone" => "0613762125"
+		$order_billing_address = $order->get_address('billing');
+		$billing_street_address = $this->parse_street_address($order_billing_address['address_1']);
+		$billing_address = [
+			"city" => $order_billing_address['city'],
+			"country" => $order_billing_address['country'],
+			"email" => $order_billing_address['email'],
+			"firstName" => $order_billing_address['first_name'],
+			"street" => $billing_street_address['street'],
+			"houseNumber" => $billing_street_address['house_number'],
+			"lastName" => $order_billing_address['last_name'],
+			"postcode" => $order_billing_address['postcode'],
+			"fullstreet" => $order_billing_address['address_1'],
+			"telephone" => $order_billing_address['phone'],
 		];
 		$preset = json_decode($result);
 
@@ -558,14 +561,14 @@ class Pdc_Connector_Admin
 
 		$restapi_url = esc_url_raw(rest_url());
 		$order_request = array(
-			"billingAddress" => $address,
+			"billingAddress" => $billing_address,
 			"customerReference" => $order->get_order_number() . '-' . $order_item_id,
 			"webhookUrl" => $restapi_url . "pdc/v1/orders/webhook?order_item_id=" . $order_item_id . "&order_id=" . $order_id,
 			"items" => [[
 				"sku" => $preset->sku,
 				"fileUrl" => $pdc_pdf_url,
 				"options" => $item_options,
-				"senderAddress" => $address,
+				"senderAddress" => $billing_address,
 				"approveDesign" => true,
 				"shipments" => [[
 					"address" => [
@@ -578,13 +581,15 @@ class Pdc_Connector_Admin
 						"fullstreet" => $shipping_address['address_1'],
 						"telephone" => $shipping_address['phone'],
 					],
-					"copies" => $order_item->get_quantity()
+					"copies" => $order_item->get_quantity(),
 				]]
 			]]
 
 		);
 
-		$result = $this->performHttpRequest('POST', $baseUrl . 'orders', $order_request, $token);
+		$result = $this->performHttpRequest('POST', $baseUrl . 'orders', $order_request, $token, [
+			'pdc-request-source' => 'pdc-woocommerce',
+		]);
 
 		if (is_wp_error($result)) {
 			return $result;
@@ -635,6 +640,30 @@ class Pdc_Connector_Admin
 		);
 	}
 
+	/**
+	 * Parses the street address and returns the street and house number
+	 *
+	 * @param string $street_address The street address to parse, usually `Teugseweg 18a` or something similar
+	 * @return array The parsed street and house number
+	 */
+	private function parse_street_address(string $street_address)
+	{
+		// Regex to match the street and house number
+		$pattern = '/^(.*?)(\d+.*)$/';
+		if (preg_match($pattern, $street_address, $matches)) {
+			return [
+				'street' => trim($matches[1]),
+				'house_number' => trim($matches[2])
+			];
+		}
+
+		// If no match, return the address as street and empty house number
+		return [
+			'street' => $street_address,
+			'house_number' => ''
+		];
+	}
+
 	private function get_pdc_order_by_order_item_number(string $order_item_number)
 	{
 		global $wpdb;
@@ -672,7 +701,7 @@ class Pdc_Connector_Admin
 		return $parsedToken;
 	}
 
-	private function performHttpRequest($method, $url, $data = NULL, $token)
+	private function performHttpRequest($method, $url, $data = NULL, $token = NULL, $headers = [])
 	{
 		$curl = curl_init($url);
 		$params = [
@@ -684,6 +713,10 @@ class Pdc_Connector_Admin
 				"content-type: application/json",
 			]
 		];
+
+		if (!empty($headers)) {
+			$params[CURLOPT_HTTPHEADER] = array_merge($params[CURLOPT_HTTPHEADER], $headers);
+		}
 
 		if ($method === 'POST' && !empty($data)) {
 			$params[CURLOPT_POSTFIELDS] = json_encode($data);
