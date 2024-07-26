@@ -530,20 +530,6 @@ class Pdc_Connector_Admin
 			return new WP_Error('no_preset', 'No preset found', array('preset_id' => $pdc_preset_id));
 		}
 
-		$order_billing_address = $order->get_address('billing');
-		$billing_street_address = $this->parse_street_address($order_billing_address['address_1']);
-		$billing_address = [
-			"city" => $order_billing_address['city'],
-			"country" => $order_billing_address['country'],
-			"email" => $order_billing_address['email'],
-			"firstName" => $order_billing_address['first_name'],
-			"street" => $billing_street_address['street'],
-			"houseNumber" => $billing_street_address['house_number'],
-			"lastName" => $order_billing_address['last_name'],
-			"postcode" => $order_billing_address['postcode'],
-			"fullstreet" => $order_billing_address['address_1'],
-			"telephone" => $order_billing_address['phone'],
-		];
 		$preset = json_decode($result);
 
 		// remove unwanted options from preset
@@ -561,14 +547,12 @@ class Pdc_Connector_Admin
 
 		$restapi_url = esc_url_raw(rest_url());
 		$order_request = array(
-			"billingAddress" => $billing_address,
 			"customerReference" => $order->get_order_number() . '-' . $order_item_id,
 			"webhookUrl" => $restapi_url . "pdc/v1/orders/webhook?order_item_id=" . $order_item_id . "&order_id=" . $order_id,
 			"items" => [[
 				"sku" => $preset->sku,
 				"fileUrl" => $pdc_pdf_url,
 				"options" => $item_options,
-				"senderAddress" => $billing_address,
 				"approveDesign" => true,
 				"shipments" => [[
 					"address" => [
