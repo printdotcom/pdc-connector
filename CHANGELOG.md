@@ -1,1 +1,9 @@
-https://github.com/slushman/now-hiring/blob/master/admin/class-now-hiring-admin.php
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0-beta]
+Beta version of the plugin. Breaking changes will not be communicated in advance as this will slow down development. 
