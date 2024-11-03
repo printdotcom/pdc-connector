@@ -35,6 +35,18 @@ jQuery(function ($) {
       .appendTo(ul);
   };
 
+  /**
+   * We are only storing the API URL so to get the right app
+   * url we can check the API URL for the matching app url.
+   */
+  function getAppURL() {
+    const api_url = pdcAdminApi.pdc_url;
+    if (api_url.includes('api.print.com')) {
+      return 'https://app.print.com';
+    }
+    return 'https://app.print.beer';
+  }
+
   $('#js-pdc-preset-search')
     .autocomplete({
       minLength: 0,
@@ -54,9 +66,10 @@ jQuery(function ($) {
         if (!ui.content.length) {
           const productTitle = $('#js-pdc-product-search').val();
           const productSKU = $('#js-pdc-product-sku').val();
+          const appURL = getAppURL();
           ui.content.push({
             value: '',
-            title: `No presets configured. Go to <a target="_blank" href="https://app.print.com/selector/${productSKU}">${productTitle}</a> to configure a preset.`,
+            title: `No presets configured. Go to <a target="_blank" href="${appURL}/selector/${productSKU}">${productTitle}</a> to configure a preset.`,
           });
         }
       },
