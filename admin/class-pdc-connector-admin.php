@@ -480,24 +480,17 @@ class Pdc_Connector_Admin
 
 	private function getCustomerPresetsBySKU(string $sku)
 	{
-		$presets = get_transient($this->plugin_name . '-customerpreset');
-		if (!$presets) {
-			$baseUrl = get_option($this->plugin_name . '-env_baseurl');
-			$token = $this->getToken();
-			$result = $this->performHttpRequest('GET', $baseUrl . "customerpresets", NULL, $token);
-			$decoded_result = json_decode($result);
-			$presets = array_map(function ($preset) {
-				return array(
-					'sku' => $preset->sku,
-					'preset_id' => $preset->id,
-					'title' => $preset->title->en,
-				);
-			}, $decoded_result->items);
-			$encoded = json_encode($presets);
-			set_transient($this->plugin_name . '-customerpreset', $encoded, 60); // 1 minute
-		} else {
-			$presets = json_decode($presets);
-		}
+		$baseUrl = get_option($this->plugin_name . '-env_baseurl');
+		$token = $this->getToken();
+		$result = $this->performHttpRequest('GET', $baseUrl . "customerpresets", NULL, $token);
+		$decoded_result = json_decode($result);
+		$presets = array_map(function ($preset) {
+			return array(
+				'sku' => $preset->sku,
+				'preset_id' => $preset->id,
+				'title' => $preset->title->en,
+			);
+		}, $decoded_result->items);
 		$filteredBySku = array_filter($presets, function ($preset) use ($sku) {
 			return $preset->sku === $sku;
 		});
