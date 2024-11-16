@@ -1,5 +1,7 @@
 <?php
 
+namespace PdcConnector\Includes;
+
 /**
  * Fired during plugin deactivation
  *
@@ -20,7 +22,8 @@
  * @subpackage Pdc_Connector/includes
  * @author     Tijmen <tijmen@print.com>
  */
-class Pdc_Connector_Deactivator {
+class Deactivator
+{
 
 	/**
 	 * Short Description. (use period)
@@ -29,8 +32,5 @@ class Pdc_Connector_Deactivator {
 	 *
 	 * @since    1.0.0
 	 */
-	public static function deactivate() {
-
-	}
-
+	public static function deactivate() {}
 }

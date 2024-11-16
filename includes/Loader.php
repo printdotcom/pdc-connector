@@ -1,5 +1,7 @@
 <?php
 
+namespace PdcConnector\Includes;
+
 /**
  * Register all actions and filters for the plugin
  *
@@ -21,7 +23,7 @@
  * @subpackage Pdc_Connector/includes
  * @author     Tijmen <tijmen@print.com>
  */
-class Pdc_Connector_Loader {
+class Loader {
 
 	/**
 	 * The array of actions registered with WordPress.
