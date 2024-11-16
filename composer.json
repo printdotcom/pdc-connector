@@ -1,0 +1,19 @@
+{
+  "name": "printdotcom/pdc-connector",
+  "description": "Plug-in to connect to Print.com",
+  "type": "project",
+  "autoload": {
+    "psr-4": {
+      "PdcConnector\\Admin\\": "admin/",
+      "PdcConnector\\Public\\": "public/",
+      "PdcConnector\\Includes\\": "includes/"
+    }
+  },
+  "authors": [
+    {
+      "name": "tijmen",
+      "email": "tijmen@print.com"
+    }
+  ],
+  "require": {}
+}

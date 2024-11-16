@@ -1,5 +1,7 @@
 <?php
 
+namespace PdcConnector\Public;
+
 /**
  * The public-facing functionality of the plugin.
  *
@@ -20,7 +22,7 @@
  * @subpackage Pdc_Connector/public
  * @author     Tijmen <tijmen@print.com>
  */
-class Pdc_Connector_Public
+class PublicCore
 {
 
 	/**
@@ -53,16 +55,6 @@ class Pdc_Connector_Public
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-	}
-
-
-	/**
-	 * Enqueue all required assets for the editor
-	 *
-	 * @since    1.0.0
-	 */
-	public function enqueue_app_assets()
-	{
 	}
 
 
@@ -106,7 +98,7 @@ class Pdc_Connector_Public
 	 * @since 		1.0.0
 	 * @return 		void
 	 */
-	public function save_pdc_values_order_meta(WC_Order_Item_Product $order_item, $cart_item_key, $values, WC_Order $order)
+	public function save_pdc_values_order_meta(\WC_Order_Item_Product $order_item, $cart_item_key, $values, \WC_Order $order)
 	{
 		$product_id = $values['product_id'];
 
@@ -119,26 +111,19 @@ class Pdc_Connector_Public
 		}
 
 		// if not, check if the cart item contains pitch print data
-		if (empty($pdc_pdf_url)) {
-			$cart_item = WC()->cart->get_cart_item($cart_item_key);
-			$pitchprint_data = $cart_item['_pda_w2p_set_option'];
+		$cart_item = WC()->cart->get_cart_item($cart_item_key);
+		$pitchprint_data = $cart_item['_pda_w2p_set_option'];
+		if (!empty($pitchprint_data)) {
 			$decoded_data = json_decode(urldecode($pitchprint_data));
 			$pdc_pdf_url = "https://pdf.print.app/" . $decoded_data->projectId;
 		}
+
 		$order_item->add_meta_data('_' . $this->plugin_name . '_pdf_url', $pdc_pdf_url);
 
 		$pdc_preset_id = get_post_meta($product_id, $this->plugin_name . '_preset_id', true);
 		if ($pdc_preset_id) {
 			$order_item->add_meta_data('_' . $this->plugin_name . '_preset_id', $pdc_preset_id);
 		}
-	}
-
-	/**
-	 * Renders the editor on the product-single page
-	 */
-	public function render_canvas()
-	{
-		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-public-editor.php');
 	}
 
 	/**

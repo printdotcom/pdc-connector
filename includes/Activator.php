@@ -1,5 +1,7 @@
 <?php
 
+namespace PdcConnector\Includes;
+
 /**
  * Fired during plugin activation
  *
@@ -20,7 +22,7 @@
  * @subpackage Pdc_Connector/includes
  * @author     Tijmen <tijmen@print.com>
  */
-class Pdc_Connector_Activator
+class Activator
 {
 
 	/**

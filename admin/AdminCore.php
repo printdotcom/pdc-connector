@@ -1,5 +1,10 @@
 <?php
 
+namespace PdcConnector\Admin;
+
+use PdcConnector\Admin\PrintDotCom\APIClient;
+use PdcConnector\Admin\PurchaseOrderRepository;
+
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -11,16 +16,13 @@
  */
 
 /**
- * The admin-specific functionality of the plugin.
+ * Admin-specific functionality of the plugin applied to hooks.
  *
- * Defines the plugin name, version, and two examples hooks for how to
- * enqueue the admin-specific stylesheet and JavaScript.
- *
- * @package    Pdc_Connector
+ * @package    PdcConnectorAdmin
  * @subpackage Pdc_Connector/admin
  * @author     Tijmen <tijmen@print.com>
  */
-class Pdc_Connector_Admin
+class AdminCore
 {
 
 	/**
@@ -41,14 +43,7 @@ class Pdc_Connector_Admin
 	 */
 	private $version;
 
-	/**
-	 * Access Token for Print.com API
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $pdc_access_token;
+	private APIClient $pdc_client;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -62,6 +57,7 @@ class Pdc_Connector_Admin
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		$this->pdc_client = new APIClient($plugin_name);
 	}
 
 	/**
@@ -84,7 +80,14 @@ class Pdc_Connector_Admin
 		 * class.
 		 */
 
-		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/pdc-connector-admin.css', array(), $this->version, 'all');
+		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/pdc-connector-admin.css', array(), time(), 'all');
+		wp_enqueue_style(
+			'accessible-autocomplete',
+			plugin_dir_url(__FILE__) . 'css/accessible-autocomplete.min.css',
+			[],
+			"3.0.1",
+			"all",
+		);
 		// wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/pdc-connector-admin.css', array(), time(), 'all');
 	}
 
@@ -121,11 +124,18 @@ class Pdc_Connector_Admin
 			'pdc_url' => get_option($this->plugin_name . '-env_baseurl'),
 		));
 		wp_enqueue_script(
+			'accessible-autocomplete',
+			plugin_dir_url(__FILE__) . 'js/accessible-autocomplete.min.js',
+			[],
+			"3.0.1",
+			array(),
+		);
+		wp_enqueue_script(
 			$this->plugin_name . '-autocomplete-search',
 			plugin_dir_url(__FILE__) . 'js/pdc-connector-autocomplete.js',
-			['jquery', 'jquery-ui-autocomplete'],
-			null,
-			true
+			['jquery', 'accessible-autocomplete'],
+			time(),
+			array(),
 		);
 		wp_localize_script($this->plugin_name . '-autocomplete-search', 'pdcAdminApi', array(
 			'root' => esc_url_raw(rest_url()),
@@ -209,6 +219,16 @@ class Pdc_Connector_Admin
 		echo "<input type=\"$type\" name=\"$name\" id=\"$name\" value=\"$value\"  />";
 	}
 
+	/**
+	 * Deletes the cached token
+	 * This is useful whenever the user changes user, password or environment
+	 */
+	public function delete_cached_tokens($new_value, $old_value)
+	{
+		delete_transient($this->plugin_name . '-token');
+		return $new_value;
+	}
+
 	public function add_product_data_tab($tabs)
 	{
 		$tabs['pdc_printtab'] = array(
@@ -231,10 +251,10 @@ class Pdc_Connector_Admin
 	 */
 	public function save_product_data_fields($post_id)
 	{
-		$this->save_text_field($post_id, $this->plugin_name . '_sku');
-		$this->save_text_field($post_id, $this->plugin_name . '_sku_title');
+		$this->save_text_field($post_id, $this->plugin_name . '_product_sku');
+		$this->save_text_field($post_id, $this->plugin_name . '_product_title');
 		$this->save_text_field($post_id, $this->plugin_name . '_preset_id');
-		$this->save_text_field($post_id, $this->plugin_name . '_preset_name');
+		$this->save_text_field($post_id, $this->plugin_name . '_preset_title');
 		$this->save_text_field($post_id, $this->plugin_name . '_file_url');
 	}
 
@@ -350,17 +370,46 @@ class Pdc_Connector_Admin
 			'methods' => 'POST',
 			'callback' => array($this, 'pdc_order_webhook'),
 		));
-		register_rest_route('pdc/v1', '/products', array(
-			'methods' => 'GET',
-			'callback' => array($this, 'pdc_list_products'),
-		));
-		register_rest_route('pdc/v1', '/products/(?P<sku>[a-zA-Z0-9_-]+)/presets', array(
-			'methods' => 'GET',
-			'callback' => array($this, 'pdc_list_presets'),
+	}
+
+	public function pdc_list_products()
+	{
+		$search_term = $_POST["searchTerm"];
+		$lc_search_term = strtolower($search_term);
+		$products = $this->pdc_client->searchProducts();
+		$filtered_products = array_filter($products, function ($item) use ($lc_search_term) {
+			$lc_title = strtolower($item->title);
+			return strpos($lc_title, $lc_search_term) !== false;
+		});
+
+		usort($filtered_products, function ($a, $b) use ($lc_search_term) {
+			$lc_a_title = strtolower($a->title);
+			$lc_b_title = strtolower($a->title);
+
+			// Check if the string starts with the search string
+			$aStartsWith = strpos($lc_a_title, $lc_search_term) === 0;
+			$bStartsWith = strpos($lc_b_title, $lc_search_term) === 0;
+
+			// Give priority to strings that start with the search string
+			if ($aStartsWith && !$bStartsWith) {
+				return -1; // $a comes before $b
+			} elseif (!$aStartsWith && $bStartsWith) {
+				return 1; // $b comes before $a
+			} else {
+				// If both start or neither starts with the prefix, maintain default order
+				return strcmp($lc_a_title, $lc_b_title);
+			}
+		});
+
+		// Re-index the filtered and sorted array to get a flat array
+		$sorted_products = array_values($filtered_products);
+
+		wp_send_json_success(array(
+			'products' => $sorted_products,
 		));
 	}
 
-	public function pdc_order_webhook(WP_REST_Request $request)
+	public function pdc_order_webhook(\WP_REST_Request $request)
 	{
 		$body = json_decode($request->get_body());
 		$event_type = $body->event_type;
@@ -384,7 +433,7 @@ class Pdc_Connector_Admin
 
 	private function on_webhook_in_production(string $order_id, string $order_item_id)
 	{
-		$order_item = new WC_Order_Item_Product($order_item_id);
+		$order_item = new \WC_Order_Item_Product($order_item_id);
 		$order_item->update_meta_data($this->plugin_name . "_order_item_status", "production");
 		$order_item->save();
 
@@ -396,73 +445,28 @@ class Pdc_Connector_Admin
 
 	private function on_webhook_shipped(string $order_item_number, string $tracking_url)
 	{
-		$pdc_order = $this->get_pdc_order_by_order_item_number($order_item_number);
+		$podb = new PurchaseOrderRepository();
+		$pdc_order = $podb->get_pdc_order_by_order_item_number($order_item_number);
 
-		$order_item = new WC_Order_Item_Product($pdc_order['wp_order_item_id']);
+		$order_item = new \WC_Order_Item_Product($pdc_order->wp_order_item_id);
 		$order_item->update_meta_data($this->plugin_name . "_order_item_tnt_url", $tracking_url);
 		$order_item->update_meta_data($this->plugin_name . "_order_item_status", "shipped");
 		$order_item->save();
 
-		$order = wc_get_order($pdc_order['wp_order_id']);
+		$order = wc_get_order($pdc_order->wp_order_id);
 		$note = __("Item has been shipped by Print.com. Track & Trace code: <a href=\"$tracking_url.\">$tracking_url</a>.");
 		$order->add_order_note($note);
 		$order->save();
 	}
 
-	public function pdc_attach_pdf(WP_REST_Request $request)
+	public function pdc_attach_pdf(\WP_REST_Request $request)
 	{
 		$order_item_id = $request->get_param('orderItemId');
 		$pdf_url = $request->get_param('pdfUrl');
-		$order_item = new WC_Order_Item_Product($order_item_id);
+		$order_item = new \WC_Order_Item_Product($order_item_id);
 		$order_item->update_meta_data("_{$this->plugin_name}_pdf_url", $pdf_url);
 		$order_item->save_meta_data();
 		return $pdf_url;
-	}
-
-	public function pdc_list_products(WP_REST_Request $request)
-	{
-		$searchterm = $request->get_param('term');
-		if (empty($searchterm)) {
-			return new WP_Error('no_searchterm', 'No search term provided', array('term' => $searchterm));
-		}
-
-		$products = get_transient($this->plugin_name . '-products');
-		if (!$products) {
-			$baseUrl = get_option($this->plugin_name . '-env_baseurl');
-			$token = $this->getToken();
-			$result = $this->performHttpRequest('GET', $baseUrl . 'products', NULL, $token);
-			$decoded_result = json_decode($result);
-			$sku_list = array_map(function ($product) {
-				return array(
-					'sku' => $product->sku,
-					'title' => $product->titlePlural,
-				);
-			}, $decoded_result);
-			$encoded = json_encode($sku_list);
-			set_transient($this->plugin_name . '-products', $encoded, 60 * 60 * 24); // 1 day
-			$products = $encoded;
-		}
-
-		$decoded = json_decode($products);
-		usort($decoded, function ($a, $b) use ($searchterm) {
-			$searchterm_lower = strtolower($searchterm);
-			$titleA = strtolower($a->title);
-			$titleB = strtolower($b->title);
-
-			// Check for prefix match and give it the highest priority
-			$startsWithA = strpos($titleA, $searchterm_lower) === 0 ? 1 : 0;
-			$startsWithB = strpos($titleB, $searchterm_lower) === 0 ? 1 : 0;
-			if ($startsWithA !== $startsWithB) {
-				return $startsWithB <=> $startsWithA;
-			}
-			$similarityA = similar_text($searchterm_lower, $titleA);
-			$similarityB = similar_text($searchterm_lower, $titleB);
-			// Sort in descending order of similarity
-			return $similarityB <=> $similarityA;
-		});
-		$filtered = array_slice($decoded, 0, 5);
-
-		return $filtered;
 	}
 
 	/**
@@ -470,113 +474,30 @@ class Pdc_Connector_Admin
 	 * Will list the presets for a given product for each selection.
 	 *
 	 * @since      1.0.0
-	 * @param      WP_Rest_Request    $request       Request object
 	 */
-	public function pdc_list_presets(WP_REST_Request $request)
+	public function pdc_list_presets()
 	{
-		$sku = $request->get_param('sku');
-		return $this->getCustomerPresetsBySKU($sku);
+		$sku = $_POST["sku"];
+		if (empty($sku)) {
+			return new \WP_Error('no_sku', 'No SKU provided', array('sku' => $sku));
+		}
+		$presets = $this->pdc_client->getPresets($sku);
+		wp_send_json_success(array(
+			'presets' => $presets,
+		));
 	}
 
-	private function getCustomerPresetsBySKU(string $sku)
-	{
-		$baseUrl = get_option($this->plugin_name . '-env_baseurl');
-		$token = $this->getToken();
-		$result = $this->performHttpRequest('GET', $baseUrl . "customerpresets", NULL, $token);
-		$decoded_result = json_decode($result);
-		$presets = array_map(function ($preset) {
-			return array(
-				'sku' => $preset->sku,
-				'preset_id' => $preset->id,
-				'title' => $preset->title->en,
-			);
-		}, $decoded_result->items);
-		$filteredBySku = array_filter($presets, function ($preset) use ($sku) {
-			return $preset->sku === $sku;
-		});
-		return $filteredBySku;
-	}
-
-	public function pdc_purchase_order_item(WP_REST_Request $request)
+	public function pdc_purchase_order_item(\WP_REST_Request $request)
 	{
 
 		$order_item_id = $request->get_param('orderItemId');
-		$baseUrl = get_option($this->plugin_name . '-env_baseurl');
 
-		$order_item = new WC_Order_Item_Product($order_item_id);
-		$order_id = wc_get_order_id_by_order_item_id($order_item_id);
-		$order = wc_get_order($order_id);
-		$shipping_address = $order->get_address('shipping');
-		if (empty($shipping_address)) {
-			return new WP_Error('no_shipping_address', 'No shipping address found', array('order' => $order));
-		}
-
-		$pdc_preset_id = wc_get_order_item_meta($order_item_id, "_{$this->plugin_name}_preset_id", true);
-		$pdc_pdf_url = wc_get_order_item_meta($order_item_id, "_{$this->plugin_name}_pdf_url", true);
-		$token = $this->getToken();
-		$result = $this->performHttpRequest('GET', $baseUrl . 'customerpresets/' . urlencode($pdc_preset_id), NULL, $token);
-
+		$result = $this->pdc_client->purchaseOrderItem($order_item_id);
 		if (is_wp_error($result)) {
 			return $result;
 		}
-		if (empty($result)) {
-			return new WP_Error('no_preset', 'No preset found', array('preset_id' => $pdc_preset_id));
-		}
-
-		$preset = json_decode($result);
-
-		// remove unwanted options from preset
-		unset($preset->configuration->variants);
-		unset($preset->configuration->_accessories);
-		unset($preset->configuration->deliveryPromise);
-
-		$item_options = $preset->configuration;
-		$item_options->copies = $order_item->get_quantity();
-
-		// remove unwanted options
-		unset($item_options->_accessories);
-		unset($item_options->variants);
-		unset($item_options->deliveryPromise);
-
-		$restapi_url = esc_url_raw(rest_url());
-		$order_request = array(
-			"customerReference" => $order->get_order_number() . '-' . $order_item_id,
-			"webhookUrl" => $restapi_url . "pdc/v1/orders/webhook?order_item_id=" . $order_item_id . "&order_id=" . $order_id,
-			"items" => [[
-				"sku" => $preset->sku,
-				"fileUrl" => $pdc_pdf_url,
-				"options" => $item_options,
-				"approveDesign" => true,
-				"shipments" => [[
-					"address" => [
-						"city" => $shipping_address['city'],
-						"country" => $shipping_address['country'],
-						"firstName" => $shipping_address['first_name'],
-						"lastName" => $shipping_address['last_name'],
-						"companyName" => $shipping_address['company'],
-						"postcode" => $shipping_address['postcode'],
-						"fullstreet" => $shipping_address['address_1'],
-						"telephone" => $shipping_address['phone'],
-					],
-					"copies" => $order_item->get_quantity(),
-				]]
-			]]
-
-		);
-
-		$result = $this->performHttpRequest('POST', $baseUrl . 'orders', $order_request, $token, [
-			'pdc-request-source' => 'pdc-woocommerce',
-		]);
-
-		if (is_wp_error($result)) {
-			return $result;
-		}
-		if (empty($result)) {
-			return new WP_Error('order_failed', 'unable to place order', array('order' => $order_request));
-		}
-
-		$pdc_order_result = json_decode($result);
-		$pdc_order = $pdc_order_result->order;
+		$pdc_order = $result->order;
+		$order_item = new \WC_Order_Item_Product($order_item_id);
 		$order_item->update_meta_data($this->plugin_name . "_purchase_date", date("c"));
 		$order_item->update_meta_data($this->plugin_name . "_order_number", $pdc_order->orderNumber);
 		$order_item->update_meta_data($this->plugin_name . "_grand_total", $pdc_order->grandTotal);
@@ -588,139 +509,23 @@ class Pdc_Connector_Admin
 		$order_item->update_meta_data($this->plugin_name . "_order_item_status", $pdc_order->items[0]->status);
 		$order_item->update_meta_data($this->plugin_name . "_order_item_grand_total", $pdc_order->items[0]->grandTotal);
 		$order_item->save();
+
+		$order_id = wc_get_order_id_by_order_item_id($order_item_id);
 		$order = wc_get_order($order_id);
 
 		$note = __("Item purchased at Print.com with order number: $pdc_order->orderNumber.");
 		$order->add_order_note($note);
 
-		$this->insert_pdc_order($pdc_order, $order, $order_item);
+		$podb = new PurchaseOrderRepository();
+		$podb->insert_pdc_order($pdc_order, $order, $order_item);
 
 		return $pdc_order;
-	}
-
-	private function insert_pdc_order($pdc_order, WC_Order $order, WC_Order_Item_Product $order_item)
-	{
-		global $wpdb;
-
-		$table_name = $wpdb->prefix . 'pdc_orders';
-
-		$wpdb->insert(
-			$table_name,
-			array(
-				'pdc_order_number' => $pdc_order->orderNumber,
-				'pdc_price'  => $pdc_order->grandTotal,
-				'pdc_order_item_number' => $pdc_order->items[0]->orderItemNumber,
-				'pdc_status' => $pdc_order->status,
-				'wp_order_id' => $order->get_ID(),
-				'wp_order_item_id' => $order_item->get_id(),
-			)
-		);
-	}
-
-	/**
-	 * Parses the street address and returns the street and house number
-	 *
-	 * @param string $street_address The street address to parse, usually `Teugseweg 18a` or something similar
-	 * @return array The parsed street and house number
-	 */
-	private function parse_street_address(string $street_address)
-	{
-		// Regex to match the street and house number
-		$pattern = '/^(.*?)(\d+.*)$/';
-		if (preg_match($pattern, $street_address, $matches)) {
-			return [
-				'street' => trim($matches[1]),
-				'house_number' => trim($matches[2])
-			];
-		}
-
-		// If no match, return the address as street and empty house number
-		return [
-			'street' => $street_address,
-			'house_number' => ''
-		];
-	}
-
-	private function get_pdc_order_by_order_item_number(string $order_item_number)
-	{
-		global $wpdb;
-
-		$table_name = $wpdb->prefix . 'pdc_orders';
-		$result = $wpdb->get_row(
-			$wpdb->prepare(
-				"SELECT * FROM $table_name WHERE pdc_order_item_number = %s",
-				$order_item_number
-			),
-			ARRAY_A
-		);
-		return $result;
-	}
-
-	private function getToken()
-	{
-		if ($this->pdc_access_token) return $this->pdc_access_token;
-
-		$transient_token = get_transient($this->plugin_name . '-token');
-		if ($transient_token) return $transient_token;
-
-		$username = get_option($this->plugin_name . '-user');
-		$password = get_option($this->plugin_name . '-pw');
-		$baseUrl = get_option($this->plugin_name . '-env_baseurl');
-		$token = $this->performHttpRequest('POST', $baseUrl . 'login', [
-			'credentials' => [
-				'username' => $username,
-				'password' => $password
-			]
-		], '');
-		$parsedToken = str_replace('"', "", $token);
-		set_transient($this->plugin_name . '-token', $parsedToken, 60 * 60 * 24); // 1 day
-		$this->pdc_access_token = $parsedToken;
-		return $parsedToken;
-	}
-
-	private function performHttpRequest($method, $url, $data = NULL, $token = NULL, $headers = [])
-	{
-		$curl = curl_init($url);
-		$params = [
-			CURLOPT_TIMEOUT => 30,
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_CUSTOMREQUEST => $method,
-			CURLOPT_HTTPHEADER => [
-				"accept: application/json",
-				"content-type: application/json",
-			]
-		];
-
-		if (!empty($headers)) {
-			$params[CURLOPT_HTTPHEADER] = array_merge($params[CURLOPT_HTTPHEADER], $headers);
-		}
-
-		if ($method === 'POST' && !empty($data)) {
-			$params[CURLOPT_POSTFIELDS] = json_encode($data);
-		}
-		if ($token) {
-			$params[CURLOPT_HTTPHEADER][] = "authorization: Bearer " . $token;
-		}
-		curl_setopt_array($curl, $params);
-
-		$response = curl_exec($curl);
-		$err = curl_error($curl);
-		$httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
-
-		if ($httpcode != 200) {
-			return new WP_Error($httpcode, $response);
-		}
-
-		if ($err) {
-			return new WP_Error($httpcode, $err);
-		}
-		return $response;
 	}
 
 	public function hide_order_item_meta($arr)
 	{
 		$arr[] = '_pdc-connector_pdf_url';
+		$arr[] = 'pdc-connector_pdf_url';
 		$arr[] = '_pdc-connector_preset_id';
 		$arr[] = 'pdc-connector_order_item__delivery_date';
 		$arr[] = 'pdc-connector_order_item__delivery_method';
@@ -736,26 +541,23 @@ class Pdc_Connector_Admin
 	}
 
 
-	public function render_variation_data_fields(int $index, array $variation_data, WP_Post $variation)
+	public function render_variation_data_fields(int $index, array $variation_data, \WP_Post $variation)
 	{
 		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-variation_data.php');
 	}
 
 	public function save_variation_data_fields($variation_id, $i)
 	{
-		$fieldname_sku = $this->plugin_name . '_sku';
-		$fieldname_sku_title = $this->plugin_name . '_sku_title';
+		var_dump($_POST);
 		$fieldname_preset_id = $this->plugin_name . '_preset_id';
-		$fieldname_preset_name = $this->plugin_name . '_preset_name';
+		$fieldname_preset_title = $this->plugin_name . '_preset_title';
 		$fieldname_file_url = $this->plugin_name . '_file_url';
 
-		$this->save_variation_data_field($variation_id, $fieldname_sku);
-		$this->save_variation_data_field($variation_id, $fieldname_sku_title);
-		$this->save_variation_data_field($variation_id, $fieldname_preset_id);
-		$this->save_variation_data_field($variation_id, $fieldname_preset_name);
-		$this->save_variation_data_field($variation_id, $fieldname_file_url);
+		$this->save_variation_data_field($variation_id, $fieldname_preset_id, $i);
+		$this->save_variation_data_field($variation_id, $fieldname_preset_title, $i);
+		$this->save_variation_data_field($variation_id, $fieldname_file_url, $i);
 	}
-	private function save_variation_data_field($variation_id, $fieldname)
+	private function save_variation_data_field($variation_id, $fieldname, $it)
 	{
 		if (isset($_POST[$fieldname])) :
 			update_post_meta($variation_id, $fieldname, $_POST[$fieldname]);

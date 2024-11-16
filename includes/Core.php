@@ -1,5 +1,9 @@
 <?php
 
+namespace PdcConnector\Includes;
+
+use PdcConnector\Public\PublicCore;
+
 /**
  * The file that defines the core plugin class
  *
@@ -27,7 +31,7 @@
  * @subpackage Pdc_Connector/includes
  * @author     Tijmen <tijmen@print.com>
  */
-class Pdc_Connector
+class Core
 {
 
 	/**
@@ -36,7 +40,7 @@ class Pdc_Connector
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      Pdc_Connector_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 * @var      Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
 
@@ -100,31 +104,7 @@ class Pdc_Connector
 	 */
 	private function load_dependencies()
 	{
-
-		/**
-		 * The class responsible for orchestrating the actions and filters of the
-		 * core plugin.
-		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-pdc-connector-loader.php';
-
-		/**
-		 * The class responsible for defining internationalization functionality
-		 * of the plugin.
-		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-pdc-connector-i18n.php';
-
-		/**
-		 * The class responsible for defining all actions that occur in the admin area.
-		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-pdc-connector-admin.php';
-
-		/**
-		 * The class responsible for defining all actions that occur in the public-facing
-		 * side of the site.
-		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'public/class-pdc-connector-public.php';
-
-		$this->loader = new Pdc_Connector_Loader();
+		$this->loader = new Loader();
 	}
 
 	/**
@@ -139,7 +119,7 @@ class Pdc_Connector
 	private function set_locale()
 	{
 
-		$plugin_i18n = new Pdc_Connector_i18n();
+		$plugin_i18n = new i18n();
 
 		$this->loader->add_action('plugins_loaded', $plugin_i18n, 'load_plugin_textdomain');
 	}
@@ -154,7 +134,7 @@ class Pdc_Connector
 	private function define_admin_hooks()
 	{
 
-		$plugin_admin = new Pdc_Connector_Admin($this->get_plugin_name(), $this->get_version());
+		$plugin_admin = new \PdcConnector\Admin\AdminCore($this->get_plugin_name(), $this->get_version());
 
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
@@ -171,7 +151,12 @@ class Pdc_Connector
 		$this->loader->add_action('add_meta_boxes', $plugin_admin, 'pdc_order_meta_box');
 		$this->loader->add_action('woocommerce_process_shop_order_meta', $plugin_admin, 'on_order_save');
 		$this->loader->add_action('rest_api_init', $plugin_admin, 'register_pdc_purchase_endpoint');
+		$this->loader->add_action('wp_ajax_pdc-list-products', $plugin_admin, 'pdc_list_products');
+		$this->loader->add_action('wp_ajax_pdc-list-presets', $plugin_admin, 'pdc_list_presets');
 		$this->loader->add_action('woocommerce_hidden_order_itemmeta', $plugin_admin, 'hide_order_item_meta');
+		$this->loader->add_filter("pre_update_option_$this->plugin_name-user", $plugin_admin, 'delete_cached_tokens', 10, 2);
+		$this->loader->add_filter("pre_update_option_$this->plugin_name-pw", $plugin_admin, 'delete_cached_tokens', 10, 2);
+		$this->loader->add_filter("pre_update_option_$this->plugin_name-env_baseurl", $plugin_admin, 'delete_cached_tokens', 10, 2);
 	}
 
 	/**
@@ -184,10 +169,8 @@ class Pdc_Connector
 	private function define_public_hooks()
 	{
 
-		$plugin_public = new Pdc_Connector_Public($this->get_plugin_name(), $this->get_version());
+		$plugin_public = new PublicCore($this->get_plugin_name(), $this->get_version());
 
-		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_app_assets');
-		$this->loader->add_action('woocommerce_before_single_product_summary', $plugin_public, 'render_canvas');
 		$this->loader->add_action('woocommerce_before_add_to_cart_button', $plugin_public, 'set_pdf_input');
 		$this->loader->add_filter('woocommerce_add_cart_item_data', $plugin_public, 'capture_cart_item_data', 10, 2);
 		$this->loader->add_filter('woocommerce_checkout_create_order_line_item', $plugin_public, 'save_pdc_values_order_meta', 80, 4);

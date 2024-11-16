@@ -1,8 +1,19 @@
 
 <?php
+
+use PdcConnector\Admin\PurchaseOrder;
+use PdcConnector\Admin\PurchaseOrderRepository;
+
 class PDCOrders_List_Table extends WP_List_Table
 {
     private $table_data;
+    private $pdc_order_repository;
+
+    function __construct()
+    {
+        parent::__construct();
+        $this->pdc_order_repository = new PurchaseOrderRepository();
+    }
 
     // Define table columns
     function get_columns()
@@ -11,9 +22,9 @@ class PDCOrders_List_Table extends WP_List_Table
             'cb'            => '<input type="checkbox" />',
             'id'                    => "ID",
             'created_at'            => "Order date",
-            'pdc_ordernumber'          => "Order number",
-            'wp_order_id'         => 'Related Order',
-            'pdc_status'   => "Status"
+            'pdc_ordernumber'          => "Print.com Order",
+            'wp_order_id'         => 'WooCommerce Order',
+            'pdc_status'   => "Print.com Status"
         );
         return $columns;
     }
@@ -34,29 +45,26 @@ class PDCOrders_List_Table extends WP_List_Table
 
     private function get_table_data()
     {
-        global $wpdb;
-
-        $table = $wpdb->prefix . 'pdc_orders';
-
-        return $wpdb->get_results(
-            "SELECT * from {$table}",
-            ARRAY_A
-        );
+        return $this->pdc_order_repository->list();
     }
 
     function column_default($item, $column_name)
     {
         switch ($column_name) {
             case 'wp_order_id':
-                $order_id = $item[$column_name];
+                $order_id = $item->wp_order_id;
                 $edit_link = admin_url('post.php?post=' . absint($order_id) . '&action=edit');
                 return sprintf('<a href="%s">%s</a>', esc_url($edit_link), esc_html($order_id));
             case 'id':
+                return $item->id;
             case 'created_at':
+                return $item->created_at;
             case 'pdc_ordernumber':
+                return $item->pdc_order_number;
             case 'pdc_status':
+                return $item->pdc_status;
             default:
-                return $item[$column_name];
+                return $item->$column_name;
         }
     }
 }

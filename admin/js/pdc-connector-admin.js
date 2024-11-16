@@ -90,7 +90,9 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
   }
 
   function refreshOrderItem(orderItemId) {
+    console.log('orderItemId:', orderItemId);
     const orderItemRow = $(`#pdc_order_item_${orderItemId}`);
+    console.log('orderItemRow:', orderItemRow);
     if (!orderItemRow.length) return;
     return new Promise((resolve) => {
       orderItemRow.load(`${document.URL} #pdc_order_item_${orderItemId}_inner`, function () {
@@ -127,6 +129,7 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
       );
       await refreshOrderItem(orderItemId);
     } catch (err) {
+      console.log('err:', err);
       $('#js-pdc-request-response').text(err.responseJSON.message);
     } finally {
       loading = false;
