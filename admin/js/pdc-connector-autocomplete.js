@@ -18,6 +18,12 @@ jQuery(function ($) {
     return $(selector).first();
   }
 
+  function variationHasChanged() {
+    $(this).closest('.woocommerce_variation').addClass('variation-needs-update');
+    $('button.cancel-variation-changes, button.save-variation-changes').prop('disabled', false);
+    $('#variable_product_options').trigger('woocommerce_variations_input_changed');
+  }
+
   const listProductsDebounced = debounce(listProducts, 350);
 
   async function listProducts(searchTerm) {
@@ -30,8 +36,6 @@ jQuery(function ($) {
         .fail(reject);
     });
   }
-
-  const listPresetsDebounced = debounce(listPresets, 350);
 
   async function listPresets(sku) {
     return new Promise((resolve, reject) => {
@@ -69,6 +73,7 @@ jQuery(function ($) {
         $el(`#js-pdc-product-sku`).val(item.sku);
         $el(`#js-pdc-product-title`).val(item.title);
         loadPresets(item.sku);
+        variationHasChanged();
       },
       templates: {
         inputValue: (item) => {
@@ -169,6 +174,7 @@ jQuery(function ($) {
         }
         $el(`${parentSelector} .js-pdc-preset-id`).val(item.id);
         $el(`${parentSelector} .js-pdc-preset-title`).val(item.title);
+        variationHasChanged();
       },
       tNoResults: function tNoResults() {
         if (listPresetsStatus === 'loading') {
@@ -193,17 +199,5 @@ jQuery(function ($) {
         },
       },
     });
-  }
-
-  /**
-   * We are only storing the API URL so to get the right app
-   * url we can check the API URL for the matching app url.
-   */
-  function getAppURL() {
-    const api_url = pdcAdminApi.pdc_url;
-    if (api_url.includes('api.print.com')) {
-      return 'https://app.print.com';
-    }
-    return 'https://app.print.beer';
   }
 });
