@@ -173,6 +173,20 @@ class APIClient
         return array_values($filteredBySku);
     }
 
+    public function getPresetByID($id)
+    {
+        $result = $this->perfromAuthenticatedRequest('GET', "customerpresets/" . urlencode($id));
+        if (is_wp_error($result)) {
+            return $result;
+        }
+        if (empty($result)) {
+            return new \WP_Error('no_preset', 'No preset found', array('preset_id' => $id));
+        }
+
+        $preset = json_decode($result);
+        return $preset;
+    }
+
     public function listProducts()
     {
         $cached = get_transient($this->plugin_name . '-products');
@@ -212,7 +226,18 @@ class APIClient
         }
 
         $product = wc_get_product($order_item["product_id"]);
-        $pdc_preset_id = $product->get_meta($this->plugin_name . '_preset_id');
+        $variation_id = $order_item->get_variation_id();
+        $pdc_preset_id = '';
+        if ($variation_id) {
+            // if variation, get preset from variation
+            $variation_preset_id = get_post_meta($variation_id, $this->plugin_name . '_preset_id', true);
+            $pdc_preset_id = $variation_preset_id;
+        }
+
+        if (empty($pdc_preset_id)) {
+            $pdc_preset_id = $product->get_meta($this->plugin_name . '_preset_id');
+        }
+
         $pdc_pdf_url = wc_get_order_item_meta($order_item_id, "_{$this->plugin_name}_pdf_url", true);
 
         $result = $this->perfromAuthenticatedRequest('GET', 'customerpresets/' . urlencode($pdc_preset_id), NULL);
