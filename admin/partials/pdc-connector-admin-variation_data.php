@@ -47,6 +47,9 @@ $preset_title = get_post_meta($variation->ID, $this->plugin_name . '_preset_titl
                         frame.on('select', function() {
                             const attachment = frame.state().get('selection').first().toJSON();
                             $("#<?= $file_field_id; ?>").val(attachment.url);
+                            $(this).closest('.woocommerce_variation').addClass('variation-needs-update');
+                            $('button.cancel-variation-changes, button.save-variation-changes').prop('disabled', false);
+                            $('#variable_product_options').trigger('woocommerce_variations_input_changed');
                         });
 
                         frame.open();
