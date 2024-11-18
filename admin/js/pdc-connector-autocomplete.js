@@ -25,7 +25,7 @@ jQuery(function ($) {
   }
 
   const listProductsDebounced = debounce(listProducts, 350);
-
+  const presets = {};
   async function listProducts(searchTerm) {
     return new Promise((resolve, reject) => {
       wp.ajax
@@ -46,6 +46,21 @@ jQuery(function ($) {
         .done(resolve)
         .fail(reject);
     });
+  }
+
+  async function loadPresets(parentSelector, sku) {
+    try {
+      $el(`${parentSelector} .js-pdc-preset-search-spinner`).addClass('is-active');
+      listPresetsStatus = 'loading';
+      const { presets: result } = await listPresets(sku);
+      presets[sku] = result;
+      listPresetsStatus = 'idle';
+      return result;
+    } catch (err) {
+      listPresetsStatus = 'error';
+    } finally {
+      $el(`${parentSelector} .js-pdc-preset-search-spinner`).removeClass('is-active');
+    }
   }
 
   initializePresetAutocomplete('#pdc_product_data_tab');
@@ -72,7 +87,7 @@ jQuery(function ($) {
         $el(`#js-pdc-preset-search`).removeAttr('disabled');
         $el(`#js-pdc-product-sku`).val(item.sku);
         $el(`#js-pdc-product-title`).val(item.title);
-        loadPresets(item.sku);
+        loadPresets('', item.sku);
         variationHasChanged();
       },
       templates: {
@@ -124,29 +139,14 @@ jQuery(function ($) {
   initProductAutocomplete();
 
   $('#woocommerce-product-data').on('woocommerce_variations_loaded', () => {
-    $('.pdc_product_options').each((index) => {
-      const elID = $('.pdc_product_options')[index].id;
+    $('.woocommerce_variation .pdc_product_options').each((index) => {
+      const elID = $('.woocommerce_variation .pdc_product_options')[index].id;
       initializePresetAutocomplete(`#${elID}`);
     });
   });
 
   function initializePresetAutocomplete(parentSelector) {
-    const presets = {};
     let listPresetsStatus = 'idle';
-    async function loadPresets(sku) {
-      try {
-        $el(`${parentSelector} .js-pdc-preset-search-spinner`).addClass('is-active');
-        listPresetsStatus = 'loading';
-        const { presets: result } = await listPresets(sku);
-        presets[sku] = result;
-        listPresetsStatus = 'idle';
-        return result;
-      } catch (err) {
-        listPresetsStatus = 'error';
-      } finally {
-        $el(`${parentSelector} .js-pdc-preset-search-spinner`).removeClass('is-active');
-      }
-    }
 
     const presetListAutocomplete = $el(`${parentSelector} .pdc-ac-preset-list`);
     const defaultValuePreset = $el(`${parentSelector} .js-pdc-preset-id`).val()
@@ -164,7 +164,7 @@ jQuery(function ($) {
         const sku = $el(`#js-pdc-product-sku`).val();
         const presetsForSku = presets[sku] || [];
         if (presetsForSku.length === 0) {
-          await loadPresets(sku);
+          await loadPresets(parentSelector, sku);
         }
         populateResults(presets[sku] || []);
       },

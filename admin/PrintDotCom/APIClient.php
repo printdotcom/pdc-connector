@@ -173,24 +173,32 @@ class APIClient
         return array_values($filteredBySku);
     }
 
-    public function searchProducts()
+    public function listProducts()
     {
         $cached = get_transient($this->plugin_name . '-products');
         if ($cached) {
             return json_decode($cached);
         }
 
-        $result = $this->perfromAuthenticatedRequest('GET', 'products', NULL);
+        $result = $this->perfromAuthenticatedRequest('GET', 'products');
         if (is_wp_error($result)) {
             return $result;
         }
+
         if (empty($result)) {
             return new \WP_Error('no result', 'No products found');
         }
 
-        set_transient($this->plugin_name . '-products', $result, 60 * 60 * 24); // 1 day
+        $decoded_result = json_decode($result);
+        $mapped_products = array_map(function ($item) {
+            return new Product($item->sku, $item->titlePlural);
+        }, $decoded_result);
 
-        return $result;
+        $products = array_values($mapped_products);
+
+        set_transient($this->plugin_name . '-products', $products, 60 * 60 * 24); // 1 day
+
+        return $products;
     }
 
     public function purchaseOrderItem(string $order_item_id)

@@ -376,7 +376,7 @@ class AdminCore
 	{
 		$search_term = $_POST["searchTerm"];
 		$lc_search_term = strtolower($search_term);
-		$products = $this->pdc_client->searchProducts();
+		$products = $this->pdc_client->listProducts();
 		$filtered_products = array_filter($products, function ($item) use ($lc_search_term) {
 			$lc_title = strtolower($item->title);
 			return strpos($lc_title, $lc_search_term) !== false;

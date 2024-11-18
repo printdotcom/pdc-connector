@@ -11,16 +11,16 @@ $preset_title = OrderUtil::get_post_or_object_meta($post, $data, $this->plugin_n
     <div class="options_group pdc_product_options" id="js-pdc-simple-options">
         <p class="form-field">
             <label id="pdc-products-label"><?php _e('Print.com SKU', $this->plugin_name); ?></label>
-            <span id="js-pdc-ac-product-list" class="pdc-ac-product-list"></span>s
-            <input type="hidden" value="<?= $sku  ?>" id="js-pdc-product-sku" name="pdc-connector_product_sku" />
-            <input type="hidden" value="<?= $sku_title  ?>" id="js-pdc-product-title" name="pdc-connector_product_title" />
+            <span id="js-pdc-ac-product-list" class="pdc-ac-product-list"></span>
+            <input type="hidden" value="<?= $sku  ?>" id="js-pdc-product-sku" name="<?= $this->plugin_name; ?>_product_sku" />
+            <input type="hidden" value="<?= $sku_title  ?>" id="js-pdc-product-title" name="<?= $this->plugin_name; ?>_product_title" />
             <span class="spinner" id="js-pdc-product-search-spinner"></span>
         </p>
         <p class="form-field">
             <label id="pdc-products-label"><?php _e('Print.com Preset', $this->plugin_name); ?></label>
             <span class="js-pdc-preset-search pdc-ac-preset-list"></span>
-            <input type="hidden" value="<?= $preset_id; ?>" class="js-pdc-preset-id" name="pdc-connector_preset_id" />
-            <input type="hidden" value="<?= $preset_title; ?>" class="js-pdc-preset-title" name="pdc-connector_preset_title" />
+            <input type="hidden" value="<?= $preset_id; ?>" class="js-pdc-preset-id" name="<?= $this->plugin_name; ?>_preset_id" />
+            <input type="hidden" value="<?= $preset_title; ?>" class="js-pdc-preset-title" name="<?= $this->plugin_name; ?>_preset_title" />
             <span id="js-pdc-preset-search-spinner" class="spinner"></span>
         </p>
 

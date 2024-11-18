@@ -7,10 +7,11 @@ $preset_id = get_post_meta($variation->ID, $this->plugin_name . '_preset_id', tr
 $preset_title = get_post_meta($variation->ID, $this->plugin_name . '_preset_title', true);
 ?>
 <?php if (!empty($sku)) { ?>
-    <div>
+    <div class="form-row">
         <div class="options_group pdc_product_options" id="js-pdc-variant-<?= $variation->ID; ?>">
-            <p class="form-field">
+            <p class="form-row form-field">
                 <label><?php _e('Print.com Preset', $this->plugin_name); ?></label>
+                <span class="woocommerce-help-tip" tabindex="0" aria-label="Select a preset for this variant. When no preset is selected, it will use the default preset of this product."></span>
                 <span class="pdc-ac-preset-list"></span>
                 <input type="hidden" id="<?= $variantion_ID; ?>_pdc-connector_preset_id" value="<?= $preset_id; ?>" class="js-pdc-preset-id" name="pdc-connector_preset_id[<?= $index; ?>]" />
                 <input type="hidden" id="<?= $variantion_ID; ?>_pdc-connector_preset_title" value="<?= $preset_title; ?>" class="js-pdc-preset-title" name="pdc-connector_preset_title[<?= $index; ?>]" />
@@ -21,11 +22,13 @@ $preset_title = get_post_meta($variation->ID, $this->plugin_name . '_preset_titl
             $button_field_id = $variation->ID . '_upload_id';
             $file_field_id = $variation->ID . '_file_url';
             ?>
-            <p class="form-field _pdc_editable_field">
+            <p class="form-row form-field _pdc_editable_field">
                 <label for="_pdc_file_url">PDF</label>
-
-                <a href="#" class="button" id="<?= $button_field_id; ?>" data-choose="<?php esc_attr_e('Choose file', 'woocommerce'); ?>" data-update="<?php esc_attr_e('Insert file URL', 'woocommerce'); ?>"><?php echo esc_html__('Choose file', 'woocommerce'); ?></a>
-                <input type="text" class="input_text" id="<?= $file_field_id; ?>" placeholder="<?php esc_attr_e('http://', 'woocommerce'); ?>" name="<?= $this->plugin_name; ?>_file_url[<?= $index; ?>]" value="<?= esc_attr($file_url); ?>" />
+                <span class="woocommerce-help-tip" tabindex="0" aria-label="Enter a URL or select a file which belongs to this variant. This file will be the design which the customer will order."></span>
+                <span class="form-flex-box">
+                    <input type="text" class="input_text" id="<?= $file_field_id; ?>" placeholder="<?php esc_attr_e('http://', 'woocommerce'); ?>" name="<?= $this->plugin_name; ?>_file_url[<?= $index; ?>]" value="<?= esc_attr($file_url); ?>" />
+                    <a href="#" class="button button-select-pdf-file" id="<?= $button_field_id; ?>" data-choose="<?php esc_attr_e('Choose file', 'woocommerce'); ?>" data-update="<?php esc_attr_e('Insert file URL', 'woocommerce'); ?>"><?php echo esc_html__('Choose file', 'woocommerce'); ?></a>
+                </span>
             </p>
             <script>
                 jQuery(document).ready(function($) {
@@ -54,6 +57,14 @@ $preset_title = get_post_meta($variation->ID, $this->plugin_name . '_preset_titl
 
                         frame.open();
                     });
+
+                    $('.woocommerce_variations .woocommerce-help-tip')
+                        .tipTip({
+                            attribute: 'data-tip',
+                            fadeIn: 50,
+                            fadeOut: 50,
+                            delay: 200,
+                        });
                 });
             </script>
         </div>
