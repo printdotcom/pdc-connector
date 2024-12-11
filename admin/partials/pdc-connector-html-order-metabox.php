@@ -9,19 +9,23 @@
     </div>
     <div class="table-body">
         <?php
+        $meta_key_pdf_url = $this->get_meta_key('pdf_url');
+        $meta_key_preset_id = $this->get_meta_key('preset_id');
+        $meta_key_preset_title = $this->get_meta_key('preset_title');
+
         foreach ($post->get_items() as $order_item_product) {
             $order_item_id = $order_item_product->get_id();
-            $pdc_order_item_number = wc_get_order_item_meta($order_item_id, $this->plugin_name . '_order_item_number', true);
-            $pdc_order_item_grand_total = wc_get_order_item_meta($order_item_id, $this->plugin_name . '_order_item_grand_total', true);
-            $pdc_purchase_date = wc_get_order_item_meta($order_item_id, $this->plugin_name . '_purchase_date', true);
-            $pdc_image_url = wc_get_order_item_meta($order_item_id, $this->plugin_name . '_image_url', true);
-            $pdc_pdf_url = wc_get_order_item_meta($order_item_id, "_{$this->plugin_name}_pdf_url", true);
-            $pdc_order_item_status = wc_get_order_item_meta($order_item_id, "{$this->plugin_name}_order_item_status", true);
-            $pdc_tnt_url = wc_get_order_item_meta($order_item_id, "{$this->plugin_name}_order_item_tnt_url", true);
+            $pdc_order_item_number = wc_get_order_item_meta($order_item_id, $this->get_meta_key('order_item_number'), true);
+            $pdc_order_item_grand_total = wc_get_order_item_meta($order_item_id, $this->get_meta_key('order_item_grand_total'), true);
+            $pdc_purchase_date = wc_get_order_item_meta($order_item_id, $this->get_meta_key('purchase_date'), true);
+            $pdc_image_url = wc_get_order_item_meta($order_item_id, $this->get_meta_key('image_url'), true);
+            $pdc_pdf_url = wc_get_order_item_meta($order_item_id, $this->get_meta_key('pdf_url'), true);
+            $pdc_order_item_status = wc_get_order_item_meta($order_item_id, $this->get_meta_key('order_item_status'), true);
+            $pdc_tnt_url = wc_get_order_item_meta($order_item_id, $this->get_meta_key('order_item_tnt_url'), true);
 
             $product = wc_get_product($order_item_product->get_product_id());
-            $pdc_preset_id = $product->get_meta($this->plugin_name . '_preset_id');
-            $pdc_preset_name = $product->get_meta($this->plugin_name . '_preset_name');
+            $pdc_preset_id = $product->get_meta($meta_key_preset_id);
+            $pdc_preset_name = $product->get_meta($meta_key_preset_title);
 
             $has_file = $pdc_pdf_url ? true : false;
             $has_preset = $pdc_preset_id ? true : false;
@@ -50,7 +54,7 @@
                     <div class="table-cell">
                         <div class="actions">
                             <?php if ($pdc_order_item_number === NULL || $pdc_order_item_number === "") { ?>
-                                <input type="text" class="hidden" id="_pdc_pdf_url" placeholder="<?php esc_attr_e('http://', 'woocommerce'); ?>" name="_pdc_pdf_url" value="<?= esc_attr($pdc_pdf_url); ?>" />
+                                <input type="text" class="hidden" id="js-pdc-order-pdf" placeholder="<?php esc_attr_e('http://', 'woocommerce'); ?>" name="<? $meta_key_pdf_url; ?>" value="<?= esc_attr($pdc_pdf_url); ?>" />
                                 <?php if (empty($pdc_pdf_url)) { ?><a href="#" id="pdc-file-upload" data-order-item-id="<?= $order_item_id; ?>" class="button button-secondary">Upload PDF</a><?php } ?>
                                 <?php if ($pdc_pdf_url) { ?><a href="#" id="pdc-file-upload" data-order-item-id="<?= $order_item_id; ?>" class="button button-secondary">Replace PDF</a><?php } ?>
                                 <?php if ($has_preset) { ?>

@@ -4,6 +4,7 @@ namespace PdcConnector\Admin;
 
 use PdcConnector\Admin\PrintDotCom\APIClient;
 use PdcConnector\Admin\PurchaseOrderRepository;
+use PdcConnector\Includes\Core;
 
 /**
  * The admin-specific functionality of the plugin.
@@ -58,6 +59,19 @@ class AdminCore
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 		$this->pdc_client = new APIClient($plugin_name);
+	}
+
+	/**
+	 * Retrieves the meta key for the given key.
+	 * Plug-in meta keys should not be shown to the public so are always prefixed
+	 * with an underscore. They are also namespaced by using the plug-in name.
+	 *
+	 * @since    1.0.1
+	 * @param      string    $key    The meta key, ex. 'pdf_url'
+	 */
+	private function get_meta_key($key)
+	{
+		return Core::get_meta_key($key);
 	}
 
 	/**
@@ -251,11 +265,11 @@ class AdminCore
 	 */
 	public function save_product_data_fields($post_id)
 	{
-		$this->save_text_field($post_id, $this->plugin_name . '_product_sku');
-		$this->save_text_field($post_id, $this->plugin_name . '_product_title');
-		$this->save_text_field($post_id, $this->plugin_name . '_preset_id');
-		$this->save_text_field($post_id, $this->plugin_name . '_preset_title');
-		$this->save_text_field($post_id, $this->plugin_name . '_file_url');
+		$this->save_text_field($post_id, $this->get_meta_key('product_sku'));
+		$this->save_text_field($post_id, $this->get_meta_key('product_title'));
+		$this->save_text_field($post_id, $this->get_meta_key('preset_id'));
+		$this->save_text_field($post_id, $this->get_meta_key('preset_title'));
+		$this->save_text_field($post_id, $this->get_meta_key('pdf_url'));
 	}
 
 	public function pdc_meta_box($post)
@@ -340,7 +354,8 @@ class AdminCore
 	 */
 	public function on_order_save(int $order_item_id)
 	{
-		update_post_meta($order_item_id, $this->plugin_name . '_pdf_url', $_POST[$this->plugin_name . "_pdf_url"]);
+		$meta_pdf_url = $this->get_meta_key('pdf_url');
+		update_post_meta($order_item_id, $meta_pdf_url, $_POST[$meta_pdf_url]);
 	}
 
 
@@ -376,7 +391,7 @@ class AdminCore
 	{
 		$search_term = $_POST["searchTerm"];
 		$lc_search_term = strtolower($search_term);
-		$products = $this->pdc_client->listProducts();
+		$products = $this->pdc_client->searchProducts();
 		$filtered_products = array_filter($products, function ($item) use ($lc_search_term) {
 			$lc_title = strtolower($item->title);
 			return strpos($lc_title, $lc_search_term) !== false;
@@ -434,7 +449,7 @@ class AdminCore
 	private function on_webhook_in_production(string $order_id, string $order_item_id)
 	{
 		$order_item = new \WC_Order_Item_Product($order_item_id);
-		$order_item->update_meta_data($this->plugin_name . "_order_item_status", "production");
+		$order_item->update_meta_data($this->get_meta_key('order_item_status'), "production");
 		$order_item->save();
 
 		$order = wc_get_order($order_id);
@@ -449,8 +464,8 @@ class AdminCore
 		$pdc_order = $podb->get_pdc_order_by_order_item_number($order_item_number);
 
 		$order_item = new \WC_Order_Item_Product($pdc_order->wp_order_item_id);
-		$order_item->update_meta_data($this->plugin_name . "_order_item_tnt_url", $tracking_url);
-		$order_item->update_meta_data($this->plugin_name . "_order_item_status", "shipped");
+		$order_item->update_meta_data($this->get_meta_key('order_item_tnt_url'), $tracking_url);
+		$order_item->update_meta_data($this->get_meta_key('order_item_status'), "shipped");
 		$order_item->save();
 
 		$order = wc_get_order($pdc_order->wp_order_id);
@@ -463,8 +478,10 @@ class AdminCore
 	{
 		$order_item_id = $request->get_param('orderItemId');
 		$pdf_url = $request->get_param('pdfUrl');
+		
+		$meta_key_pdf_url = $this->get_meta_key('pdf_url');
 		$order_item = new \WC_Order_Item_Product($order_item_id);
-		$order_item->update_meta_data("_{$this->plugin_name}_pdf_url", $pdf_url);
+		$order_item->update_meta_data($meta_key_pdf_url, $pdf_url);
 		$order_item->save_meta_data();
 		return $pdf_url;
 	}
@@ -498,16 +515,16 @@ class AdminCore
 		}
 		$pdc_order = $result->order;
 		$order_item = new \WC_Order_Item_Product($order_item_id);
-		$order_item->update_meta_data($this->plugin_name . "_purchase_date", date("c"));
-		$order_item->update_meta_data($this->plugin_name . "_order_number", $pdc_order->orderNumber);
-		$order_item->update_meta_data($this->plugin_name . "_grand_total", $pdc_order->grandTotal);
-		$order_item->update_meta_data($this->plugin_name . "_order_status", $pdc_order->status);
+		$order_item->update_meta_data($this->get_meta_key('purchase_date'), date("c"));
+		$order_item->update_meta_data($this->get_meta_key('order_number'), $pdc_order->orderNumber);
+		$order_item->update_meta_data($this->get_meta_key('grand_total'), $pdc_order->grandTotal);
+		$order_item->update_meta_data($this->get_meta_key('order_status'), $pdc_order->status);
 
-		$order_item->update_meta_data($this->plugin_name . '_order_item_number', $pdc_order->items[0]->orderItemNumber);
-		$order_item->update_meta_data($this->plugin_name . "_order_item__delivery_date", $pdc_order->items[0]->shipments[0]->deliveryDate);
-		$order_item->update_meta_data($this->plugin_name . "_order_item__delivery_method", $pdc_order->items[0]->shipments[0]->method);
-		$order_item->update_meta_data($this->plugin_name . "_order_item_status", $pdc_order->items[0]->status);
-		$order_item->update_meta_data($this->plugin_name . "_order_item_grand_total", $pdc_order->items[0]->grandTotal);
+		$order_item->update_meta_data($this->get_meta_key('order_item_number'), $pdc_order->items[0]->orderItemNumber);
+		$order_item->update_meta_data($this->get_meta_key('order_item__delivery_date'), $pdc_order->items[0]->shipments[0]->deliveryDate);
+		$order_item->update_meta_data($this->get_meta_key('order_item__delivery_method'), $pdc_order->items[0]->shipments[0]->method);
+		$order_item->update_meta_data($this->get_meta_key('order_item_status'), $pdc_order->items[0]->status);
+		$order_item->update_meta_data($this->get_meta_key('order_item_grand_total'), $pdc_order->items[0]->grandTotal);
 		$order_item->save();
 
 		$order_id = wc_get_order_id_by_order_item_id($order_item_id);
@@ -522,25 +539,6 @@ class AdminCore
 		return $pdc_order;
 	}
 
-	public function hide_order_item_meta($arr)
-	{
-		$arr[] = '_pdc-connector_pdf_url';
-		$arr[] = 'pdc-connector_pdf_url';
-		$arr[] = '_pdc-connector_preset_id';
-		$arr[] = 'pdc-connector_order_item__delivery_date';
-		$arr[] = 'pdc-connector_order_item__delivery_method';
-		$arr[] = 'pdc-connector_order_item_status';
-		$arr[] = 'pdc-connector_order_item_grand_total';
-		$arr[] = 'pdc-connector_purchase_date';
-		$arr[] = 'pdc-connector_order_number';
-		$arr[] = 'pdc-connector_grand_total';
-		$arr[] = 'pdc-connector_order_status';
-		$arr[] = 'pdc-connector_order_item_number';
-		$arr[] = 'pdc-connector_order_item_tnt_url';
-		return $arr;
-	}
-
-
 	public function render_variation_data_fields(int $index, array $variation_data, \WP_Post $variation)
 	{
 		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-variation_data.php');
@@ -548,13 +546,13 @@ class AdminCore
 
 	public function save_variation_data_fields($variation_id, $i)
 	{
-		$fieldname_preset_id = $this->plugin_name . '_preset_id';
-		$fieldname_preset_title = $this->plugin_name . '_preset_title';
-		$fieldname_file_url = $this->plugin_name . '_file_url';
+		$fieldname_preset_id = $this->get_meta_key('preset_id');
+		$fieldname_preset_title = $this->get_meta_key('preset_title');
+		$fieldname_pdf_url = $this->get_meta_key('pdf_url');
 
 		$this->save_variation_data_field($variation_id, $fieldname_preset_id, $i);
 		$this->save_variation_data_field($variation_id, $fieldname_preset_title, $i);
-		$this->save_variation_data_field($variation_id, $fieldname_file_url, $i);
+		$this->save_variation_data_field($variation_id, $fieldname_pdf_url, $i);
 	}
 	private function save_variation_data_field($variation_id, $fieldname, $it)
 	{

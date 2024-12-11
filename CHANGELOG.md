@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0-beta]
+
+### Changed
+- Rename meta keys
+    - pdf_url
+    - product_sku
+    - product_title
+    - preset_id
+    - preset_title
+    - order_item_number
+    - order_item_grand_total
+    - purchase_date
+    - image_url
+    - order_item_status
+    - order_item_tnt_url
+- Resolved issue with saving variants
+
+### Added
+- Centralized formatting for meta keys. Everything will now be prefixed with _ to mark it as private and have a plug-in prefix name.
+
+
 ## [1.2.0-beta]
 
 ### Changed

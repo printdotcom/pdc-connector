@@ -2,6 +2,8 @@
 
 namespace PdcConnector\Admin\PrintDotCom;
 
+use PdcConnector\Includes\Core;
+
 /**
  * Client to connect to the Print.com API
  *
@@ -173,44 +175,30 @@ class APIClient
         return array_values($filteredBySku);
     }
 
-    public function getPresetByID($id)
-    {
-        $result = $this->perfromAuthenticatedRequest('GET', "customerpresets/" . urlencode($id));
-        if (is_wp_error($result)) {
-            return $result;
-        }
-        if (empty($result)) {
-            return new \WP_Error('no_preset', 'No preset found', array('preset_id' => $id));
-        }
 
-        $preset = json_decode($result);
-        return $preset;
-    }
-
-    public function listProducts()
+    public function searchProducts()
     {
+        $result = NULL;
         $cached = get_transient($this->plugin_name . '-products');
         if ($cached) {
-            return json_decode($cached);
+            $result = json_decode($cached);
+        } else {
+            $response = $this->perfromAuthenticatedRequest('GET', 'products', NULL);
+            if (is_wp_error($response)) {
+                return $response;
+            }
+            if (empty($response)) {
+                return new \WP_Error('no result', 'No products found');
+            }
+            set_transient($this->plugin_name . '-products', $response, 60 * 60 * 24); // 1 day
+            $result = json_decode($response);
         }
 
-        $result = $this->perfromAuthenticatedRequest('GET', 'products');
-        if (is_wp_error($result)) {
-            return $result;
-        }
 
-        if (empty($result)) {
-            return new \WP_Error('no result', 'No products found');
-        }
+        $products = array_map(function ($result_item) {
+            return new Product($result_item->sku, $result_item->titlePlural);
+        }, $result);
 
-        $decoded_result = json_decode($result);
-        $mapped_products = array_map(function ($item) {
-            return new Product($item->sku, $item->titlePlural);
-        }, $decoded_result);
-
-        $products = array_values($mapped_products);
-
-        set_transient($this->plugin_name . '-products', $products, 60 * 60 * 24); // 1 day
 
         return $products;
     }
@@ -226,19 +214,8 @@ class APIClient
         }
 
         $product = wc_get_product($order_item["product_id"]);
-        $variation_id = $order_item->get_variation_id();
-        $pdc_preset_id = '';
-        if ($variation_id) {
-            // if variation, get preset from variation
-            $variation_preset_id = get_post_meta($variation_id, $this->plugin_name . '_preset_id', true);
-            $pdc_preset_id = $variation_preset_id;
-        }
-
-        if (empty($pdc_preset_id)) {
-            $pdc_preset_id = $product->get_meta($this->plugin_name . '_preset_id');
-        }
-
-        $pdc_pdf_url = wc_get_order_item_meta($order_item_id, "_{$this->plugin_name}_pdf_url", true);
+        $pdc_preset_id = $product->get_meta(Core::get_meta_key('preset_id'));
+        $pdc_pdf_url = wc_get_order_item_meta($order_item_id, Core::get_meta_key('pdf_url'), true);
 
         $result = $this->perfromAuthenticatedRequest('GET', 'customerpresets/' . urlencode($pdc_preset_id), NULL);
 

@@ -2,6 +2,8 @@
 
 namespace PdcConnector\Includes;
 
+const PLUGIN_NAME = 'pdc-connector';
+
 use PdcConnector\Public\PublicCore;
 
 /**
@@ -78,13 +80,23 @@ class Core
 		} else {
 			$this->version = '1.0.0';
 		}
-		$this->plugin_name = 'pdc-connector';
+		$this->plugin_name = PLUGIN_NAME;
 
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 	}
+
+	public static function get_meta_key($name, $public = false)
+	{
+		$meta_key_name = PLUGIN_NAME . '_' . $name;
+		if ($public) {
+			return $meta_key_name;
+		}
+		return '_' . $meta_key_name;
+	}
+
 
 	/**
 	 * Load the required dependencies for this plugin.
@@ -153,7 +165,6 @@ class Core
 		$this->loader->add_action('rest_api_init', $plugin_admin, 'register_pdc_purchase_endpoint');
 		$this->loader->add_action('wp_ajax_pdc-list-products', $plugin_admin, 'pdc_list_products');
 		$this->loader->add_action('wp_ajax_pdc-list-presets', $plugin_admin, 'pdc_list_presets');
-		$this->loader->add_action('woocommerce_hidden_order_itemmeta', $plugin_admin, 'hide_order_item_meta');
 		$this->loader->add_filter("pre_update_option_$this->plugin_name-user", $plugin_admin, 'delete_cached_tokens', 10, 2);
 		$this->loader->add_filter("pre_update_option_$this->plugin_name-pw", $plugin_admin, 'delete_cached_tokens', 10, 2);
 		$this->loader->add_filter("pre_update_option_$this->plugin_name-env_baseurl", $plugin_admin, 'delete_cached_tokens', 10, 2);

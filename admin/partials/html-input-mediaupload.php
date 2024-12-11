@@ -1,10 +1,11 @@
 <?php
 $file_url = get_post_meta($thepostid, $this->plugin_name . '_file_url', true);
+$meta_key_pdf_url = $this->get_meta_key('pdf_url');
 ?>
 <p class="form-field _pdc_editable_field">
     <label for="_pdc_file_url">PDF</label>
     <span class="form-flex-box">
-        <input type="text" class="input_text pdc_input_pdf" id="_pdc-file_url" placeholder="<?php esc_attr_e('http://', 'woocommerce'); ?>" name="<?= $this->plugin_name; ?>_file_url" value="<?= esc_attr($file_url); ?>" />
+        <input type="text" class="input_text pdc_input_pdf" id="_pdc-file_url" placeholder="<?php esc_attr_e('http://', 'woocommerce'); ?>" name="<?= $meta_key_pdf_url; ?>" value="<?= esc_attr($file_url); ?>" />
         <a href="#" class="button button-select-pdf-file" id="pdc-product-file-upload" data-choose="<?php esc_attr_e('Choose file', 'woocommerce'); ?>" data-update="<?php esc_attr_e('Insert file URL', 'woocommerce'); ?>"><?php echo esc_html__('Choose file', 'woocommerce'); ?></a>
     </span>
 </p>

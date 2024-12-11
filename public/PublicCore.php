@@ -2,6 +2,8 @@
 
 namespace PdcConnector\Public;
 
+use PdcConnector\Includes\Core;
+
 /**
  * The public-facing functionality of the plugin.
  *
@@ -67,13 +69,13 @@ class PublicCore
 	 */
 	public function capture_cart_item_data($cart_item_data, $product_id)
 	{
-		$cart_item_data[$this->plugin_name . '_pdf_url'] = $this->capture_cart_item_pdf_url();
+		$cart_item_data[Core::get_meta_key('pdf_url')] = $this->capture_cart_item_pdf_url();
 		return $cart_item_data;
 	}
 
 	private function capture_cart_item_pdf_url()
 	{
-		$pdc_pdf_url = $_REQUEST[$this->plugin_name . '_pdf_url'];
+		$pdc_pdf_url = $_REQUEST[Core::get_meta_key('pdf_url')];
 		if (isset($pdc_pdf_url) && !empty($pdc_pdf_url)) {
 			// When a static PDC file is configured, we just use that.
 			return $pdc_pdf_url;
@@ -92,7 +94,6 @@ class PublicCore
 
 	/**
 	 * Saves the PDC values on the order item
-	 * Action hook to adjust item before save. 
 	 * Hooks into woocommerce_checkout_create_order_line_item
 	 *
 	 * @since 		1.0.0
@@ -101,16 +102,44 @@ class PublicCore
 	public function save_pdc_values_order_meta(\WC_Order_Item_Product $order_item, $cart_item_key, $values, \WC_Order $order)
 	{
 		$product_id = $values['product_id'];
+		$variation_id = $order_item->get_variation_id();
 
-		// Check if the cart item contains a pdf url
-		$pdc_pdf_url = $values[$this->plugin_name . '_pdf_url'];
+		$pdc_pdf_url = $values[Core::get_meta_key('pdf_url')];
+		$pdc_preset_id = $values[Core::get_meta_key('preset_id')];
 
-		// if not, check if product has a preconfigured pdf url
+
 		if (empty($pdc_pdf_url)) {
-			$pdc_pdf_url = get_post_meta($product_id, $this->plugin_name . '_file_url', true);
+			// there is no preconfigured pdf on the cart item
+			if ($variation_id) {
+				$variation_pdf_url = get_post_meta($variation_id, Core::get_meta_key('pdf_url'), true);
+				if (!empty($variation_pdf_url)) {
+					$pdc_pdf_url = $variation_pdf_url;
+				}
+			}
+
+			// if variant did not set the pdc_pdf_url, get it from product
+			if (empty($pdc_pdf_url)) {
+				$pdc_pdf_url = get_post_meta($product_id, Core::get_meta_key('pdf_url'), true);
+			}
 		}
 
-		// if not, check if the cart item contains pitch print data
+
+		if (empty($pdc_preset_id)) {
+			// there is no preconfigured preset on the cart item
+			if ($variation_id) {
+				$variation_preset_id = get_post_meta($variation_id, Core::get_meta_key('preset_id'), true);
+				if (!empty($variation_preset_id)) {
+					$pdc_preset_id = $variation_preset_id;
+				}
+
+				if (empty($pdc_preset_id)) {
+					// variation did not have a preset id so get it from product
+					$pdc_preset_id = get_post_meta($product_id, Core::get_meta_key('preset_id'), true);
+				}
+			}
+		}
+
+		// check if we have pitch print 
 		$cart_item = WC()->cart->get_cart_item($cart_item_key);
 		$pitchprint_data = $cart_item['_pda_w2p_set_option'];
 		if (!empty($pitchprint_data)) {
@@ -118,12 +147,8 @@ class PublicCore
 			$pdc_pdf_url = "https://pdf.print.app/" . $decoded_data->projectId;
 		}
 
-		$order_item->add_meta_data('_' . $this->plugin_name . '_pdf_url', $pdc_pdf_url);
-
-		$pdc_preset_id = get_post_meta($product_id, $this->plugin_name . '_preset_id', true);
-		if ($pdc_preset_id) {
-			$order_item->add_meta_data('_' . $this->plugin_name . '_preset_id', $pdc_preset_id);
-		}
+		$order_item->add_meta_data(Core::get_meta_key('pdf_url'), $pdc_pdf_url);
+		$order_item->add_meta_data(Core::get_meta_key('preset_id'), $pdc_preset_id);
 	}
 
 	/**
