@@ -135,7 +135,7 @@ class AdminCore
 			'nonce' => wp_create_nonce('wp_rest'),
 			'plugin_name' => $this->plugin_name,
 			'ajax_url' => admin_url('admin-ajax.php'),
-			'pdc_url' => get_option($this->plugin_name . '-env_baseurl'),
+			'pdc_url' => $this->pdc_client->get_api_base_url(),
 		));
 		wp_enqueue_script(
 			'accessible-autocomplete',
@@ -155,7 +155,7 @@ class AdminCore
 			'root' => esc_url_raw(rest_url()),
 			'nonce' => wp_create_nonce('wp_rest'),
 			'plugin_name' => $this->plugin_name,
-			'pdc_url' => get_option($this->plugin_name . '-env_baseurl'),
+			'pdc_url' => $this->pdc_client->get_api_base_url(),
 		));
 	}
 
@@ -178,60 +178,20 @@ class AdminCore
 			array($this, 'section_credentials'),
 			$this->plugin_name,
 		);
-		add_settings_section(
-			$this->plugin_name . '-environment',
-			'Environment',
-			array($this, 'section_environment'),
-			$this->plugin_name,
-		);
 	}
 
 	public function register_settings()
 	{
-
 		register_setting(
 			$this->plugin_name . '-options',
-			$this->plugin_name . '-user',
-		);
-		register_setting(
-			$this->plugin_name . '-options',
-			$this->plugin_name . '-pw',
+			$this->plugin_name . '-api_key',
 		);
 		register_setting(
 			$this->plugin_name . '-options',
-			$this->plugin_name . '-env_baseurl',
-		);
-	} // register_settings()
-
-	public function register_fields()
-	{
-		add_settings_field($this->plugin_name . '-user', 'E-mail', array($this, 'pdc_inputfield'), $this->plugin_name, $this->plugin_name . '-credentials', [
-			'type' => "email",
-			"name" => $this->plugin_name . '-user',
-		]);
-		add_settings_field($this->plugin_name . '-pw', 'Password', array($this, 'pdc_inputfield'), $this->plugin_name, $this->plugin_name . '-credentials', [
-			'type' => "password",
-			"name" => $this->plugin_name . '-pw',
-		]);
-	}
-
-	public function pdc_password($args)
-	{
-		printf(
-			'<input type="password" id="%s" name="%s" value="%s" />',
-			$args['name'],
-			$args['name'],
-			get_option($args['name'], "")
+			$this->plugin_name . '-env',
 		);
 	}
 
-	public function pdc_inputfield($args)
-	{
-		$type = $args['type'];
-		$name = $args['name'];
-		$value = get_option($name);
-		echo "<input type=\"$type\" name=\"$name\" id=\"$name\" value=\"$value\"  />";
-	}
 
 	/**
 	 * Deletes the cached token
@@ -478,7 +438,7 @@ class AdminCore
 	{
 		$order_item_id = $request->get_param('orderItemId');
 		$pdf_url = $request->get_param('pdfUrl');
-		
+
 		$meta_key_pdf_url = $this->get_meta_key('pdf_url');
 		$order_item = new \WC_Order_Item_Product($order_item_id);
 		$order_item->update_meta_data($meta_key_pdf_url, $pdf_url);

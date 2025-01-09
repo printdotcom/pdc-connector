@@ -3,45 +3,46 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
 (function ($) {
   'use strict';
 
-  function getCredentials() {
-    const username = $(`#js-${PLUGIN_NAME}-testusername`).val();
-    const password = $(`#js-${PLUGIN_NAME}-testpw`).val();
-    return {
-      username,
-      password,
-    };
-  }
-
   async function checkCredentials() {
     $(`#js-${PLUGIN_NAME}-auth-success`).hide();
     $(`#js-${PLUGIN_NAME}-auth-failed`).hide();
 
-    const { username, password } = getCredentials();
+    const pdcApiKey = $(`#pdc_api_key`).val();
 
-    if (!username || !password) {
-      alert('Missing username or password');
+    if (!pdcApiKey) {
+      alert('No API Key entered');
       return;
     }
 
-    const response = await fetch(pdcAdminApi.pdc_url + 'login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        credentials: {
-          username,
-          password,
+    if (formIsDirty) {
+      alert('Please save the settings before verifying the API key');
+      return;
+    }
+
+    try {
+      $(`#js-${PLUGIN_NAME}-verify_key`).prop('disabled', true);
+      $(`#js-${PLUGIN_NAME}-verify_loader`).addClass('is-active');
+
+      const response = await fetch(pdcAdminApi.pdc_url + '/products', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `PrintApiKey ${pdcApiKey}`,
         },
-      }),
-    });
-    if (response.status !== 200) {
+      });
+      if (response.status !== 200) {
+        $(`#js-${PLUGIN_NAME}-auth-failed`).show();
+        $(`#js-${PLUGIN_NAME}-auth-success`).hide();
+        return;
+      }
+      $(`#js-${PLUGIN_NAME}-auth-failed`).hide();
+      $(`#js-${PLUGIN_NAME}-auth-success`).show();
+    } catch (err) {
       $(`#js-${PLUGIN_NAME}-auth-failed`).show();
-      $(`#js-${PLUGIN_NAME}-auth-success`).hide();
-      return;
+    } finally {
+      $(`#js-${PLUGIN_NAME}-verify_key`).prop('disabled', false);
+      $(`#js-${PLUGIN_NAME}-verify_loader`).removeClass('is-active');
     }
-    $(`#js-${PLUGIN_NAME}-auth-failed`).hide();
-    $(`#js-${PLUGIN_NAME}-auth-success`).show();
   }
 
   // On order item detail page, will allow adding a
@@ -136,9 +137,20 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
     }
   }
 
+  let formIsDirty = false;
+  function observeFormChanges(formID) {
+    const formElement = $(formID);
+    if (!formElement.length) return;
+
+    $(`${formID} input, ${formID} select`).on('change', function () {
+      formIsDirty = true;
+    });
+  }
+
   $(window).load(function () {
     $('#pdc-file-upload').on('click', orderItemAttachPdf);
     $('#pdc-order').on('click', purchaseOrderItem);
-    $(`#js-${PLUGIN_NAME}-testcredentials`).click(checkCredentials);
+    $(`#js-${PLUGIN_NAME}-verify_key`).click(checkCredentials);
+    observeFormChanges(`#js-${PLUGIN_NAME}-general-form`);
   });
 })(jQuery);
