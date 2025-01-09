@@ -24,8 +24,8 @@ class APIClient
     // will be used to store unique cache entries
     private $plugin_name;
 
-    // Access token for the Print.com API
-    private $pdc_access_token;
+    // API Key for the Print.com API
+    private $pdc_api_key;
 
     /**
      * Initializes the API client
@@ -35,51 +35,28 @@ class APIClient
     public function __construct($plugin_name)
     {
         $this->plugin_name = $plugin_name;
-        $this->pdc_api_base_url = get_option($plugin_name . '-env_baseurl');;
+
+        $env = get_option($plugin_name . '-env');
+        $this->pdc_api_base_url = $env === 'prod' ? "https://api.print.com" : "https://api.stg.print.com";
+
+        $api_key = get_option($plugin_name . '-api_key');
+        $this->pdc_api_key = $api_key;
     }
 
     /**
-     * Retrieves the access token for the Print.com API
-     * Will check if there is already a access token stored
-     * If not, it will attempt to retrieve one from the API
+     * Retrieves the API base url based on the current environment.
+     */
+    public function get_api_base_url()
+    {
+        return $this->pdc_api_base_url;
+    }
+
+    /**
+     * Returns the API Key used for authenticated requests
      */
     private function get_token()
     {
-        if ($this->pdc_access_token) {
-            return $this->pdc_access_token;
-        }
-
-        $this->pdc_access_token = $this->retrieve_access_token();
-        return $this->pdc_access_token;
-    }
-
-    /**
-     * DO NOT use this method, use get_token() instead.
-     * 
-     * Retrieves an access token for the Print.com API
-     * Will first attempt to retrieve the token from the transient cache
-     * If the token is not found, it will attempt to retrieve it from the API
-     * 
-     */
-    private function retrieve_access_token()
-    {
-        $transient_token = get_transient($this->plugin_name . '-token');
-        if ($transient_token) {
-            return $transient_token;
-        }
-
-        $username = get_option($this->plugin_name . '-user');
-        $password = get_option($this->plugin_name . '-pw');
-        $baseUrl = get_option($this->plugin_name . '-env_baseurl');
-        $token = $this->performHttpRequest('POST', $baseUrl . 'login', [
-            'credentials' => [
-                'username' => $username,
-                'password' => $password
-            ]
-        ], '');
-        $parsedToken = str_replace('"', "", $token);
-        set_transient($this->plugin_name . '-token', $parsedToken, 60 * 60 * 24); // 1 day
-        return $parsedToken;
+        return $this->pdc_api_key;
     }
 
     /**
@@ -92,10 +69,10 @@ class APIClient
      * @param array $headers Optional headers to send with the request
      * @return string|WP_Error The unparsed response from the API
      */
-    private function perfromAuthenticatedRequest($method, $path, $data = NULL, $headers = [])
+    private function performAuthenticatedRequest($method, $path, $data = NULL, $headers = [])
     {
-        $token = $this->get_token();
         $url = $this->pdc_api_base_url . $path;
+        $token = $this->get_token();
         return $this->performHttpRequest($method, $url, $data, $token, $headers);
     }
 
@@ -130,7 +107,7 @@ class APIClient
             $params[CURLOPT_POSTFIELDS] = json_encode($data);
         }
         if ($token) {
-            $params[CURLOPT_HTTPHEADER][] = "authorization: Bearer " . $token;
+            $params[CURLOPT_HTTPHEADER][] = "authorization: PrintApiKey " . $token;
         }
         curl_setopt_array($curl, $params);
 
@@ -160,7 +137,7 @@ class APIClient
     {
         $result = get_transient($this->plugin_name . '-customerpresets');
         if (empty($result)) {
-            $result = $this->perfromAuthenticatedRequest('GET', "customerpresets");
+            $result = $this->performAuthenticatedRequest('GET', "/customerpresets");
             set_transient($this->plugin_name . '-customerpresets', $result, 30); // 30 seconds
         }
         $decoded_result = json_decode($result);
@@ -183,7 +160,7 @@ class APIClient
         if ($cached) {
             $result = json_decode($cached);
         } else {
-            $response = $this->perfromAuthenticatedRequest('GET', 'products', NULL);
+            $response = $this->performAuthenticatedRequest('GET', '/products', NULL);
             if (is_wp_error($response)) {
                 return $response;
             }
@@ -217,7 +194,7 @@ class APIClient
         $pdc_preset_id = $product->get_meta(Core::get_meta_key('preset_id'));
         $pdc_pdf_url = wc_get_order_item_meta($order_item_id, Core::get_meta_key('pdf_url'), true);
 
-        $result = $this->perfromAuthenticatedRequest('GET', 'customerpresets/' . urlencode($pdc_preset_id), NULL);
+        $result = $this->performAuthenticatedRequest('GET', '/customerpresets/' . urlencode($pdc_preset_id), NULL);
 
         if (is_wp_error($result)) {
             return $result;
@@ -268,7 +245,7 @@ class APIClient
 
         );
 
-        $result = $this->perfromAuthenticatedRequest('POST',  'orders', $order_request, [
+        $result = $this->performAuthenticatedRequest('POST',  '/orders', $order_request, [
             'pdc-request-source' => 'pdc-woocommerce',
         ]);
 
