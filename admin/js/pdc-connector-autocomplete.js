@@ -74,6 +74,8 @@ jQuery(function ($) {
         }
       : undefined;
     const productListAutocomplete = $el(`#js-pdc-ac-product-list`);
+    if (!productListAutocomplete.length) return;
+    
     accessibleAutocomplete({
       element: productListAutocomplete[0],
       id: 'pdc-products-label', // To match it to the existing <label>.
@@ -149,6 +151,9 @@ jQuery(function ($) {
     let listPresetsStatus = 'idle';
 
     const presetListAutocomplete = $el(`${parentSelector} .pdc-ac-preset-list`);
+    if (!presetListAutocomplete.length) return;
+    console.log('presetListAutocomplete.length:', presetListAutocomplete.length);
+
     const defaultValuePreset = $el(`${parentSelector} .js-pdc-preset-id`).val()
       ? {
           sku: $el(`${parentSelector} .js-pdc-preset-id`).val(),
