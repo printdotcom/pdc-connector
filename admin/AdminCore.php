@@ -344,7 +344,7 @@ class AdminCore
 		$products = $this->pdc_client->searchProducts();
 		$filtered_products = array_filter($products, function ($item) use ($lc_search_term) {
 			$lc_title = strtolower($item->title);
-			return strpos($lc_title, $lc_search_term) !== false;
+			return strpos($lc_title, $lc_search_term) !== false || strpos($item->sku, $lc_search_term) !== false;
 		});
 
 		usort($filtered_products, function ($a, $b) use ($lc_search_term) {
