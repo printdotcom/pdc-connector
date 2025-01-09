@@ -164,9 +164,6 @@ class Core
 		$this->loader->add_action('rest_api_init', $plugin_admin, 'register_pdc_purchase_endpoint');
 		$this->loader->add_action('wp_ajax_pdc-list-products', $plugin_admin, 'pdc_list_products');
 		$this->loader->add_action('wp_ajax_pdc-list-presets', $plugin_admin, 'pdc_list_presets');
-		$this->loader->add_filter("pre_update_option_$this->plugin_name-user", $plugin_admin, 'delete_cached_tokens', 10, 2);
-		$this->loader->add_filter("pre_update_option_$this->plugin_name-pw", $plugin_admin, 'delete_cached_tokens', 10, 2);
-		$this->loader->add_filter("pre_update_option_$this->plugin_name-env_baseurl", $plugin_admin, 'delete_cached_tokens', 10, 2);
 	}
 
 	/**

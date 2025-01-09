@@ -192,17 +192,6 @@ class AdminCore
 		);
 	}
 
-
-	/**
-	 * Deletes the cached token
-	 * This is useful whenever the user changes user, password or environment
-	 */
-	public function delete_cached_tokens($new_value, $old_value)
-	{
-		delete_transient($this->plugin_name . '-token');
-		return $new_value;
-	}
-
 	public function add_product_data_tab($tabs)
 	{
 		$tabs['pdc_printtab'] = array(
@@ -413,7 +402,7 @@ class AdminCore
 		$order_item->save();
 
 		$order = wc_get_order($order_id);
-		$note = __("Item is being produced at Print.com.");
+		$note = __("Item is being produced at Print.com.", 'pdc-connector');
 		$order->add_order_note($note);
 		$order->save();
 	}
@@ -429,7 +418,12 @@ class AdminCore
 		$order_item->save();
 
 		$order = wc_get_order($pdc_order->wp_order_id);
-		$note = __("Item has been shipped by Print.com. Track & Trace code: <a href=\"$tracking_url.\">$tracking_url</a>.");
+		$note = sprintf(
+			// translators: placeholder is a URL to the track & trace page
+			__('Item has been shipped by Print.com. Track & Trace code: <a href="%1$s">%2$s</a>.', 'pdc-connector'),
+			$tracking_url,
+			$tracking_url,
+		);
 		$order->add_order_note($note);
 		$order->save();
 	}
@@ -490,7 +484,11 @@ class AdminCore
 		$order_id = wc_get_order_id_by_order_item_id($order_item_id);
 		$order = wc_get_order($order_id);
 
-		$note = __("Item purchased at Print.com with order number: $pdc_order->orderNumber.");
+		$note = sprintf(
+			// translators: placeholder is the order number
+			__("Item purchased at Print.com with order number: %s.", 'pdc-connector'),
+			$pdc_order->orderNumber
+		);
 		$order->add_order_note($note);
 
 		$podb = new PurchaseOrderRepository();
