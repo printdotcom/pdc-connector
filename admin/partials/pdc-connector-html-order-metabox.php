@@ -54,7 +54,7 @@
                     <div class="table-cell">
                         <div class="actions">
                             <?php if ($pdc_order_item_number === NULL || $pdc_order_item_number === "") { ?>
-                                <input type="text" class="hidden" id="js-pdc-order-pdf" placeholder="<?php esc_attr_e('http://', 'woocommerce'); ?>" name="<? $meta_key_pdf_url; ?>" value="<?= esc_attr($pdc_pdf_url); ?>" />
+                                <input type="text" class="hidden" id="js-pdc-order-pdf" placeholder="<?php esc_attr_e('http://', 'pdc-connector'); ?>" name="<? $meta_key_pdf_url; ?>" value="<?= esc_attr($pdc_pdf_url); ?>" />
                                 <?php if (empty($pdc_pdf_url)) { ?><a href="#" id="pdc-file-upload" data-order-item-id="<?= $order_item_id; ?>" class="button button-secondary">Upload PDF</a><?php } ?>
                                 <?php if ($pdc_pdf_url) { ?><a href="#" id="pdc-file-upload" data-order-item-id="<?= $order_item_id; ?>" class="button button-secondary">Replace PDF</a><?php } ?>
                                 <?php if ($has_preset) { ?>

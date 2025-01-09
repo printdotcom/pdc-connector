@@ -15,7 +15,7 @@ $preset_title = get_post_meta($variation->ID, $meta_key_preset_title, true);
     <div class="form-row">
         <div class="options_group pdc_product_options" id="js-pdc-variant-<?= $variation->ID; ?>">
             <p class="form-row form-field">
-                <label><?php _e('Print.com Preset', $this->plugin_name); ?></label>
+                <label><?php _e('Print.com Preset', 'pdc-connector'); ?></label>
                 <span class="woocommerce-help-tip" tabindex="0" aria-label="Select a preset for this variant. When no preset is selected, it will use the default preset of this product."></span>
                 <span class="pdc-ac-preset-list"></span>
                 <input type="hidden" id="<?= $variantion_ID; ?>_<?= $meta_key_preset_id; ?>" value="<?= $preset_id; ?>" class="js-pdc-preset-id" name="<?= $meta_key_preset_id; ?>[<?= $index; ?>]" />
@@ -31,8 +31,8 @@ $preset_title = get_post_meta($variation->ID, $meta_key_preset_title, true);
                 <label for="<?= $file_field_id; ?>">PDF</label>
                 <span class="woocommerce-help-tip" tabindex="0" aria-label="Enter a URL or select a file which belongs to this variant. This file will be the design which the customer will order."></span>
                 <span class="form-flex-box">
-                    <input type="text" class="input_text" id="<?= $file_field_id; ?>" placeholder="<?php esc_attr_e('http://', 'woocommerce'); ?>" name="<?= $meta_key_pdf_url; ?>[<?= $index; ?>]" value="<?= esc_attr($pdf_url); ?>" />
-                    <a href="#" class="button button-select-pdf-file" id="<?= $button_field_id; ?>" data-choose="<?php esc_attr_e('Choose file', 'woocommerce'); ?>" data-update="<?php esc_attr_e('Insert file URL', 'woocommerce'); ?>"><?php echo esc_html__('Choose file', 'woocommerce'); ?></a>
+                    <input type="text" class="input_text" id="<?= $file_field_id; ?>" placeholder="<?php esc_attr_e('http://', 'pdc-connector'); ?>" name="<?= $meta_key_pdf_url; ?>[<?= $index; ?>]" value="<?= esc_attr($pdf_url); ?>" />
+                    <a href="#" class="button button-select-pdf-file" id="<?= $button_field_id; ?>" data-choose="<?php esc_attr_e('Choose file', 'pdc-connector'); ?>" data-update="<?php esc_attr_e('Insert file URL', 'pdc-connector'); ?>"><?php echo esc_html__('Choose file', 'pdc-connector'); ?></a>
                 </span>
             </p>
             <script>

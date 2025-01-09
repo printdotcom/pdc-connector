@@ -5,8 +5,8 @@ $meta_key_pdf_url = $this->get_meta_key('pdf_url');
 <p class="form-field _pdc_editable_field">
     <label for="_pdc_file_url">PDF</label>
     <span class="form-flex-box">
-        <input type="text" class="input_text pdc_input_pdf" id="_pdc-file_url" placeholder="<?php esc_attr_e('http://', 'woocommerce'); ?>" name="<?= $meta_key_pdf_url; ?>" value="<?= esc_attr($file_url); ?>" />
-        <a href="#" class="button button-select-pdf-file" id="pdc-product-file-upload" data-choose="<?php esc_attr_e('Choose file', 'woocommerce'); ?>" data-update="<?php esc_attr_e('Insert file URL', 'woocommerce'); ?>"><?php echo esc_html__('Choose file', 'woocommerce'); ?></a>
+        <input type="text" class="input_text pdc_input_pdf" id="_pdc-file_url" placeholder="<?php esc_attr_e('http://', 'pdc-connector'); ?>" name="<?= $meta_key_pdf_url; ?>" value="<?= esc_attr($file_url); ?>" />
+        <a href="#" class="button button-select-pdf-file" id="pdc-product-file-upload" data-choose="<?php esc_attr_e('Choose file', 'pdc-connector'); ?>" data-update="<?php esc_attr_e('Insert file URL', 'pdc-connector'); ?>"><?php echo esc_html__('Choose file', 'pdc-connector'); ?></a>
     </span>
 </p>
 <script>
