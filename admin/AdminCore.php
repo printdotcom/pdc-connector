@@ -333,6 +333,7 @@ class AdminCore
 		register_rest_route('pdc/v1', '/orders/webhook', array(
 			'methods' => 'POST',
 			'callback' => array($this, 'pdc_order_webhook'),
+			'permission_callback' => '__return_true',
 		));
 	}
 

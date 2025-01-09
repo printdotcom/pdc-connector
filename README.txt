@@ -2,9 +2,9 @@
 Contributors: tijmenbruggeman
 Donate link: https://print.com
 Tags: woocommerce
-Requires at least: 3.0.1
-Tested up to: 3.4
-Stable tag: 4.3
+Requires at least: 3.4
+Tested up to: 6.7
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,11 +47,6 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 
 = 0.1 =
 * Initial version of the plug-in.
-
-== Upgrade Notice ==
-
-= 0.1 =
-Initial version of the plug-in.
 
 == About Print.com ==
 
