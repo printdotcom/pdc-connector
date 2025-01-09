@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+
+## [2.0.0-beta]
+
+### Changed
+
+- Prevent initializing the autocompletions when products or presets are not available.
+- Removed token based authentication.
+- Removed option keys pw and user.
+- Removed base_url option key, replaced by env option key.
+- Removed input field from product page
+- Mark variation as dirty when pdf has been uploaded
+- Removed hidden input for pdf url
+
+### Added
+
+- API Key support.
+
+
 ## [1.3.0-beta]
 
 ### Changed
@@ -24,7 +43,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Centralized formatting for meta keys. Everything will now be prefixed with _ to mark it as private and have a plug-in prefix name.
-
 
 ## [1.2.0-beta]
 
