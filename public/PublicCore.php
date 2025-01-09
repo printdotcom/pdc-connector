@@ -104,9 +104,8 @@ class PublicCore
 		$product_id = $values['product_id'];
 		$variation_id = $order_item->get_variation_id();
 
-		$pdc_pdf_url = $values[Core::get_meta_key('pdf_url')];
-		$pdc_preset_id = $values[Core::get_meta_key('preset_id')];
-
+		$pdc_pdf_url = isset($values[Core::get_meta_key('pdf_url')]) ? $values[Core::get_meta_key('pdf_url')] : null;
+		$pdc_preset_id = isset($values[Core::get_meta_key('preset_id')]) ? $values[Core::get_meta_key('preset_id')] : null;
 
 		if (empty($pdc_pdf_url)) {
 			// there is no preconfigured pdf on the cart item
@@ -122,7 +121,6 @@ class PublicCore
 				$pdc_pdf_url = get_post_meta($product_id, Core::get_meta_key('pdf_url'), true);
 			}
 		}
-
 
 		if (empty($pdc_preset_id)) {
 			// there is no preconfigured preset on the cart item
@@ -149,14 +147,5 @@ class PublicCore
 
 		$order_item->add_meta_data(Core::get_meta_key('pdf_url'), $pdc_pdf_url);
 		$order_item->add_meta_data(Core::get_meta_key('preset_id'), $pdc_preset_id);
-	}
-
-	/**
-	 * Renders the pdf input on the product-single page
-	 */
-	public function set_pdf_input()
-	{
-		global $product;
-		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-html-pdf-url-input.php');
 	}
 }
