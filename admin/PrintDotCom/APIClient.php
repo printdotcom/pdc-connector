@@ -242,10 +242,11 @@ class APIClient
                     "copies" => $copies,
                 ]]
             ]]
-
         );
 
-        $result = $this->performAuthenticatedRequest('POST',  '/orders', $order_request, [
+        $order_body = apply_filters($this->plugin_name . '_before_place_order', $order_request);
+
+        $result = $this->performAuthenticatedRequest('POST',  '/orders', $order_body, [
             'pdc-request-source' => 'pdc-woocommerce',
         ]);
 
