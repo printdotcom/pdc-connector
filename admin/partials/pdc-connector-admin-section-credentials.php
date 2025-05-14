@@ -16,21 +16,21 @@ $app_url = $pdc_env === 'prod' ? 'app.print.com' : 'app.stg.print.com';
 <table class="form-table">
     <tbody>
         <tr>
-            <th scope="row"><label for="pdc_api_key">API Key</label></th>
+            <th scope="row"><label for="pdc_api_key"><?php _e('API Key', 'pdc-connector'); ?></label></th>
             <td>
                 <input id="pdc_api_key" name="<?php echo $this->plugin_name; ?>-api_key" type="text" value="<?php echo $api_key; ?>" class="regular-text" />
                 <span id="js-<?php echo $this->plugin_name; ?>-verify_loader" class="spinner"></span>
                 <button type="button" id="js-<?php echo $this->plugin_name; ?>-verify_key" class="button button-secondary">
-                    <span>Verify Key</span>
+                    <span><?php _e('Verify', 'pdc-connector'); ?></span>
                 </button>
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="pdc_env">Environment</label></th>
+            <th scope="row"><label for="pdc_env"><?php _e('Environment', 'pdc-connector'); ?></label></th>
             <td>
                 <select name="<?php echo $this->plugin_name; ?>-env" id="pdc_env">
-                    <option <?php if ($pdc_env === "stg") { ?> selected <?php } ?> value="stg">Testing</option>
-                    <option <?php if ($pdc_env === "prod") { ?> selected <?php } ?> value="prod">Live</option>
+                    <option <?php if ($pdc_env === "stg") { ?> selected <?php } ?> value="stg"><?php _e('Test', 'pdc-connector'); ?></option>
+                    <option <?php if ($pdc_env === "prod") { ?> selected <?php } ?> value="prod"><?php _e('Live', 'pdc-connector'); ?></option>
                 </select>
             </td>
         </tr>

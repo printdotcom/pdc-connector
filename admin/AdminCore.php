@@ -3,7 +3,6 @@
 namespace PdcConnector\Admin;
 
 use PdcConnector\Admin\PrintDotCom\APIClient;
-use PdcConnector\Admin\PurchaseOrderRepository;
 use PdcConnector\Includes\Core;
 
 /**
