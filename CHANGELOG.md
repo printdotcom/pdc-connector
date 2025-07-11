@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Search products on sku
 
+### Changed
+
+- Removed unused public.css
+
 ## [2.0.0-beta]
 
 ### Changed
