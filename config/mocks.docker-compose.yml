@@ -1,0 +1,19 @@
+services:
+  pdc-mock-api:
+    image: wiremock/wiremock:3.3.1
+    ports:
+      - '8001:8080'
+    volumes:
+      - ../test/wiremock/mappings:/home/wiremock/mappings
+      - ../test/wiremock/__files:/home/wiremock/__files
+    command: >
+      --global-response-templating
+      --verbose
+      --root-dir=/home/wiremock
+      --port=8080
+    networks:
+      - pdc
+
+networks:
+  pdc:
+    external: true

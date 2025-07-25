@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# Print.com Mock API management script
+set -e
+
+ACTION="${1:-start}"
+COMPOSE_FILE="config/mocks.docker-compose.yml"
+
+case "$ACTION" in
+    "start")
+        echo "🚀 Starting Print.com Mock API..."
+        docker network create pdc 2>/dev/null || true
+        docker compose -f "$COMPOSE_FILE" up -d
+        echo "✅ Mock API started at http://localhost:8001"
+        echo "🔑 Test API Key: test_key_12345"
+        ;;
+    
+    "stop")
+        echo "🛑 Stopping Mock API..."
+        docker compose -f "$COMPOSE_FILE" down
+        ;;
+    
+    "logs")
+        docker compose -f "$COMPOSE_FILE" logs -f pdc-mock-api
+        ;;
+    
+    "status")
+        if curl -s --fail "http://localhost:8001/__admin/health" >/dev/null 2>&1; then
+            echo "✅ Mock API is running - http://localhost:8001"
+        else
+            echo "❌ Mock API is not running"
+        fi
+        ;;
+    
+    *)
+        echo "Usage: $0 {start|stop|logs|status}"
+        exit 1
+        ;;
+esac

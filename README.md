@@ -57,6 +57,7 @@ A WordPress plugin that integrates with the Print.com API to enable custom print
 | `bin/run-wordpress [WP_VER] [PHP_VER]` | Start WordPress environment | `bin/run-wordpress 67 82` |
 | `bin/stop-wordpress [WP_VER] [PHP_VER]` | Stop WordPress environment | `bin/stop-wordpress 67 82` |
 | `bin/seed-woocommerce.sh [WP_VER] [PHP_VER]` | Seed WooCommerce with sample data | `bin/seed-woocommerce.sh 67 82` |
+| `bin/run-mock-api {start\|stop\|status}` | Manage Print.com Mock API | `bin/run-mock-api start` |
 
 ### Supported Versions
 
@@ -213,6 +214,30 @@ The project uses PSR-4 autoloading via Composer:
    - Visit admin: http://localhost:8067/wp-admin
    - Check PDC Connector settings
    - Verify product configurations
+
+### Mock API Testing
+
+Test API integration without real Print.com credentials:
+
+```bash
+# Start the mock API
+bin/run-mock-api start
+
+# Test API endpoints
+curl -H "X-API-Key: test_key_12345" http://localhost:8001/products
+
+# Configure plugin to use mock API
+# Set API base URL to: http://localhost:8001
+# Use API key: test_key_12345
+```
+
+**Mock API Features:**
+- 🎯 Based on actual Print.com API documentation
+- 🔑 Realistic authentication with test API keys
+- 📊 Dynamic responses with templating
+- 🛠️ Admin interface at http://localhost:8001/__admin
+
+See [`test/wiremock/README.md`](test/wiremock/README.md) for detailed documentation.
 
 ## 📝 API Documentation
 
