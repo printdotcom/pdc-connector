@@ -1,0 +1,31 @@
+# node/npm
+node_modules
+package.json
+package-lock.json
+debug.log
+
+# PHP/composer dev
+composer.json
+composer.lock
+/vendor
+
+# tests & reports
+test
+playwright.config.ts
+phpunit.xml
+phpcs.xml
+playwright-report
+test-results
+
+# config & scripts
+bin
+/config
+
+# CI/config files
+.gitignore
+.git
+.github
+.distignore
+
+# editor/os
+.vscode
