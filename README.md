@@ -40,7 +40,7 @@ A WordPress plugin that integrates with the Print.com API to enable custom print
 3. **Seed WooCommerce with sample data:**
    ```bash
    # Configure WooCommerce and create sample products
-   bin/seed-woocommerce.sh 67 82
+   bin/seed-woocommerce 67 82
    ```
 
 4. **Access your site:**
@@ -56,7 +56,7 @@ A WordPress plugin that integrates with the Print.com API to enable custom print
 |---------|-------------|----------|
 | `bin/run-wordpress [WP_VER] [PHP_VER]` | Start WordPress environment | `bin/run-wordpress 67 82` |
 | `bin/stop-wordpress [WP_VER] [PHP_VER]` | Stop WordPress environment | `bin/stop-wordpress 67 82` |
-| `bin/seed-woocommerce.sh [WP_VER] [PHP_VER]` | Seed WooCommerce with sample data | `bin/seed-woocommerce.sh 67 82` |
+| `bin/seed-woocommerce [WP_VER] [PHP_VER]` | Seed WooCommerce with sample data | `bin/seed-woocommerce 67 82` |
 | `bin/run-mock-api {start\|stop\|status}` | Manage Print.com Mock API | `bin/run-mock-api start` |
 
 ### Supported Versions
@@ -105,7 +105,7 @@ pdc-connector/
 ├── bin/                   # Development scripts
 │   ├── run-wordpress      # Start WordPress environment
 │   ├── stop-wordpress     # Stop WordPress environment
-│   └── seed-woocommerce.sh # Seed WooCommerce data
+│   └── seed-woocommerce   # Seed WooCommerce data
 ├── config/                # Configuration files
 │   ├── docker-compose.yml # Docker Compose configuration
 │   └── wp-version.conf    # WordPress/PHP version mapping
@@ -202,7 +202,7 @@ The project uses PSR-4 autoloading via Composer:
 1. **Start environment and seed data:**
    ```bash
    bin/run-wordpress 67 82
-   bin/seed-woocommerce.sh 67 82
+   bin/seed-woocommerce 67 82
    ```
 
 2. **Test WooCommerce integration:**
