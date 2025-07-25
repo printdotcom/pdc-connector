@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+echo "Stopping Docker environment..."
+
+WORDPRESS_VERSION_ENV="${1:-$WORDPRESS_VERSION}"
+export WORDPRESS_VERSION_ENV
+
+PHP_VERSION_ENV="${2:-$PHP_VERSION}"
+export PHP_VERSION_ENV
+
+WP_IMAGE=""
+export WP_IMAGE
+
+export COMPOSE_PROJECT_NAME="pdc_${WORDPRESS_VERSION_ENV}_${PHP_VERSION_ENV}"
+
+docker compose -f config/docker-compose.yml down -v
