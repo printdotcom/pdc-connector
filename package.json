@@ -1,0 +1,12 @@
+{
+    "name": "@printcom/pdc-connector",
+    "version": "1.0.0",
+    "description": "Print.com Print on Demand",
+    "main": "index.js",
+    "scripts": {
+      "test:playwright": "playwright test"
+    },
+    "devDependencies": {
+      "@playwright/test": "^1.53.0"
+    }
+  }
