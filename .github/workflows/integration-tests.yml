@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - { wp: 67, php: 70 }
+          - { wp: 60, php: 70 }
           - { wp: 68, php: 82 }
     steps:
       - name: Checkout code
