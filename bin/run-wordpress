@@ -4,6 +4,7 @@
 # Example: bin/run-wordpress 67 82
 
 CONFIG_FILE="config/wp-version.conf"
+PLUGINS_CONFIG_FILE="config/wp-plugins.conf"
 
 # Ensure Docker CLI is installed.
 if ! command -v docker >/dev/null; then
@@ -17,6 +18,9 @@ PHP_VERSION_ENV="${2:-$PHP_VERSION}"
 WP_IMAGE_KEY="${WORDPRESS_VERSION_ENV}_${PHP_VERSION_ENV}"
 WP_IMAGE=$(grep "^${WP_IMAGE_KEY}=" "$CONFIG_FILE" | cut -d'=' -f2)
 WORDPRESS_PORT="80${WORDPRESS_VERSION_ENV}"
+
+# Get plugins for this WordPress/PHP version
+PLUGINS_LIST=$(grep "^${WP_IMAGE_KEY}=" "$PLUGINS_CONFIG_FILE" | cut -d'=' -f2)
 
 if [ -z "$WP_IMAGE" ]; then
   echo "Unsupported version combination: $WP_IMAGE_KEY"
@@ -93,9 +97,18 @@ EOF
 echo "Activating plug-in.."
 docker compose -f config/docker-compose.yml run --rm wpcli wp plugin activate pdc-connector --allow-root
 
-if [ "$WORDPRESS_VERSION_ENV" -ge 55 ]; then
+if [ "$WORDPRESS_VERSION_ENV" -ge 55 ] && [ -n "$PLUGINS_LIST" ]; then
   echo "Installing compatible plugins for WordPress ${WORDPRESS_PORT}.."
-  docker compose -f config/docker-compose.yml run --rm --user 33 wpcli wp plugin install woocommerce --activate --allow-root || exit 1
+  
+  # Parse and install each plugin
+  IFS=',' read -ra PLUGINS <<< "$PLUGINS_LIST"
+  for plugin_spec in "${PLUGINS[@]}"; do
+    plugin_name=$(echo "$plugin_spec" | cut -d':' -f1)
+    plugin_version=$(echo "$plugin_spec" | cut -d':' -f2)
+    
+    echo "Installing $plugin_name version $plugin_version..."
+    docker compose -f config/docker-compose.yml run --rm --user 33 wpcli wp plugin install "$plugin_name" --version="$plugin_version" --activate --allow-root || exit 1
+  done
 fi
 
 MAX_ATTEMPTS=10
