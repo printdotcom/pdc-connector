@@ -2,9 +2,10 @@
 
 namespace PdcConnector\Includes;
 
+use PdcConnector\Front\FrontCore;
+
 const PLUGIN_NAME = 'pdc-connector';
 
-use PdcConnector\Public\PublicCore;
 
 /**
  * The file that defines the core plugin class
@@ -175,8 +176,7 @@ class Core
 	 */
 	private function define_public_hooks()
 	{
-
-		$plugin_public = new PublicCore($this->get_plugin_name(), $this->get_version());
+		$plugin_public = new FrontCore($this->get_plugin_name(), $this->get_version());
 
 		$this->loader->add_filter('woocommerce_add_cart_item_data', $plugin_public, 'capture_cart_item_data', 10, 2);
 		$this->loader->add_filter('woocommerce_checkout_create_order_line_item', $plugin_public, 'save_pdc_values_order_meta', 80, 4);

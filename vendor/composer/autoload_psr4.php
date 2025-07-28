@@ -6,7 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'PdcConnector\\Public\\' => array($baseDir . '/public'),
     'PdcConnector\\Includes\\' => array($baseDir . '/includes'),
+    'PdcConnector\\Front\\' => array($baseDir . '/front'),
     'PdcConnector\\Admin\\' => array($baseDir . '/admin'),
 );

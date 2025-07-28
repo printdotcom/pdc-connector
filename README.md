@@ -114,8 +114,8 @@ pdc-connector/
 │   ├── Activator.php     # Plugin activation
 │   ├── Deactivator.php   # Plugin deactivation
 │   └── Loader.php        # Hook loader
-├── public/                # Public-facing functionality
-│   └── PublicCore.php    # Main public class
+├── front/                 # Public-facing functionality
+│   └── FrontCore.php      # Main public class
 └── vendor/                # Composer dependencies
 ```
 
@@ -155,7 +155,7 @@ The project uses PSR-4 autoloading via Composer:
   "autoload": {
     "psr-4": {
       "PdcConnector\\Admin\\": "admin/",
-      "PdcConnector\\Public\\": "public/",
+      "PdcConnector\\Front\\": "front/",
       "PdcConnector\\Includes\\": "includes/"
     }
   }
