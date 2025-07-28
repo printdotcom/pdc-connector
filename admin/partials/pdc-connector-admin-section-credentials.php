@@ -20,7 +20,7 @@ $app_url = $pdc_env === 'prod' ? 'app.print.com' : 'app.stg.print.com';
             <td>
                 <input id="pdc_api_key" data-testid="pdc-apikey" name="<?php echo $this->plugin_name; ?>-api_key" type="text" value="<?php echo $api_key; ?>" class="regular-text" />
                 <span id="js-<?php echo $this->plugin_name; ?>-verify_loader" class="spinner"></span>
-                <button type="button" id="js-<?php echo $this->plugin_name; ?>-verify_key" class="button button-secondary">
+                <button data-testid="pdc-verify-key" type="button" id="js-<?php echo $this->plugin_name; ?>-verify_key" class="button button-secondary">
                     <span><?php _e('Verify', 'pdc-connector'); ?></span>
                 </button>
             </td>
