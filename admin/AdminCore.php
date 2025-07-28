@@ -177,6 +177,12 @@ class AdminCore
 			array($this, 'section_credentials'),
 			$this->plugin_name,
 		);
+		add_settings_section(
+			$this->plugin_name . '-product',
+			'Product',
+			array($this, 'section_product'),
+			$this->plugin_name,
+		);
 	}
 
 	public function register_settings()
@@ -188,6 +194,10 @@ class AdminCore
 		register_setting(
 			$this->plugin_name . '-options',
 			$this->plugin_name . '-env',
+		);
+		register_setting(
+			$this->plugin_name . '-options',
+			$this->plugin_name . '-product',
 		);
 	}
 
@@ -284,14 +294,14 @@ class AdminCore
 	}
 
 	/**
-	 * Creates the environment section
+	 * Creates the product configuration section
 	 *
 	 * @since 		1.0.0
 	 * @return 		void
 	 */
-	public function section_environment()
+	public function section_product()
 	{
-		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-section-environment.php');
+		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-section-product.php');
 	}
 
 	/**
