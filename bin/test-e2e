@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+# Usage: bin/test-e2e [WORDPRESS_VERSION] [PHP_VERSION] [OPTIONS]
+# Example: bin/test-e2e 67 82 --ui
+# Example: bin/test-e2e 67 82 --debug
+# Example: bin/test-e2e 67 82 --headed
+
+set -e
+
+CONFIG_FILE="config/wp-version.conf"
+
+# Check if Playwright is installed
+if [ ! -d "node_modules/@playwright/test" ]; then
+  echo "Installing dependencies..."
+  npm install
+fi
+
+# Parse WordPress and PHP version arguments
+WORDPRESS_VERSION_ENV="${1:-67}"
+PHP_VERSION_ENV="${2:-82}"
+
+# Remove version arguments from the arguments list for passing to playwright
+shift 2 2>/dev/null || true
+
+# Export version info for playwright config
+if [[ "$WORDPRESS_VERSION_ENV" =~ ^[0-9]{2}$ ]]; then
+  WORDPRESS_VERSION="${WORDPRESS_VERSION_ENV:0:1}.${WORDPRESS_VERSION_ENV:1:1}"
+else
+  WORDPRESS_VERSION="$WORDPRESS_VERSION_ENV"
+fi
+
+if [[ "$PHP_VERSION_ENV" =~ ^[0-9]{2}$ ]]; then
+  PHP_VERSION="${PHP_VERSION_ENV:0:1}.${PHP_VERSION_ENV:1:1}"
+else
+  PHP_VERSION="$PHP_VERSION_ENV"
+fi
+
+export WORDPRESS_VERSION
+export WORDPRESS_VERSION_ENV 
+export PHP_VERSION
+export PHP_VERSION_ENV
+export WORDPRESS_PORT="80${WORDPRESS_VERSION_ENV}"
+
+echo "Running e2e tests against WordPress $WORDPRESS_VERSION on port $WORDPRESS_PORT..."
+
+# Check if WordPress is running
+if ! curl -s --head --fail "http://localhost:${WORDPRESS_PORT}" > /dev/null; then
+  echo "WordPress is not running on port ${WORDPRESS_PORT}."
+  echo "Start it with: bin/run-wordpress ${WORDPRESS_VERSION_ENV} ${PHP_VERSION_ENV}"
+  exit 1
+fi
+
+# Check if mock API is running and set environment variables accordingly
+if curl -s --head --fail "http://localhost:8001/__admin" > /dev/null; then
+  echo "Mock API detected - configuring tests to use mock API..."
+  export PDC_API_BASE_URL="http://localhost:8001"
+  export PDC_API_KEY="test_key_12345"
+else
+  echo "Mock API not running - tests will use configured API settings"
+  echo "To use mock API, start it with: bin/run-mock-api start"
+fi
+
+# Ensure auth directory exists
+mkdir -p test/e2e/.auth
+
+# Run Playwright tests with any additional arguments
+echo "Running Playwright tests..."
+npx playwright test "$@"

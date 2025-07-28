@@ -9,20 +9,20 @@ class ComposerStaticInit1f4280dc5b0009eb593b81cb298a6361
     public static $prefixLengthsPsr4 = array (
         'P' => 
         array (
-            'PdcConnector\\Public\\' => 20,
             'PdcConnector\\Includes\\' => 22,
+            'PdcConnector\\Front\\' => 19,
             'PdcConnector\\Admin\\' => 19,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'PdcConnector\\Public\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/public',
-        ),
         'PdcConnector\\Includes\\' => 
         array (
             0 => __DIR__ . '/../..' . '/includes',
+        ),
+        'PdcConnector\\Front\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/front',
         ),
         'PdcConnector\\Admin\\' => 
         array (

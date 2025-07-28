@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/orders",
+    "headers": {
+      "X-API-Key": {
+        "matches": ".*"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    },
+    "body": "{}"
+  },
+  "serveEventListeners": [
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "POST",
+        "url": "{{jsonPath originalRequest.body '$.webhookUrl'}}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"result\": \"SUCCESS\" }"
+      }
+    }
+  ]
+}

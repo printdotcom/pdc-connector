@@ -37,10 +37,21 @@ class APIClient
         $this->plugin_name = $plugin_name;
 
         $env = get_option($plugin_name . '-env');
-        $this->pdc_api_base_url = $env === 'prod' ? "https://api.print.com" : "https://api.stg.print.com";
+        
+        // Allow environment variable override for testing
+        if (getenv('PDC_API_BASE_URL')) {
+            $this->pdc_api_base_url = getenv('PDC_API_BASE_URL');
+        } else {
+            $this->pdc_api_base_url = $env === 'prod' ? "https://api.print.com" : "https://api.stg.print.com";
+        }
 
-        $api_key = get_option($plugin_name . '-api_key');
-        $this->pdc_api_key = $api_key;
+        // Allow environment variable override for testing  
+        if (getenv('PDC_API_KEY')) {
+            $this->pdc_api_key = getenv('PDC_API_KEY');
+        } else {
+            $api_key = get_option($plugin_name . '-api_key');
+            $this->pdc_api_key = $api_key;
+        }
     }
 
     /**

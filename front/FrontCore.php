@@ -1,30 +1,30 @@
 <?php
 
-namespace PdcConnector\Public;
+namespace PdcConnector\Front;
 
 use PdcConnector\Includes\Core;
 
 /**
- * The public-facing functionality of the plugin.
+ * The user-facing functionality of the plugin.
  *
  * @link       https://print.com
  * @since      1.0.0
  *
  * @package    Pdc_Connector
- * @subpackage Pdc_Connector/public
+ * @subpackage Pdc_Connector/front
  */
 
 /**
- * The public-facing functionality of the plugin.
+ * The user-facing functionality of the plugin.
  *
  * Defines the plugin name, version, and two examples hooks for how to
- * enqueue the public-facing stylesheet and JavaScript.
+ * enqueue the user-facing stylesheet and JavaScript.
  *
  * @package    Pdc_Connector
- * @subpackage Pdc_Connector/public
+ * @subpackage Pdc_Connector/front
  * @author     Tijmen <tijmen@print.com>
  */
-class PublicCore
+class FrontCore
 {
 
 	/**

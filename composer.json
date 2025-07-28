@@ -5,7 +5,7 @@
   "autoload": {
     "psr-4": {
       "PdcConnector\\Admin\\": "admin/",
-      "PdcConnector\\Public\\": "public/",
+      "PdcConnector\\Front\\": "front/",
       "PdcConnector\\Includes\\": "includes/"
     }
   },
