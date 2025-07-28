@@ -5,10 +5,6 @@ test.describe('Settings Page', () => {
     await page.goto('/wp-admin/admin.php?page=pdc-connector');
   });
 
-  test.afterAll(async ({ page }) => {
-    await page.unrouteAll();
-  });
-
   test('when settings page is loaded for the first time, environment is staging', async ({ page }) => {
     // Environment is on test
     await expect(page.getByTestId('pdc-environment')).toHaveValue('stg');
