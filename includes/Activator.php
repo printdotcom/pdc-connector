@@ -32,27 +32,5 @@ class Activator
 	 *
 	 * @since    1.0.0
 	 */
-	public static function activate()
-	{
-		global $wpdb;
-
-		$table_name = $wpdb->prefix . 'pdc_orders';
-		$charset_collate = $wpdb->get_charset_collate();
-		$sql = "CREATE TABLE $table_name (
-			id bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-			created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
-			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
-			pdc_order_number varchar(55) DEFAULT '' NOT NULL,
-			pdc_order_item_number varchar(55) DEFAULT '' NOT NULL,
-			pdc_status varchar(55) DEFAULT '' NOT NULL,
-			wp_order_id bigint UNSIGNED NOT NULL,
-			wp_order_item_id bigint UNSIGNED NOT NULL,
-			pdc_price DECIMAL(10,2) NOT NULL,
-			PRIMARY KEY  (id)
-		) $charset_collate;";
-
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-
-		dbDelta($sql);
-	}
+	public static function activate() {}
 }
