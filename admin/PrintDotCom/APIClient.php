@@ -172,6 +172,7 @@ class APIClient
             $result = json_decode($cached);
         } else {
             $response = $this->performAuthenticatedRequest('GET', '/products', NULL);
+            var_dump($response);
             if (is_wp_error($response)) {
                 return $response;
             }
@@ -186,7 +187,6 @@ class APIClient
         $products = array_map(function ($result_item) {
             return new Product($result_item->sku, $result_item->titlePlural);
         }, $result);
-
 
         return $products;
     }
@@ -215,11 +215,6 @@ class APIClient
         }
 
         $preset = json_decode($result);
-
-        // remove unwanted options from preset
-        unset($preset->configuration->variants);
-        unset($preset->configuration->_accessories);
-        unset($preset->configuration->deliveryPromise);
 
         $item_options = $preset->configuration;
         $copies = $order_item->get_quantity();
