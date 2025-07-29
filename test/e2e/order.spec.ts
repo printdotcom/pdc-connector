@@ -9,20 +9,15 @@ test.describe('Order', () => {
       usePresetCopies: true,
     });
 
+    await configurePoster(page);
+
     await orderPoster(page);
 
     await page.goto('/wp-admin/edit.php?post_type=shop_order');
 
     // view latest order
     await page.locator('table.wp-list-table tbody tr:first-child a.order-view').click();
-    
-    // Ensure meta box is expanded if not..
-    const toggle = page.locator('#pdc_order_meta_box > button.handlediv'); // or '.postbox .handlediv'
-    const metaBox = page.locator('#pdc_order_meta_box');
 
-    if (await metaBox.getAttribute('class').then((cls) => cls?.includes('closed'))) {
-      await toggle.click();
-    }
 
     // purchase it
     await page.getByTestId('pdc-purchase-orderitem').click();
@@ -38,20 +33,14 @@ test.describe('Order', () => {
       usePresetCopies: false,
     });
 
+    await configurePoster(page);
+
     await orderPoster(page);
 
     await page.goto('/wp-admin/edit.php?post_type=shop_order');
 
     // view latest order
     await page.locator('table.wp-list-table tbody tr:first-child a.order-view').click();
-
-    // Ensure meta box is expanded if not..
-    const toggle = page.locator('#pdc_order_meta_box > button.handlediv'); // or '.postbox .handlediv'
-    const metaBox = page.locator('#pdc_order_meta_box');
-
-    if (await metaBox.getAttribute('class').then((cls) => cls?.includes('closed'))) {
-      await toggle.click();
-    }
 
     // purchase it
     await page.getByTestId('pdc-purchase-orderitem').click();
