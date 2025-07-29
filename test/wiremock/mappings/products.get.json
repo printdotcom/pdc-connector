@@ -3,8 +3,8 @@
     "method": "GET",
     "urlPath": "/products",
     "headers": {
-      "X-API-Key": {
-        "matches": ".*"
+      "authorization": {
+        "equalTo": "PrintApiKey test_key_12345"
       }
     }
   },

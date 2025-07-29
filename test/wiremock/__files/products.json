@@ -1,18 +1,16 @@
-{
-  "items": [
-    {
-      "active": true,
-      "sku": "flyers",
-      "createdAt": "2020-01-01T11:11:11Z",
-      "titlePlural": "Flyers",
-      "titleSingle": "Flyer"
-    },
-    {
-      "active": true,
-      "sku": "posters",
-      "createdAt": "2020-02-01T11:11:11Z",
-      "titlePlural": "Posters",
-      "titleSingle": "poster"
-    }
-  ]
-}
+[
+  {
+    "active": true,
+    "sku": "flyers",
+    "createdAt": "2020-01-01T11:11:11Z",
+    "titlePlural": "Flyers",
+    "titleSingle": "Flyer"
+  },
+  {
+    "active": true,
+    "sku": "posters",
+    "createdAt": "2020-02-01T11:11:11Z",
+    "titlePlural": "Posters",
+    "titleSingle": "poster"
+  }
+]
