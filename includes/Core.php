@@ -165,6 +165,7 @@ class Core
 		$this->loader->add_action('rest_api_init', $plugin_admin, 'register_pdc_purchase_endpoint');
 		$this->loader->add_action('wp_ajax_pdc-list-products', $plugin_admin, 'pdc_list_products');
 		$this->loader->add_action('wp_ajax_pdc-list-presets', $plugin_admin, 'pdc_list_presets');
+		$this->loader->add_action('wp_ajax_pdc-place-order', $plugin_admin, 'pdc_place_order');
 	}
 
 	/**

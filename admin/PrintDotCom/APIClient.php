@@ -172,7 +172,6 @@ class APIClient
             $result = json_decode($cached);
         } else {
             $response = $this->performAuthenticatedRequest('GET', '/products', NULL);
-            var_dump($response);
             if (is_wp_error($response)) {
                 return $response;
             }
@@ -191,7 +190,7 @@ class APIClient
         return $products;
     }
 
-    public function purchaseOrderItem(string $order_item_id)
+    public function purchaseOrderItem($order_item_id)
     {
         $order_item = new \WC_Order_Item_Product($order_item_id);
         $order_id = wc_get_order_id_by_order_item_id($order_item_id);
