@@ -159,10 +159,7 @@ jQuery(function ($) {
       defaultValue: defaultValuePreset?.title,
       source: async function (query, populateResults) {
         const sku = $el(`#js-pdc-product-sku`).val();
-        const presetsForSku = presets[sku] || [];
-        if (presetsForSku.length === 0) {
-          await loadPresets(parentSelector, sku);
-        }
+        await loadPresets(parentSelector, sku);
         populateResults(presets[sku] || []);
       },
       onConfirm: (item) => {

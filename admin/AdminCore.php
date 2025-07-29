@@ -481,9 +481,12 @@ class AdminCore
 		if (empty($sku)) {
 			return new \WP_Error('no_sku', 'No SKU provided', array('sku' => $sku));
 		}
-		$presets = $this->pdc_client->getPresets($sku);
+		$result = $this->pdc_client->getPresets($sku);
+		if (is_wp_error($result)) {
+			return $result;
+		}
 		wp_send_json_success(array(
-			'presets' => $presets,
+			'presets' => $result,
 		));
 	}
 

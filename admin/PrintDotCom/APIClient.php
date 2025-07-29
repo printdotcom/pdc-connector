@@ -146,10 +146,9 @@ class APIClient
      */
     public function getPresets($sku)
     {
-        $result = get_transient($this->plugin_name . '-customerpresets');
-        if (empty($result)) {
-            $result = $this->performAuthenticatedRequest('GET', "/customerpresets");
-            set_transient($this->plugin_name . '-customerpresets', $result, 30); // 30 seconds
+        $result = $this->performAuthenticatedRequest('GET', "/customerpresets");
+        if (is_wp_error($result)) {
+            return $result;
         }
         $decoded_result = json_decode($result);
 

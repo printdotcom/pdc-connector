@@ -16,7 +16,7 @@ $preset_title = get_post_meta($post->ID, $this->get_meta_key('preset_title'), tr
             <span class="spinner" id="js-pdc-product-search-spinner"></span>
         </p>
         <p class="form-field">
-            <label id="pdc-products-label"><?php _e('Print.com Preset', 'pdc-connector'); ?></label>
+            <label id="pdc-presets-label"><?php _e('Print.com Preset', 'pdc-connector'); ?></label>
             <span class="js-pdc-preset-search pdc-ac-preset-list"></span>
             <input data-testid="pdc-preset-id" type="hidden" value="<?php echo $preset_id; ?>" class="js-pdc-preset-id" name="<?php echo $this->get_meta_key('preset_id'); ?>" />
             <input data-testid="pdc-preset-title" type="hidden" value="<?php echo $preset_title; ?>" class="js-pdc-preset-title" name="<?php echo $this->get_meta_key('preset_title'); ?>" />
