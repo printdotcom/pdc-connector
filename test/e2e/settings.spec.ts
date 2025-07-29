@@ -131,7 +131,6 @@ test.describe('Settings Page', () => {
       await page.getByRole('button', { name: 'Save Settings' }).click();
 
       // Navigate away and back
-      await page.goto('/wp-admin/admin.php?page=pdc-connector-purchases');
       await page.goto('/wp-admin/admin.php?page=pdc-connector');
 
       // Verify checkbox is still checked
@@ -159,6 +158,7 @@ test.describe('Settings Page', () => {
       await expect(page.getByTestId('pdc-apikey')).toHaveValue('combined_test_key');
       await expect(page.getByTestId('pdc-environment')).toHaveValue('stg');
       await expect(page.getByTestId('pdc-use_preset_copies')).toBeChecked();
+
     });
   });
 });
