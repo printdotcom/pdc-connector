@@ -37,7 +37,7 @@ class APIClient
         $this->plugin_name = $plugin_name;
 
         $env = get_option($plugin_name . '-env');
-        
+
         // Allow environment variable override for testing
         if (getenv('PDC_API_BASE_URL')) {
             $this->pdc_api_base_url = getenv('PDC_API_BASE_URL');
@@ -237,10 +237,8 @@ class APIClient
         $preset = json_decode($result);
 
         $item_options = $preset->configuration;
-        if (isset($args['use_preset_copies']) && !$args['use_preset_copies']) {
-            // when preset copies 
-            $copies = $order_item->get_quantity();
-            $item_options->copies = $copies;
+        if (empty($args['use_preset_copies'])) {
+            $item_options->copies = $order_item->get_quantity();
         }
 
         // remove unwanted options
@@ -268,7 +266,7 @@ class APIClient
                         "fullstreet" => $shipping_address['address_1'],
                         "telephone" => $shipping_address['phone'],
                     ],
-                    "copies" => $copies,
+                    "copies" => $item_options->copies,
                 ]]
             ]]
         );
