@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "sku": "posters",
+      "title": {
+        "en": "A3 Posters"
+      },
+      "id": "123poster"
+    }
+  ]
+}
