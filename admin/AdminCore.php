@@ -314,13 +314,6 @@ class AdminCore
 	 */
 	public function register_pdc_purchase_endpoint()
 	{
-		register_rest_route('pdc/v1', '/orders', array(
-			'methods' => 'POST',
-			'callback' => array($this, 'pdc_purchase_order_item'),
-			'permission_callback'   => function () {
-				return current_user_can('manage_options');
-			}
-		));
 		register_rest_route('pdc/v1', '/orders/(?P<id>\d+)/attach-pdf', array(
 			'methods' => 'POST',
 			'callback' => array($this, 'pdc_attach_pdf'),
@@ -483,27 +476,29 @@ class AdminCore
 		));
 	}
 
-	public function pdc_purchase_order_item(\WP_REST_Request $request)
+	public function pdc_place_order()
 	{
-
-		$order_item_id = $request->get_param('orderItemId');
+		$order_item_id = $_POST['order_item_id'];
 
 		$result = $this->pdc_client->purchaseOrderItem($order_item_id);
 		if (is_wp_error($result)) {
 			return $result;
 		}
 		$pdc_order = $result->order;
+		$pdc_order_item = $pdc_order->items[0];
+		$pdc_order_item_shipment = $pdc_order_item->shipments[0];
 		$order_item = new \WC_Order_Item_Product($order_item_id);
+		
+		$order_item->update_meta_data($this->get_meta_key('order'), $pdc_order);
 		$order_item->update_meta_data($this->get_meta_key('purchase_date'), date("c"));
 		$order_item->update_meta_data($this->get_meta_key('order_number'), $pdc_order->orderNumber);
 		$order_item->update_meta_data($this->get_meta_key('grand_total'), $pdc_order->grandTotal);
 		$order_item->update_meta_data($this->get_meta_key('order_status'), $pdc_order->status);
-
-		$order_item->update_meta_data($this->get_meta_key('order_item_number'), $pdc_order->items[0]->orderItemNumber);
-		$order_item->update_meta_data($this->get_meta_key('order_item__delivery_date'), $pdc_order->items[0]->shipments[0]->deliveryDate);
-		$order_item->update_meta_data($this->get_meta_key('order_item__delivery_method'), $pdc_order->items[0]->shipments[0]->method);
-		$order_item->update_meta_data($this->get_meta_key('order_item_status'), $pdc_order->items[0]->status);
-		$order_item->update_meta_data($this->get_meta_key('order_item_grand_total'), $pdc_order->items[0]->grandTotal);
+		$order_item->update_meta_data($this->get_meta_key('order_item'), $pdc_order_item);
+		$order_item->update_meta_data($this->get_meta_key('order_item_shipment'), $pdc_order_item_shipment);
+		$order_item->update_meta_data($this->get_meta_key('order_item_number'), $pdc_order_item->orderItemNumber);
+		$order_item->update_meta_data($this->get_meta_key('order_item_status'), $pdc_order_item->status);
+		$order_item->update_meta_data($this->get_meta_key('order_item_grand_total'), $pdc_order_item->grandTotal);
 		$order_item->save();
 
 		$order_id = wc_get_order_id_by_order_item_id($order_item_id);
@@ -516,7 +511,7 @@ class AdminCore
 		);
 		$order->add_order_note($note);
 
-		return $pdc_order;
+		wp_send_json_success($pdc_order);
 	}
 
 	public function render_variation_data_fields(int $index, array $variation_data, \WP_Post $variation)
