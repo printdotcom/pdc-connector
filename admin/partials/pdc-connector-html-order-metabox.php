@@ -13,7 +13,7 @@
         $meta_key_preset_id = $this->get_meta_key('preset_id');
         $meta_key_preset_title = $this->get_meta_key('preset_title');
 
-        foreach ($post->get_items() as $order_item_product) {
+        foreach ($order->get_items() as $order_item_product) {
             $order_item_id = $order_item_product->get_id();
             $pdc_order_item_number = wc_get_order_item_meta($order_item_id, $this->get_meta_key('order_item_number'), true);
             $pdc_order_item_grand_total = wc_get_order_item_meta($order_item_id, $this->get_meta_key('order_item_grand_total'), true);
