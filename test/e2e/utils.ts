@@ -7,7 +7,6 @@ export async function orderPoster(page) {
   await page.getByRole('link', { name: 'Proceed to checkout' }).click();
   await page.locator('#billing_first_name').fill('Test');
   await page.locator('#billing_last_name').fill('User');
-  await page.getByRole('textbox', { name: 'Company name (optional)' }).fill('Print.com');
   await page.getByRole('textbox', { name: 'Street address' }).fill('Teugseweg 18a');
   await page.getByRole('textbox', { name: 'Town / City' }).fill('Deventer');
   await page.getByRole('textbox', { name: 'ZIP Code' }).fill('63104');
