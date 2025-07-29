@@ -15,6 +15,7 @@
 
         foreach ($order->get_items() as $order_item_product) {
             $order_item_id = $order_item_product->get_id();
+            $pdc_order_item = wc_get_order_item_meta($order_item_id, $this->get_meta_key('order_item'), true);
             $pdc_order_item_number = wc_get_order_item_meta($order_item_id, $this->get_meta_key('order_item_number'), true);
             $pdc_order_item_grand_total = wc_get_order_item_meta($order_item_id, $this->get_meta_key('order_item_grand_total'), true);
             $pdc_purchase_date = wc_get_order_item_meta($order_item_id, $this->get_meta_key('purchase_date'), true);
@@ -36,6 +37,7 @@
                     <div class="table-cell">
                         <?php if ($pdc_order_item_number) { ?>
                             <span><strong>Order item number</strong> #<?= $pdc_order_item_number; ?></span><br>
+                            <span data-testid="pdc-ordered-copies"><strong>Copies</strong> <?php echo $pdc_order_item->options->copies; ?></span><br>
                             <span><strong>Purchase Date</strong> <?= $pdc_purchase_date; ?></span><br>
                             <span><strong>Item Status</strong> <?= $pdc_order_item_status; ?></span><br>
                             <span><strong>Price</strong> <?= wc_price($pdc_order_item_grand_total); ?></span><br>
@@ -58,7 +60,7 @@
                                 <?php if (empty($pdc_pdf_url)) { ?><a href="#" id="pdc-file-upload" data-order-item-id="<?= $order_item_id; ?>" class="button button-secondary">Upload PDF</a><?php } ?>
                                 <?php if ($pdc_pdf_url) { ?><a href="#" id="pdc-file-upload" data-order-item-id="<?= $order_item_id; ?>" class="button button-secondary">Replace PDF</a><?php } ?>
                                 <?php if ($has_preset) { ?>
-                                    <a id="pdc-order" data-order-item-id="<?= $order_item_id; ?>" href="#" class="button button-primary"> Purchase</a>
+                                    <a id="pdc-order" data-testid="pdc-purchase-orderitem" data-order-item-id="<?= $order_item_id; ?>" href="#" class="button button-primary"> Purchase</a>
                                 <?php } ?>
                                 <span class="spinner" id="js-pdc-action-spinner"></span>
                                 <div class="notice-warning"><span id="js-pdc-request-response"></span></div>
