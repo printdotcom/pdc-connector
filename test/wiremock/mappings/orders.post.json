@@ -9,6 +9,7 @@
     }
   },
   "response": {
+    "transformers": ["response-template"],
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
