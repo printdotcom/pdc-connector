@@ -2,7 +2,7 @@ import path from 'path';
 
 export async function orderPoster(page) {
   await page.goto('/?product=custom-poster-a3');
-  await page.getByRole('button', { name: 'Add to cart' }).click();
+  await page.getByRole('button', { name: 'Add to cart', exact: true }).click();
   await page.getByRole('link', { name: 'View cart' }).click();
   await page.getByRole('link', { name: 'Proceed to checkout' }).click();
   await page.locator('#billing_first_name').fill('Test');
