@@ -13,7 +13,7 @@ test.describe('Order', () => {
 
     await orderPoster(page);
 
-    await page.goto('http://localhost:8060/wp-admin/edit.php?post_type=shop_order');
+    await page.goto('/wp-admin/edit.php?post_type=shop_order');
 
     // view latest order
     await page.locator('table.wp-list-table tbody tr:first-child a.order-view').click();
@@ -31,7 +31,7 @@ test.describe('Order', () => {
 
     await orderPoster(page);
 
-    await page.goto('http://localhost:8060/wp-admin/edit.php?post_type=shop_order');
+    await page.goto('/wp-admin/edit.php?post_type=shop_order');
 
     // view latest order
     await page.locator('table.wp-list-table tbody tr:first-child a.order-view').click();
@@ -52,7 +52,7 @@ test.describe('Order', () => {
 
     await orderPoster(page);
 
-    await page.goto('http://localhost:8060/wp-admin/edit.php?post_type=shop_order');
+    await page.goto('/wp-admin/edit.php?post_type=shop_order');
 
     // view latest order
     await page.locator('table.wp-list-table tbody tr:first-child a.order-view').click();

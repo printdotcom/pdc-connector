@@ -1,7 +1,7 @@
 import path from 'path';
 
 export async function orderPoster(page) {
-  await page.goto('http://localhost:8060/?product=custom-poster-a3');
+  await page.goto('/?product=custom-poster-a3');
   await page.getByRole('button', { name: 'Add to cart' }).click();
   await page.getByRole('link', { name: 'View cart' }).click();
   await page.getByRole('link', { name: 'Proceed to checkout' }).click();
@@ -36,19 +36,19 @@ export async function setSettings(page, settings: Settings) {
 }
 
 export async function configurePoster(page) {
-  await page.goto('http://localhost:8060/wp-admin/post.php?post=16&action=edit');
+  await page.goto('/wp-admin/post.php?post=16&action=edit');
   await page.getByRole('link', { name: 'Print.com' }).click();
 
   // sku = poster
   await page.locator('#js-pdc-ac-product-list #pdc-products-label').fill('post');
   await page.waitForResponse(/\/wp-admin\/admin-ajax.php/);
   await page.getByRole('option', { name: 'Posters posters' }).click();
-  
+
   // preset = A3 Posters
   await page.locator('#pdc-presets-label').click();
   await page.waitForResponse(/\/wp-admin\/admin-ajax.php/);
   await page.getByRole('option', { name: 'A3 Posters' }).click();
-  await page
+  await page;
 
   // pdf file = fixture
   await page.getByRole('link', { name: 'Choose file' }).click();

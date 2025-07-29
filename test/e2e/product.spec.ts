@@ -10,7 +10,7 @@ test.describe('product', () => {
   });
 
   test('can configure a PDF for a product', async ({ page }) => {
-    await page.goto('http://localhost:8060/wp-admin/post.php?post=16&action=edit');
+    await page.goto('/wp-admin/post.php?post=16&action=edit');
     await page.getByRole('link', { name: 'Print.com' }).click();
 
     await page.getByRole('link', { name: 'Choose file' }).click();
