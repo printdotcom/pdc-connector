@@ -166,7 +166,6 @@ class AdminCore
 	public function add_menu_pages()
 	{
 		add_menu_page('General Settings', 'Print.com', 'manage_options',  $this->plugin_name, array($this, 'page_general_settings'), "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJMYWFnXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeD0iMCIgeT0iMCIgdmlld0JveD0iMCAwIDY5IDY5IiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA2OSA2OSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CiAgPHN0eWxlPgogICAgLnN0MXtmaWxsOiNmZmZ9CiAgPC9zdHlsZT4KICA8cGF0aCBpZD0iUGF0aF82MDQiIGQ9Ik01MC4zIDY1LjVjLTIzLjIgOS4zLTQxIC4yLTQ4LjUtMjcuMS01LjUtMjAgMi0yNS4xIDIyLjctMzQuNEM0OC43LTYuOSA2Mi44IDUuNyA2Ny43IDI4LjJjMy44IDE3LjQtLjYgMzAuNS0xNy40IDM3LjN6IiBzdHlsZT0iZmlsbDojZmYwMDQ4Ii8+CiAgPGcgaWQ9Ikdyb3VwXzgxMzQiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE2LjM3MiAyNC43MjgpIj4KICAgIDxnIGlkPSJHcm91cF84MTMyIj4KICAgICAgPHBhdGggaWQ9IlBhdGhfNjA1IiBjbGFzcz0ic3QxIiBkPSJNNC4xIDcuNVYxLjRDNC4yLjIgMy43LTEgMi44LTEuOCAxLjctMi42LjQtMy0uOS0yLjloLTVWMTVjMCAuNS4zLjguOS44aDIuN1YxMWMuNi42IDEuNC45IDIuMy44IDEuMSAwIDIuMi0uNCAzLTEuMS43LS45IDEuMS0yIDEuMS0zLjJ6TS41IDYuN2MwIC42LS4xIDEuMi0uMyAxLjctLjIuNC0uNy42LTEuMS42LS41IDAtMS0uMi0xLjQtLjZWMGgxLjRDMCAwIC41LjUuNSAxLjV2NS4yeiIvPgogICAgICA8cGF0aCBpZD0iUGF0aF82MDYiIGNsYXNzPSJzdDEiIGQ9Ik0xMi44LTMuMmMtMS4yLS4xLTIuMy43LTIuNiAxLjh2LS43YzAtLjUtLjMtLjgtLjktLjhINi41djEzLjdjMCAuNS4zLjguOS44aDIuN1YzLjFjLjEtMS4zIDEtMi41IDIuMy0yLjcuMiAwIC40LS4yLjUtLjR2LTMuMWMwLS4xIDAtLjEtLjEtLjF6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYwNyIgY2xhc3M9InN0MSIgZD0iTTIzLjUgMTEuNWgyLjdWLjVjLjItLjYuOC0xIDEuNC0uOS44IDAgMS4yLjUgMS4yIDEuNHY5LjdjMCAuNS4zLjcuOC43aDIuOFYuOGMuMS0xLjEtLjMtMi4xLTEtMi45LS41LS44LTEuNC0xLjItMi40LTEuMS0xLjEtLjEtMi4yLjUtMi43IDEuNXYtLjRjMC0uNS0uMy0uOC0uOS0uOGgtMy44djIuM2MwIC4zLjMuNi42LjZoLjR2MTAuOGMuMS40LjMuNy45Ljd6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYwOCIgY2xhc3M9InN0MSIgZD0iTTIwLjIgMTEuNVY5LjJjMC0uMy0uMy0uNi0uNi0uNkgxOVYtMi4yYzAtLjUtLjMtLjgtLjktLjhoLTIuN3YxMy43YzAgLjUuMy43LjkuN2gzLjl6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYwOSIgY2xhc3M9InN0MSIgZD0iTTQwLjIgOC43aC0uNGMtLjggMC0xLjMtLjQtMS4zLTEuM1YwaDIuMXYtMi4xYzAtLjUtLjMtLjctLjgtLjdoLTEuNHYtMS4xYzAtLjUtLjMtLjgtLjktLjhIMzVWNi45YzAgMS42LjMgMi44IDEgMy41LjcuNyAxLjcgMS4xIDMuMiAxLjFoMS45VjkuNGMwLS41LS4zLS43LS45LS43eiIvPgogICAgICA8cGF0aCBpZD0iUGF0aF82MTAiIGNsYXNzPSJzdDEiIGQ9Ik0xOC4xLTQuOWMtMS40LjYtMi41IDAtMy0xLjctLjMtMS4yLjEtMS41IDEuNC0yLjEgMS41LS43IDIuNC4xIDIuNyAxLjUuMyAxIDAgMS44LTEuMSAyLjN6Ii8+CiAgICA8L2c+CiAgICA8ZyBpZD0iR3JvdXBfODEzMyIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTguODI0IDM4LjQwNikiPgogICAgICA8cGF0aCBpZD0iUGF0aF82MTEiIGNsYXNzPSJzdDEiIGQ9Ik0tMS42LTIyYy0xLjctMS4xLTMuOS0xLjEtNS41IDAtLjcuNi0xIDEuNS0xIDIuNHY0LjVjLS4xLjkuMyAxLjggMSAyLjQgMS43IDEuMSAzLjkgMS4xIDUuNSAwIC43LS42IDEtMS41IDEtMi40di0uNmMwLS40LS4yLS42LS43LS42aC0xLjRjLS40IDAtLjcuMi0uNy42di42YzAgLjctLjMgMS4xLTEgMS4xcy0xLS40LTEtMS4xdi00LjZjMC0uNy4zLTEuMSAxLTEuMXMxIC40IDEgMS4xdi42YzAgLjQuMi42LjcuNmgxLjRjLjQgMCAuNy0uMi43LS42di0uNmMuMS0uOC0uMy0xLjctMS0yLjN6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYxMiIgY2xhc3M9InN0MSIgZD0iTTcuNS0yMmMtMS43LTEuMS0zLjktMS4xLTUuNSAwLS43LjYtMSAxLjUtMSAyLjR2NC41Yy0uMS45LjMgMS44IDEgMi40IDEuNyAxLjEgMy45IDEuMSA1LjUgMCAuNy0uNiAxLTEuNSAxLTIuNHYtNC41YzAtLjktLjQtMS44LTEtMi40em0tMS44IDYuOWMwIC43LS4zIDEuMS0xIDEuMXMtMS0uNC0xLTEuMXYtNC42YzAtLjcuMy0xLjEgMS0xLjFzMSAuNCAxIDEuMXY0LjZ6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYxMyIgY2xhc3M9InN0MSIgZD0iTS0xMC4zLTEyYy0xLjEuNS0yIDAtMi40LTEuMy0uMy0xIC4xLTEuMiAxLjEtMS43IDEuMi0uNSAxLjkuMSAyLjEgMS4yLjQuNyAwIDEuNS0uOCAxLjguMS0uMS4xLS4xIDAgMHoiLz4KICAgICAgPHBhdGggaWQ9IlBhdGhfNjE0IiBjbGFzcz0ic3QxIiBkPSJNMjIuNi0xNC4zaC0uNHYtNS42YzAtLjgtLjItMS42LS43LTIuMi0uNS0uNS0xLjItLjgtMi0uOC0xIDAtMS45LjUtMi40IDEuMy0uNC0uOC0xLjMtMS4zLTIuMy0xLjItLjgtLjEtMS42LjMtMiAxLjF2LS4zYzAtLjQtLjItLjYtLjctLjZIOS40djEuOGMwIC4yLjIuNC40LjRoLjN2Ny44YzAgLjQuMi41LjcuNWgydi04Yy4xLS40LjYtLjcgMS0uNy42IDAgLjkuNC45IDEuMXY3LjFjMCAuNC4yLjUuNi41aDIuMXYtOGMuMi0uNC42LS43IDEtLjcuNiAwIC45LjQuOSAxLjF2Ny4xYzAgLjQuMi41LjYuNWgyLjl2LTEuN2MuMy0uMy4xLS41LS4yLS41eiIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+");
-		add_submenu_page($this->plugin_name, 'Print.com Purchases', 'Purchases', 'manage_options', $this->plugin_name . '-purchases', array($this, 'page_purchases'));
 	}
 
 	public function register_sections()
@@ -175,6 +174,12 @@ class AdminCore
 			$this->plugin_name . '-credentials',
 			'Credentials',
 			array($this, 'section_credentials'),
+			$this->plugin_name,
+		);
+		add_settings_section(
+			$this->plugin_name . '-product',
+			'Product',
+			array($this, 'section_product'),
 			$this->plugin_name,
 		);
 	}
@@ -188,6 +193,10 @@ class AdminCore
 		register_setting(
 			$this->plugin_name . '-options',
 			$this->plugin_name . '-env',
+		);
+		register_setting(
+			$this->plugin_name . '-options',
+			$this->plugin_name . '-product',
 		);
 	}
 
@@ -220,17 +229,35 @@ class AdminCore
 		$this->save_text_field($post_id, $this->get_meta_key('pdf_url'));
 	}
 
-	public function pdc_meta_box($post)
+	public function pdc_meta_box_shop_order($post)
 	{
+		$order = wc_get_order($post->ID);
+		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-html-order-metabox.php');
+	}
+
+	public function pdc_meta_box_page_wc_orders($post)
+	{
+		$order = wc_get_order($post->get_ID());
 		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-html-order-metabox.php');
 	}
 
 	public function pdc_order_meta_box()
 	{
+		##  WooCommerce 7.7 and lower
 		add_meta_box(
-			'pdc_purchase',
+			'pdc_order_meta_box',
 			'Print.com',
-			array($this, 'pdc_meta_box'),
+			array($this, 'pdc_meta_box_shop_order'),
+			'shop_order',
+			'normal',
+			'core'
+		);
+
+		##  WooCommerce 7.8+
+		add_meta_box(
+			'pdc_order_meta_box',
+			'Print.com',
+			array($this, 'pdc_meta_box_page_wc_orders'),
 			'woocommerce_page_wc-orders',
 			'normal',
 			'core'
@@ -262,17 +289,6 @@ class AdminCore
 	}
 
 	/**
-	 * Creates the purchases
-	 *
-	 * @since 		1.0.0
-	 * @return 		void
-	 */
-	public function page_purchases()
-	{
-		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-purchases.php');
-	}
-
-	/**
 	 * Creates the credentials section
 	 *
 	 * @since 		1.0.0
@@ -284,14 +300,14 @@ class AdminCore
 	}
 
 	/**
-	 * Creates the environment section
+	 * Creates the product configuration section
 	 *
 	 * @since 		1.0.0
 	 * @return 		void
 	 */
-	public function section_environment()
+	public function section_product()
 	{
-		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-section-environment.php');
+		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-section-product.php');
 	}
 
 	/**
@@ -315,13 +331,6 @@ class AdminCore
 	 */
 	public function register_pdc_purchase_endpoint()
 	{
-		register_rest_route('pdc/v1', '/orders', array(
-			'methods' => 'POST',
-			'callback' => array($this, 'pdc_purchase_order_item'),
-			'permission_callback'   => function () {
-				return current_user_can('manage_options');
-			}
-		));
 		register_rest_route('pdc/v1', '/orders/(?P<id>\d+)/attach-pdf', array(
 			'methods' => 'POST',
 			'callback' => array($this, 'pdc_attach_pdf'),
@@ -407,12 +416,38 @@ class AdminCore
 		$order->save();
 	}
 
+	/**
+	 * Will attempt to retrieve a WC_Order_item by a Print.com Order Number
+	 *
+	 * @param [type] $pdc_order_item_number ex. 6000012345-1
+	 * @return WC_Order_Item_Product
+	 */
+	private function get_order_item_by_order_item_number($pdc_order_item_number)
+	{
+		global $wpdb;
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				"
+				SELECT im.order_item_id 
+				FROM {$wpdb->prefix}woocommerce_order_items AS i
+				JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS im ON i.order_item_id = im.order_item_id
+				WHERE im.meta_key = %s AND im.meta_value = %s
+				",
+				$this->get_meta_key('order_item_number'),
+				$pdc_order_item_number
+			)
+		);
+		if (empty($results)) {
+			return null;
+		}
+		$result = $results[0];
+		$order_item = new \WC_Order_Item_Product($result->wp_order_item_id);
+		return $order_item;
+	}
+
 	private function on_webhook_shipped(string $order_item_number, string $tracking_url)
 	{
-		$podb = new PurchaseOrderRepository();
-		$pdc_order = $podb->get_pdc_order_by_order_item_number($order_item_number);
-
-		$order_item = new \WC_Order_Item_Product($pdc_order->wp_order_item_id);
+		$order_item = $this->get_order_item_by_order_item_number($order_item_number);
 		$order_item->update_meta_data($this->get_meta_key('order_item_tnt_url'), $tracking_url);
 		$order_item->update_meta_data($this->get_meta_key('order_item_status'), "shipped");
 		$order_item->save();
@@ -452,33 +487,40 @@ class AdminCore
 		if (empty($sku)) {
 			return new \WP_Error('no_sku', 'No SKU provided', array('sku' => $sku));
 		}
-		$presets = $this->pdc_client->getPresets($sku);
+		$result = $this->pdc_client->getPresets($sku);
+		if (is_wp_error($result)) {
+			return $result;
+		}
 		wp_send_json_success(array(
-			'presets' => $presets,
+			'presets' => $result,
 		));
 	}
 
-	public function pdc_purchase_order_item(\WP_REST_Request $request)
+	public function pdc_place_order()
 	{
+		$order_item_id = $_POST['order_item_id'];
 
-		$order_item_id = $request->get_param('orderItemId');
+		$pdc_product_config = get_option($this->plugin_name . '-product');
 
-		$result = $this->pdc_client->purchaseOrderItem($order_item_id);
+		$result = $this->pdc_client->purchaseOrderItem($order_item_id, $pdc_product_config);
 		if (is_wp_error($result)) {
 			return $result;
 		}
 		$pdc_order = $result->order;
+		$pdc_order_item = $pdc_order->items[0];
+		$pdc_order_item_shipment = $pdc_order_item->shipments[0];
 		$order_item = new \WC_Order_Item_Product($order_item_id);
+
+		$order_item->update_meta_data($this->get_meta_key('order'), $pdc_order);
 		$order_item->update_meta_data($this->get_meta_key('purchase_date'), date("c"));
 		$order_item->update_meta_data($this->get_meta_key('order_number'), $pdc_order->orderNumber);
 		$order_item->update_meta_data($this->get_meta_key('grand_total'), $pdc_order->grandTotal);
 		$order_item->update_meta_data($this->get_meta_key('order_status'), $pdc_order->status);
-
-		$order_item->update_meta_data($this->get_meta_key('order_item_number'), $pdc_order->items[0]->orderItemNumber);
-		$order_item->update_meta_data($this->get_meta_key('order_item__delivery_date'), $pdc_order->items[0]->shipments[0]->deliveryDate);
-		$order_item->update_meta_data($this->get_meta_key('order_item__delivery_method'), $pdc_order->items[0]->shipments[0]->method);
-		$order_item->update_meta_data($this->get_meta_key('order_item_status'), $pdc_order->items[0]->status);
-		$order_item->update_meta_data($this->get_meta_key('order_item_grand_total'), $pdc_order->items[0]->grandTotal);
+		$order_item->update_meta_data($this->get_meta_key('order_item'), $pdc_order_item);
+		$order_item->update_meta_data($this->get_meta_key('order_item_shipment'), $pdc_order_item_shipment);
+		$order_item->update_meta_data($this->get_meta_key('order_item_number'), $pdc_order_item->orderItemNumber);
+		$order_item->update_meta_data($this->get_meta_key('order_item_status'), $pdc_order_item->status);
+		$order_item->update_meta_data($this->get_meta_key('order_item_grand_total'), $pdc_order_item->grandTotal);
 		$order_item->save();
 
 		$order_id = wc_get_order_id_by_order_item_id($order_item_id);
@@ -491,10 +533,7 @@ class AdminCore
 		);
 		$order->add_order_note($note);
 
-		$podb = new PurchaseOrderRepository();
-		$podb->insert_pdc_order($pdc_order, $order, $order_item);
-
-		return $pdc_order;
+		wp_send_json_success($pdc_order);
 	}
 
 	public function render_variation_data_fields(int $index, array $variation_data, \WP_Post $variation)

@@ -1,0 +1,9 @@
+{
+  "id": "123poster",
+  "sku": "poster",
+  "configuration": {
+    "size": "a3",
+    "copies": 300,
+    "variants": []
+  }
+}

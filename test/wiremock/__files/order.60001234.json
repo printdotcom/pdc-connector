@@ -1,0 +1,24 @@
+{
+  "order": {
+    "orderNumber": "60001234",
+    "grandTotal": 150,
+    "status": "ORDERRECEIVED",
+    "items": [
+      {
+        "orderItemNumber": "60001234-1",
+        "status": "ORDERRECEIVED",
+        "grandTotal": 150,
+        "options": {
+          "size": "a3",
+          "copies": "{{jsonPath request.body '$.items[0].options.copies'}}"
+        },
+        "shipments": [
+          {
+            "deliveryDate": "2025-07-29T19:00.000Z",
+            "method": "PNL"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -28,7 +28,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         storageState: './test/e2e/.auth/user.json',
       },
-      fullyParallel: false,
+      fullyParallel: process.env.CI ? false : true,
       dependencies: ['setup'],
     },
   ],

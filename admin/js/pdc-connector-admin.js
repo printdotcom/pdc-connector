@@ -112,24 +112,16 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
     $('#js-pdc-request-response').text('');
     const orderItemId = e.target.getAttribute('data-order-item-id');
     try {
-      await $.ajax(
-        {
-          method: 'POST',
-          url: `${pdcAdminApi.root}pdc/v1/orders/`,
-          beforeSend(xhr) {
-            xhr.setRequestHeader('X-WP-Nonce', pdcAdminApi.nonce);
-          },
-          data: {
-            orderItemId,
-          },
-          success: function () {},
-        },
-        {}
-      );
+      await wp.ajax
+        .post('pdc-place-order', {
+          order_item_id: orderItemId,
+        })
+        .promise();
       await refreshOrderItem(orderItemId);
     } catch (err) {
-      console.error('err:', err);
-      $('#js-pdc-request-response').text(err.responseJSON.message);
+      const message = err?.responseJSON?.message || err?.responseText || 'Something went wrong. Please try again.';
+      console.error('AJAX error:', message);
+      $('#js-pdc-request-response').text(message);
     } finally {
       loading = false;
       $('#pdc-order').removeClass('button-disabled');

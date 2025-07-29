@@ -3,18 +3,19 @@
     "method": "POST",
     "urlPath": "/orders",
     "headers": {
-      "X-API-Key": {
-        "matches": ".*"
+      "authorization": {
+        "equalTo": "PrintApiKey test_key_12345"
       }
     }
   },
   "response": {
+    "transformers": ["response-template"],
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*"
     },
-    "body": "{}"
+    "bodyFileName": "order.60001234.json"
   },
   "serveEventListeners": [
     {

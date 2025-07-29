@@ -37,7 +37,7 @@ class APIClient
         $this->plugin_name = $plugin_name;
 
         $env = get_option($plugin_name . '-env');
-        
+
         // Allow environment variable override for testing
         if (getenv('PDC_API_BASE_URL')) {
             $this->pdc_api_base_url = getenv('PDC_API_BASE_URL');
@@ -146,10 +146,9 @@ class APIClient
      */
     public function getPresets($sku)
     {
-        $result = get_transient($this->plugin_name . '-customerpresets');
-        if (empty($result)) {
-            $result = $this->performAuthenticatedRequest('GET', "/customerpresets");
-            set_transient($this->plugin_name . '-customerpresets', $result, 30); // 30 seconds
+        $result = $this->performAuthenticatedRequest('GET', "/customerpresets");
+        if (is_wp_error($result)) {
+            return $result;
         }
         $decoded_result = json_decode($result);
 
@@ -187,11 +186,31 @@ class APIClient
             return new Product($result_item->sku, $result_item->titlePlural);
         }, $result);
 
-
         return $products;
     }
 
-    public function purchaseOrderItem(string $order_item_id)
+    /**
+     * Purchases an order item through the Print.com API.
+     *
+     * This function creates a print order by retrieving preset configuration,
+     * combining it with WooCommerce order data, and submitting it to Print.com.
+     * It handles preset retrieval, file URLs, shipping addresses, and quantity
+     * management based on the provided arguments.
+     *
+     * @since 1.0.0
+     *
+     * @param int   $order_item_id The WooCommerce order item ID to purchase.
+     * @param array $args {
+     *     Optional. Arguments for customizing the purchase behavior.
+     *
+     *     @type bool $use_preset_copies Whether to use preset-defined copy count.
+     *                                   If false, uses order item quantity. Default true.
+     * }
+     *
+     * @return object|WP_Error Returns the Print.com order response object on success,
+     *                         or WP_Error on failure with error details.
+     */
+    public function purchaseOrderItem($order_item_id, $args)
     {
         $order_item = new \WC_Order_Item_Product($order_item_id);
         $order_id = wc_get_order_id_by_order_item_id($order_item_id);
@@ -216,14 +235,10 @@ class APIClient
 
         $preset = json_decode($result);
 
-        // remove unwanted options from preset
-        unset($preset->configuration->variants);
-        unset($preset->configuration->_accessories);
-        unset($preset->configuration->deliveryPromise);
-
         $item_options = $preset->configuration;
-        $copies = $order_item->get_quantity();
-        $item_options->copies = $copies;
+        if (empty($args['use_preset_copies'])) {
+            $item_options->copies = $order_item->get_quantity();
+        }
 
         // remove unwanted options
         unset($item_options->_accessories);
@@ -250,7 +265,7 @@ class APIClient
                         "fullstreet" => $shipping_address['address_1'],
                         "telephone" => $shipping_address['phone'],
                     ],
-                    "copies" => $copies,
+                    "copies" => $item_options->copies,
                 ]]
             ]]
         );

@@ -75,18 +75,16 @@ class FrontCore
 
 	private function capture_cart_item_pdf_url()
 	{
-		$pdc_pdf_url = $_REQUEST[Core::get_meta_key('pdf_url')];
-		if (isset($pdc_pdf_url) && !empty($pdc_pdf_url)) {
-			// When a static PDC file is configured, we just use that.
-			return $pdc_pdf_url;
+		$pdc_pdf_url_metakey = Core::get_meta_key('pdf_url');
+		if (isset($_REQUEST[$pdc_pdf_url_metakey]) && !empty($_REQUEST[$pdc_pdf_url_metakey])) {
+			// Request contains a pdf_url so we use that.
+			return $_REQUEST[$pdc_pdf_url_metakey];
 		}
 
-		// This was the old method of getting pitch print data
-		$pitchprint_data = $_REQUEST['_w2p_set_option'];
-		if (isset($pitchprint_data) && !empty($pitchprint_data)) {
-			// When a file is configured via pitch print, we use that.
-			$decoded_data = json_decode(urldecode($pitchprint_data));
-			return "https://pdf.pitchprint.com/" . $decoded_data->projectId;
+		if (isset($_REQUEST['_w2p_set_option']) && !empty($_REQUEST['_w2p_set_option'])) {
+			// pitch print has a PDF url, so we use that.
+			$pitch_print_data = json_decode(urldecode($_REQUEST['_w2p_set_option']));
+			return "https://pdf.pitchprint.com/" . $pitch_print_data->projectId;
 		}
 
 		return "";

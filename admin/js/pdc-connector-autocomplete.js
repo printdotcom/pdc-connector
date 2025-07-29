@@ -27,25 +27,19 @@ jQuery(function ($) {
   const listProductsDebounced = debounce(listProducts, 350);
   const presets = {};
   async function listProducts(searchTerm) {
-    return new Promise((resolve, reject) => {
-      wp.ajax
-        .post('pdc-list-products', {
-          searchTerm: searchTerm?.toLowerCase(),
-        })
-        .done(resolve)
-        .fail(reject);
-    });
+    return wp.ajax
+      .post('pdc-list-products', {
+        searchTerm: searchTerm?.toLowerCase(),
+      })
+      .promise();
   }
 
   async function listPresets(sku) {
-    return new Promise((resolve, reject) => {
-      wp.ajax
-        .post('pdc-list-presets', {
-          sku: sku,
-        })
-        .done(resolve)
-        .fail(reject);
-    });
+    return wp.ajax
+      .post('pdc-list-presets', {
+        sku: sku,
+      })
+      .promise();
   }
 
   async function loadPresets(parentSelector, sku) {
@@ -82,7 +76,7 @@ jQuery(function ($) {
       confirmOnBlur: false,
       defaultValue: defaultValueProduct?.title,
       onConfirm: (item) => {
-        if (!item) {
+        if (!item || !item.sku) {
           $el(`#js-pdc-preset-search`).attr('disabled', true);
           return;
         }
@@ -130,7 +124,6 @@ jQuery(function ($) {
           listProductsStatus = 'idle';
         } catch (err) {
           listProductsStatus = 'error';
-          console.error('err:', err);
           populateResults([]);
         } finally {
           $el(`#js-pdc-product-search-spinner`).removeClass('is-active');
@@ -166,10 +159,7 @@ jQuery(function ($) {
       defaultValue: defaultValuePreset?.title,
       source: async function (query, populateResults) {
         const sku = $el(`#js-pdc-product-sku`).val();
-        const presetsForSku = presets[sku] || [];
-        if (presetsForSku.length === 0) {
-          await loadPresets(parentSelector, sku);
-        }
+        await loadPresets(parentSelector, sku);
         populateResults(presets[sku] || []);
       },
       onConfirm: (item) => {

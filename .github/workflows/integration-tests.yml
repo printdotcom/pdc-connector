@@ -21,6 +21,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Cache vendor
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer Dependencies
+        shell: bash
+        run: composer install --prefer-dist --no-progress --no-suggest
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -34,8 +52,8 @@ jobs:
           key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-modules-
-
-      - name: Install dependencies
+            
+      - name: Install Npm dependencies
         run: npm ci
 
       - name: Get installed Playwright version
@@ -63,6 +81,9 @@ jobs:
 
       - name: Start Wiremock
         run: ./bin/run-mock-api
+
+      - name: Seed WooCommerce
+        run: ./bin/seed-woocommerce ${{ matrix.wp }} ${{ matrix.php }}
 
       - name: Run end-to-end tests
         run: ./bin/test-e2e ${{ matrix.wp }} ${{ matrix.php }}
