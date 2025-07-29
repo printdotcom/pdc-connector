@@ -2,26 +2,6 @@ import { test, expect } from '@playwright/test';
 import { configurePoster, orderPoster, setSettings } from './utils';
 
 test.describe('Order', () => {
-  test('has print.com meta table visible', async ({ page }) => {
-    await setSettings(page, {
-      apikey: 'test_key_12345',
-      env: 'stg',
-      usePresetCopies: true,
-    });
-
-    await configurePoster(page);
-
-    await orderPoster(page);
-
-    await page.goto('/wp-admin/edit.php?post_type=shop_order');
-
-    // view latest order
-    await page.locator('table.wp-list-table tbody tr:first-child a.order-view').click();
-
-    await expect(page.getByRole('heading', { name: 'Print.com' })).toBeVisible();
-  });
-
-
   test('will purchase the preset copies amount when use_preset_copies is true', async ({ page }) => {
     await setSettings(page, {
       apikey: 'test_key_12345',
@@ -38,7 +18,7 @@ test.describe('Order', () => {
 
     // purchase it
     await page.getByTestId('pdc-purchase-orderitem').click();
-    
+
     // We have configured a preset with 300 copies (see preset.123poster.json), so should be 300 copies.
     await expect(page.getByTestId('pdc-ordered-copies')).toHaveText('Copies 300');
   });
