@@ -231,17 +231,28 @@ class AdminCore
 
 	public function pdc_meta_box($post)
 	{
-		$order = wc_get_order($post->ID);
+		$order = wc_get_order($post->get_ID());
 		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-html-order-metabox.php');
 	}
 
 	public function pdc_order_meta_box()
 	{
+		##  WooCommerce 7.8+
 		add_meta_box(
 			'pdc_order_meta_box',
 			'Print.com',
 			array($this, 'pdc_meta_box'),
 			'shop_order',
+			'normal',
+			'core'
+		);
+
+		##  WooCommerce 7.7 and lower
+		add_meta_box(
+			'pdc_order_meta_box',
+			'Print.com',
+			array($this, 'pdc_meta_box'),
+			'woocommerce_page_wc-orders',
 			'normal',
 			'core'
 		);
@@ -490,7 +501,7 @@ class AdminCore
 		$pdc_order_item = $pdc_order->items[0];
 		$pdc_order_item_shipment = $pdc_order_item->shipments[0];
 		$order_item = new \WC_Order_Item_Product($order_item_id);
-		
+
 		$order_item->update_meta_data($this->get_meta_key('order'), $pdc_order);
 		$order_item->update_meta_data($this->get_meta_key('purchase_date'), date("c"));
 		$order_item->update_meta_data($this->get_meta_key('order_number'), $pdc_order->orderNumber);
