@@ -237,7 +237,6 @@ class APIClient
         $preset = json_decode($result);
 
         $item_options = $preset->configuration;
-
         if (isset($args['use_preset_copies']) && !$args['use_preset_copies']) {
             // when preset copies 
             $copies = $order_item->get_quantity();

@@ -480,7 +480,9 @@ class AdminCore
 	{
 		$order_item_id = $_POST['order_item_id'];
 
-		$result = $this->pdc_client->purchaseOrderItem($order_item_id);
+		$pdc_product_config = get_option($this->plugin_name . '-product');
+
+		$result = $this->pdc_client->purchaseOrderItem($order_item_id, $pdc_product_config);
 		if (is_wp_error($result)) {
 			return $result;
 		}
