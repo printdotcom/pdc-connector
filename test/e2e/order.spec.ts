@@ -22,7 +22,7 @@ test.describe('Order', () => {
   });
 
 
-  test('will purchase the ordered quantity when use_preset_copies is true', async ({ page }) => {
+  test('will purchase the preset copies amount when use_preset_copies is true', async ({ page }) => {
     await setSettings(page, {
       apikey: 'test_key_12345',
       env: 'stg',
