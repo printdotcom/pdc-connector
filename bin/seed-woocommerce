@@ -50,20 +50,59 @@ export PHP_VERSION_ENV
 export WORDPRESS_PORT
 export COMPOSE_PROJECT_NAME="pdc_${WORDPRESS_VERSION_ENV}_${PHP_VERSION_ENV}"
 
-echo "🚀 Starting WooCommerce configuration with SQL..."
-echo "Using WordPress $WORDPRESS_VERSION and PHP $PHP_VERSION"
-echo "Project: $COMPOSE_PROJECT_NAME"
-
-# Ensure WooCommerce is installed and activated
-echo "📦 Installing and activating WooCommerce..."
-docker compose -f config/docker-compose.yml run --rm wpcli wp plugin install woocommerce --activate --allow-root
-
 # Execute SQL commands via WP-CLI
 execute_sql() {
     local SQL="$1"
     echo "Executing SQL: ${SQL:0:100}..."
     docker compose -f config/docker-compose.yml run --rm wpcli wp db query "$SQL" --allow-root
 }
+
+execute_wp_cli() {
+    docker compose -f config/docker-compose.yml run --rm wpcli wp "$@" --allow-root
+}
+
+# Resetting environment
+execute_wp_cli db reset --yes
+
+docker compose -f config/docker-compose.yml run --rm --user root --no-TTY --env WORDPRESS_PORT --env WORDPRESS_VERSION wpcli bash <<EOF
+set -e
+
+if [ ! -f wp-load.php ]; then
+  echo "Downloading WordPress \${WORDPRESS_VERSION}..."
+  TMP=\$(mktemp -d)
+  curl -fsSL "http://wordpress.org/wordpress-\${WORDPRESS_VERSION}.tar.gz" | tar -xz -C "\$TMP"
+  cp -R "\$TMP"/wordpress/* .
+  rm -rf "\$TMP"
+fi
+
+if [ ! -f wp-config.php ]; then
+  wp config create --dbname=wordpress --dbuser=wordpress --dbpass=wordpress --dbhost=db --allow-root --skip-salts
+fi
+
+until wp db check --allow-root; do
+  echo "DB not ready yet.."
+  sleep 2
+done
+
+wp db create --allow-root 2>/dev/null || true
+
+if ! wp core is-installed --allow-root; then
+  wp core install \
+    --url=http://localhost:${WORDPRESS_PORT} \
+    --title='My Site' \
+    --admin_user=admin \
+    --admin_password=password \
+    --admin_email=wordpress@example.com \
+    --skip-email \
+    --allow-root
+  chown -R 33:33 wp-content/uploads/
+else
+  echo "WordPress already installed."
+fi
+EOF
+
+# Activating Plugins
+execute_wp_cli plugin activate woocommerce pdc-connector
 
 # Configure WooCommerce settings via SQL
 echo "⚙️ Configuring WooCommerce..."
@@ -202,25 +241,29 @@ create_product_sql() {
     "
 }
 
+# Adding shipping zones and payment methods using WP-CLI
+echo "🚚 Setting up shipping zones and methods..."
+US_ZONE_ID=$(execute_wp_cli wc shipping_zone create --name='United States' --order=0 --porcelain --user=1)
+execute_wp_cli wc shipping_zone_method create $US_ZONE_ID --method_id=flat_rate --enabled=true --user=1 --settings='{\"title\":\"Flat rate\",\"cost\":\"5.99\"}'
+ROW_ZONE_ID=$(execute_wp_cli wc shipping_zone create --name='Rest of World' --order=1 --porcelain --user=1)
+execute_wp_cli wc shipping_zone_method create $ROW_ZONE_ID --method_id=flat_rate --enabled=true --user=1 --settings='{\"title\":\"Flat rate\",\"cost\":\"15.99\"}'
+
+echo "💰 Configuring payment methods..."
+execute_wp_cli wc payment_gateway update cod --enabled=true --user=1 --settings='{\"title\":\"Cash on delivery\",\"description\":\"Pay with cash upon delivery.\",\"instructions\":\"Pay with cash upon delivery.\",\"enable_for_virtual\":\"yes\"}'
+execute_wp_cli option update woocommerce_default_gateway cod
+
 # Create sample products
 echo "🎨 Creating sample products..."
-
 create_product_sql "PDC-TSHIRT-001" "Custom T-Shirt - Basic" "29.99" "High-quality custom printed t-shirt. Perfect for personal use or promotional purposes. Available in multiple sizes and colors." "t-shirts"
-
 create_product_sql "PDC-TSHIRT-002" "Custom T-Shirt - Premium" "39.99" "Premium quality custom printed t-shirt with enhanced fabric and printing. Ideal for professional events and gifts." "t-shirts"
-
 create_product_sql "PDC-POSTER-001" "Custom Poster - A3" "19.99" "High-resolution custom printed poster in A3 size. Perfect for home decoration, office display, or promotional materials." "posters"
-
 create_product_sql "PDC-POSTER-002" "Custom Poster - A2" "34.99" "Large format custom printed poster in A2 size. Premium paper quality with vibrant colors for professional displays." "posters"
-
 create_product_sql "PDC-MUG-001" "Custom Mug - Ceramic" "14.99" "Personalized ceramic mug with your custom design. Dishwasher and microwave safe. Perfect for gifts or promotional items." "print-products"
 
 # Update WooCommerce version and setup completion
 echo "🔄 Finalizing WooCommerce setup..."
 execute_sql "
 INSERT INTO wp_options (option_name, option_value, autoload) VALUES
-('woocommerce_version', '8.5.0', 'yes'),
-('woocommerce_db_version', '8.5.0', 'yes'),
 ('woocommerce_onboarding_profile', '{\"completed\": true}', 'yes')
 ON DUPLICATE KEY UPDATE option_value = VALUES(option_value);"
 
@@ -234,6 +277,3 @@ execute_sql "SELECT COUNT(*) as product_count FROM wp_posts WHERE post_type = 'p
 execute_sql "SELECT p.post_title, pm1.meta_value as sku, pm2.meta_value as price FROM wp_posts p LEFT JOIN wp_postmeta pm1 ON p.ID = pm1.post_id AND pm1.meta_key = '_sku' LEFT JOIN wp_postmeta pm2 ON p.ID = pm2.post_id AND pm2.meta_key = '_price' WHERE p.post_type = 'product' AND p.post_status = 'publish' ORDER BY p.post_title;"
 
 echo "🎉 WooCommerce seeding completed successfully!"
-echo "📊 You can now visit your WooCommerce shop and admin area to see the products."
-echo "🛒 Shop URL: http://localhost:\${WORDPRESS_PORT:-8000}/shop/"
-echo "⚙️ Admin URL: http://localhost:\${WORDPRESS_PORT:-8000}/wp-admin/"

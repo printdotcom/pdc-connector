@@ -64,6 +64,9 @@ jobs:
       - name: Start Wiremock
         run: ./bin/run-mock-api
 
+      - name: Seed WooCommerce
+        run: ./bin/seed-woocommerce ${{ matrix.wp }}-${{ matrix.php }}
+
       - name: Run end-to-end tests
         run: ./bin/test-e2e ${{ matrix.wp }} ${{ matrix.php }}
 
