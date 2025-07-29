@@ -229,9 +229,47 @@ class AdminCore
 		$this->save_text_field($post_id, $this->get_meta_key('pdf_url'));
 	}
 
-	public function pdc_meta_box($post)
+	/**
+	 * Displays the Print.com meta box for orders.
+	 *
+	 * Handles compatibility between WordPress 6.0 and 6.8+ by checking
+	 * the parameter type and extracting the order ID appropriately.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param WP_Post|WC_Order $post_or_order The post object (WP 6.0) or order object (WP 6.8+).
+	 */
+	public function pdc_meta_box($post_or_order)
 	{
-		$order = wc_get_order($post->get_ID());
+		// Handle compatibility between WordPress versions
+		if (is_object($post_or_order)) {
+			// Check if it's a WC_Order object (WordPress 6.8+)
+			if (method_exists($post_or_order, 'get_id')) {
+				$order_id = $post_or_order->get_id();
+				$order = $post_or_order;
+			} elseif (isset($post_or_order->ID)) {
+				// It's a WP_Post object (WordPress 6.0)
+				$order_id = $post_or_order->ID;
+				$order = wc_get_order($order_id);
+			} else {
+				// Fallback: try to get current post ID
+				global $post;
+				$order_id = $post ? $post->ID : get_the_ID();
+				$order = wc_get_order($order_id);
+			}
+		} else {
+			// Fallback for unexpected parameter types
+			global $post;
+			$order_id = $post ? $post->ID : get_the_ID();
+			$order = wc_get_order($order_id);
+		}
+
+		// Only proceed if we have a valid order
+		if (!$order || !is_a($order, 'WC_Order')) {
+			echo '<p>' . esc_html__('Unable to load order data.', 'pdc-connector') . '</p>';
+			return;
+		}
+
 		include(plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-html-order-metabox.php');
 	}
 
