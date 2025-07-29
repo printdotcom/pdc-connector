@@ -1,11 +1,10 @@
 <?php
+/** @var WP_Post $post */
 
-use Automattic\WooCommerce\Utilities\OrderUtil;
-
-$sku = OrderUtil::get_post_or_object_meta($post, null, $this->get_meta_key('product_sku'), true);
-$sku_title = OrderUtil::get_post_or_object_meta($post, null, $this->get_meta_key('product_title'), true);
-$preset_id = OrderUtil::get_post_or_object_meta($post, null, $this->get_meta_key('preset_id'), true);
-$preset_title = OrderUtil::get_post_or_object_meta($post, null, $this->get_meta_key('preset_title'), true);
+$sku = get_post_meta($post->ID, $this->get_meta_key('product_sku'), true);
+$sku_title = get_post_meta($post->ID, $this->get_meta_key('product_title'), true);
+$preset_id = get_post_meta($post->ID, $this->get_meta_key('preset_id'), true);
+$preset_title = get_post_meta($post->ID, $this->get_meta_key('preset_title'), true);
 ?>
 <div id="pdc_product_data_tab" class="panel woocommerce_options_panel">
     <div class="options_group pdc_product_options" id="js-pdc-simple-options">

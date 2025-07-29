@@ -47,7 +47,6 @@ export async function configurePoster(page) {
   await page.locator('#pdc-presets-label').click();
   await page.waitForResponse(/\/wp-admin\/admin-ajax.php/);
   await page.getByRole('option', { name: 'A3 Posters' }).click();
-  await page;
 
   // pdf file = fixture
   await page.getByRole('link', { name: 'Choose file' }).click();
