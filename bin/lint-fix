@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Auto-fix fixable issues using PHPCBF with WordPress standards.
+# Usage:
+#   bin/lint-fix [path ...]
+
+ROOT_DIR="$(cd "$(dirname "$0")"/.. && pwd)"
+PHPCBF="$ROOT_DIR/vendor/bin/phpcbf"
+CONFIG="$ROOT_DIR/phpcs.xml.dist"
+
+if [ ! -x "$PHPCBF" ]; then
+  echo "PHP_CodeSniffer (phpcbf) not found. Installing dev dependencies..." 1>&2
+  if command -v composer >/dev/null 2>&1; then
+    composer install --no-interaction --no-progress
+  else
+    echo "composer is not installed or not in PATH." 1>&2
+    exit 1
+  fi
+fi
+
+if [ -f "$CONFIG" ]; then
+  exec "$PHPCBF" --standard="$CONFIG" "$@"
+else
+  exec "$PHPCBF" "$@"
+fi
+
