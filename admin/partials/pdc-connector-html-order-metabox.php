@@ -8,8 +8,8 @@
  * @subpackage Pdc_Connector/admin/partials
  * @since 1.0.0
  */
-?>
 
+?>
 <div class="wp-list-table pdc-table widefat fixed striped posts">
 	<div class="table-head">
 		<div class="table-head-col">

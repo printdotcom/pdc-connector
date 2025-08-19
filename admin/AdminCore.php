@@ -545,7 +545,7 @@ class AdminCore {
 	}
 
 	public function render_variation_data_fields( int $index, array $variation_data, \WP_Post $variation ) {
-		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-admin-variation_data.php';
+		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-admin-variation-data.php';
 	}
 
 	public function save_variation_data_fields( $variation_id, $i ) {

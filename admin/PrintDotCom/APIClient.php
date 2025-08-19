@@ -22,7 +22,6 @@ use PdcConnector\Includes\Core;
  * @package    Pdc_Connector
  * @subpackage Pdc_Connector/admin
  */
-
 class APIClient {
 
 

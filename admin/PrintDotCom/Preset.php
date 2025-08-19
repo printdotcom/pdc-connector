@@ -20,7 +20,6 @@ namespace PdcConnector\Admin\PrintDotCom;
  * @package    Pdc_Connector
  * @subpackage Pdc_Connector/admin
  */
-
 class Preset {
 
 	public string $id;
