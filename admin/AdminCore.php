@@ -144,7 +144,7 @@ class AdminCore {
 			'pdcAdminApi',
 			array(
 				'root'        => esc_url_raw( rest_url() ),
-				'nonce'       => wp_create_nonce( 'wp_rest' ),
+				'nonce'       => wp_create_nonce(),
 				'plugin_name' => $this->plugin_name,
 				'ajax_url'    => admin_url( 'admin-ajax.php' ),
 				'pdc_url'     => $this->pdc_client->get_api_base_url(),
@@ -169,7 +169,7 @@ class AdminCore {
 			'pdcAdminApi',
 			array(
 				'root'        => esc_url_raw( rest_url() ),
-				'nonce'       => wp_create_nonce( 'wp_rest' ),
+				'nonce'       => wp_create_nonce(),
 				'plugin_name' => $this->plugin_name,
 				'pdc_url'     => $this->pdc_client->get_api_base_url(),
 			)
@@ -506,10 +506,9 @@ class AdminCore {
 		if (
 			! isset( $_POST['pdc_connector_nonce'] ) ||
 			! wp_verify_nonce(
-				sanitize_text_field( wp_unslash( $_POST['pdc_connector_nonce'] ) ),
-				'pdc_connector_ajax_list_products'
+				sanitize_text_field( wp_unslash( $_POST['pdc_connector_nonce'] ) )
 			)
-		) {
+				) {
 			return;
 		}
 
@@ -610,7 +609,7 @@ class AdminCore {
 	/**
 	 * Retrieves a WC_Order_Item_Product by Print.com order item number.
 	 * We have to do this by direct query as WooCommerce does not expose
-	 * a possiblity to get an order item by a meta key. 
+	 * a possiblity to get an order item by a meta key.
 	 *
 	 * @since 1.0.0
 	 * @param string $pdc_order_item_number ex. 6000012345-1.
@@ -638,7 +637,7 @@ class AdminCore {
 		if ( empty( $results ) ) {
 			return null;
 		}
-		$result     = $results[0];
+		$result = $results[0];
 		return $result->order_item_id;
 		return $order_item;
 	}
@@ -653,7 +652,7 @@ class AdminCore {
 	 */
 	private function on_webhook_shipped( string $order_item_number, string $tracking_url ) {
 		$order_item_id = $this->get_order_item_id_by_order_item_number( $order_item_number );
-		$order_item = new \WC_Order_Item_Product( $order_item_id );
+		$order_item    = new \WC_Order_Item_Product( $order_item_id );
 		$order_item->update_meta_data( $this->get_meta_key( 'order_item_tnt_url' ), $tracking_url );
 		$order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), 'shipped' );
 		$order_item->save();
