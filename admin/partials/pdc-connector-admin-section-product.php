@@ -20,13 +20,13 @@ $pdc_connector_use_preset_copies = isset( $pdc_connector_product_config['use_pre
 <table class="form-table">
 	<tbody>
 		<tr>
-			<th scope="row"><label for="pdc_use_preset_copies"><?php _e( 'Presets', 'pdc-connector' ); ?></label></th>
+			<th scope="row"><label for="pdc_use_preset_copies"><?php esc_html_e( 'Presets', 'pdc-connector' ); ?></label></th>
 			<td>
 				<label for="pdc_use_preset_copies">
-					<input type="checkbox" id="pdc_use_preset_copies" data-testid="pdc-use_preset_copies" name="<?php echo $this->plugin_name; ?>-product[use_preset_copies]" value="1" <?php checked( $pdc_connector_use_preset_copies, true ); ?> />
-					<?php _e( 'Use preset copies', 'pdc-connector' ); ?>
+					<input type="checkbox" id="pdc_use_preset_copies" data-testid="pdc-use_preset_copies" name="<?php echo esc_attr( $this->plugin_name ); ?>-product[use_preset_copies]" value="1" <?php checked( $pdc_connector_use_preset_copies, true ); ?> />
+					<?php esc_html_e( 'Use preset copies', 'pdc-connector' ); ?>
 				</label>
-				<p class="description"><?php _e( 'When enabled, the number of copies from the preset will be used instead of allowing customers to choose their own quantity.', 'pdc-connector' ); ?></p>
+				<p class="description"><?php esc_html_e( 'When enabled, the number of copies from the preset will be used instead of allowing customers to choose their own quantity.', 'pdc-connector' ); ?></p>
 			</td>
 		</tr>
 	</tbody>

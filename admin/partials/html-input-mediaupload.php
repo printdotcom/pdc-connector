@@ -15,7 +15,7 @@ $pdc_connector_file_url          = get_post_meta( $thepostid, $pdc_connector_fil
 <p class="form-field _pdc_editable_field">
 	<label for="_pdc_file_url">PDF</label>
 	<span class="form-flex-box">
-		<input data-testid="pdc-file-upload" type="text" class="input_text pdc_input_pdf" id="_pdc-file_url" placeholder="<?php esc_attr_e( 'http://', 'pdc-connector' ); ?>" name="<?php echo esc_attr( $pdc_connector_file_url_meta_key ); ?>" value="<?php echo esc_attr( $pdc_connector_file_url ); ?>" />
+		<input data-testid="pdc-file-upload" type="text" class="input_text pdc_input_pdf" id="_pdc-file_url" placeholder="<?php esc_attr_e( 'http://', 'pdc-connector' ); ?>" name="<?php echo esc_attr( (string) $pdc_connector_file_url_meta_key ); ?>" value="<?php echo esc_attr( (string) $pdc_connector_file_url ); ?>" />
 		<a href="#" class="button button-select-pdf-file" id="pdc-product-file-upload" data-choose="<?php esc_attr_e( 'Choose file', 'pdc-connector' ); ?>" data-update="<?php esc_attr_e( 'Insert file URL', 'pdc-connector' ); ?>"><?php esc_html_e( 'Choose file', 'pdc-connector' ); ?></a>
 	</span>
 </p>

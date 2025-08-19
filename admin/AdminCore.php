@@ -323,8 +323,12 @@ class AdminCore {
 	 * @return void
 	 */
 	private function save_text_field( $post_id, $fieldname ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in save_product_data_fields().
 		if ( isset( $_POST[ $fieldname ] ) ) :
-			update_post_meta( $post_id, $fieldname, $_POST[ $fieldname ] );
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in save_product_data_fields().
+			$raw_value = $_POST[ $fieldname ];
+			$sanitized = is_array( $raw_value ) ? array_map( 'sanitize_text_field', wp_unslash( $raw_value ) ) : sanitize_text_field( wp_unslash( $raw_value ) );
+			update_post_meta( $post_id, $fieldname, $sanitized );
 		endif;
 	}
 
@@ -384,7 +388,7 @@ class AdminCore {
 	 */
 	public function on_order_save( int $order_item_id ) {
 		$meta_pdf_url = $this->get_meta_key( 'pdf_url' );
-		update_post_meta( $order_item_id, $meta_pdf_url, $_POST[ $meta_pdf_url ] );
+		update_post_meta( $order_item_id, $meta_pdf_url, $_POST[ $meta_pdf_url ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by WooCommerce before woocommerce_process_shop_order_meta.
 	}
 
 
@@ -424,7 +428,17 @@ class AdminCore {
 	 * @return void
 	 */
 	public function pdc_list_products() {
-		$search_term       = $_POST['searchTerm'];
+		if (
+			! isset( $_POST['pdc_connector_nonce'] ) ||
+			! wp_verify_nonce(
+				sanitize_text_field( wp_unslash( $_POST['pdc_connector_nonce'] ) ),
+				'pdc_connector_ajax_list_products'
+			)
+		) {
+			return;
+		}
+	
+		$search_term       = isset($_POST['searchTerm']) ? $_POST['searchTerm'] : '';
 		$lc_search_term    = strtolower( $search_term );
 		$products          = $this->pdc_client->search_products();
 		$filtered_products = array_filter(
@@ -441,11 +455,11 @@ class AdminCore {
 				$lc_a_title = strtolower( $a->title );
 				$lc_b_title = strtolower( $b->title );
 
-				// Check if the string starts with the search string
+				// Check if the string starts with the search string.
 				$a_starts_with = 0 === strpos( $lc_a_title, $lc_search_term );
 				$b_starts_with = 0 === strpos( $lc_b_title, $lc_search_term );
 
-				// Give priority to strings that start with the search string
+				// Give priority to strings that start with the search string.
 				if ( $a_starts_with && ! $b_starts_with ) {
 					return -1; // $a comes before $b.
 				} elseif ( ! $a_starts_with && $b_starts_with ) {
@@ -491,7 +505,6 @@ class AdminCore {
 		if ( 'SHIPMENT_CREATED' === $event_type ) {
 			$this->on_webhook_shipped( $payload->order_item_number, $payload->tracking_code );
 		}
-
 	}
 
 	/**
@@ -564,7 +577,7 @@ class AdminCore {
 
 		$order = wc_get_order( $pdc_order->wp_order_id );
 		$note  = sprintf(
-			// translators: placeholder is a URL to the track & trace page
+			// translators: placeholder is a URL to the track & trace page.
 			__( 'Item has been shipped by Print.com. Track & Trace code: <a href="%1$s">%2$s</a>.', 'pdc-connector' ),
 			$tracking_url,
 			$tracking_url,
@@ -704,8 +717,9 @@ class AdminCore {
 	 * @return void
 	 */
 	private function save_variation_data_field( $variation_id, $fieldname, $it ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by WooCommerce during product variation save.
 		if ( isset( $_POST[ $fieldname ] ) && $_POST[ $fieldname ][ $it ] ) :
-			update_post_meta( $variation_id, $fieldname, $_POST[ $fieldname ][ $it ] );
+			update_post_meta( $variation_id, $fieldname, $_POST[ $fieldname ][ $it ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by WooCommerce during product variation save.
 		endif;
 	}
 }
