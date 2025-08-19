@@ -51,6 +51,10 @@
     </properties>
   </rule>
 
+  <rule ref="WordPress-Core">
+		<exclude name="WordPress.Files.FileName" />
+	</rule>
+
   <!-- Allow WordPress i18n functions -->
   <rule ref="WordPress.WP.I18n"/>
 </ruleset>
