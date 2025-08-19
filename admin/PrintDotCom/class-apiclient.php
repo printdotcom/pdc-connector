@@ -24,35 +24,50 @@ use PdcConnector\Includes\Core;
  */
 class APIClient {
 
-
-	// Base URL of the Print.com API
+	/**
+	 * Base URL of the Print.com API.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
 	private $pdc_api_base_url;
 
-	// Unique reference for this client,
-	// will be used to store unique cache entries
+	/**
+	 * Unique plugin name used for namespacing cache and hooks.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
 	private $plugin_name;
 
-	// API Key for the Print.com API
+	/**
+	 * API key for the Print.com API.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
 	private $pdc_api_key;
 
 	/**
-	 * Initializes the API client
+	 * Initializes the API client.
 	 *
-	 * @param string $client_id Unique reference for this client
+	 * @since 1.0.0
+	 *
+	 * @param string $plugin_name Unique reference for this client, typically the plugin slug.
 	 */
 	public function __construct( $plugin_name ) {
 		$this->plugin_name = $plugin_name;
 
 		$env = get_option( $plugin_name . '-env' );
 
-		// Allow environment variable override for testing
+		// Allow environment variable override for testing.
 		if ( getenv( 'PDC_API_BASE_URL' ) ) {
 			$this->pdc_api_base_url = getenv( 'PDC_API_BASE_URL' );
 		} else {
-			$this->pdc_api_base_url = $env === 'prod' ? 'https://api.print.com' : 'https://api.stg.print.com';
+			$this->pdc_api_base_url = ( 'prod' === $env ) ? 'https://api.print.com' : 'https://api.stg.print.com';
 		}
 
-		// Allow environment variable override for testing
+		// Allow environment variable override for testing.
 		if ( getenv( 'PDC_API_KEY' ) ) {
 			$this->pdc_api_key = getenv( 'PDC_API_KEY' );
 		} else {
@@ -62,28 +77,36 @@ class APIClient {
 	}
 
 	/**
-	 * Retrieves the API base url based on the current environment.
+	 * Retrieves the API base URL based on the current environment.
+	 *
+	 * @since 1.0.0
+	 * @return string API base URL.
 	 */
 	public function get_api_base_url() {
 		return $this->pdc_api_base_url;
 	}
 
 	/**
-	 * Returns the API Key used for authenticated requests
+	 * Returns the API key used for authenticated requests.
+	 *
+	 * @since 1.0.0
+	 * @return string API key.
 	 */
 	private function get_token() {
 		return $this->pdc_api_key;
 	}
 
 	/**
-	 * Performs an authenticated request to the Print.com API
-	 * A more convenient wrapper around performHttpRequest
+	 * Performs an authenticated request to the Print.com API.
+	 * A more convenient wrapper around performHttpRequest.
 	 *
-	 * @param string $method The HTTP method to use
-	 * @param string $path The path to request
-	 * @param array  $data Optional data to send in the request
-	 * @param array  $headers Optional headers to send with the request
-	 * @return string|WP_Error The unparsed response from the API
+	 * @since 1.0.0
+	 *
+	 * @param string     $method  The HTTP method to use.
+	 * @param string     $path    The path to request.
+	 * @param array|null $data    Optional data to send in the request.
+	 * @param array      $headers Optional headers to send with the request.
+	 * @return string|WP_Error The unparsed response from the API.
 	 */
 	private function performAuthenticatedRequest( $method, $path, $data = null, $headers = array() ) {
 		$url   = $this->pdc_api_base_url . $path;
@@ -92,14 +115,16 @@ class APIClient {
 	}
 
 	/**
-	 * Performs an HTTP request to the Print.com API
+	 * Performs an HTTP request to the Print.com API.
 	 *
-	 * @param string $method The HTTP method to use
-	 * @param string $url The URL to request
-	 * @param array  $data The data to send in the request
-	 * @param string $token The access token to use
-	 * @param array  $headers Additional headers to send with the request
-	 * @return string|WP_Error The unparsed response from the API
+	 * @since 1.0.0
+	 *
+	 * @param string     $method  The HTTP method to use.
+	 * @param string     $url     The URL to request.
+	 * @param array|null $data    The data to send in the request.
+	 * @param string|null $token  The access token to use.
+	 * @param array      $headers Additional headers to send with the request.
+	 * @return string|WP_Error The unparsed response from the API.
 	 */
 	private function performHttpRequest( $method, $url, $data = null, $token = null, $headers = array() ) {
 		$curl   = curl_init( $url );
@@ -117,10 +142,10 @@ class APIClient {
 			$params[ CURLOPT_HTTPHEADER ] = array_merge( $params[ CURLOPT_HTTPHEADER ], $headers );
 		}
 
-		if ( $method === 'POST' && ! empty( $data ) ) {
-			$params[ CURLOPT_POSTFIELDS ] = json_encode( $data );
+		if ( 'POST' === $method && ! empty( $data ) ) {
+			$params[ CURLOPT_POSTFIELDS ] = function_exists( 'wp_json_encode' ) ? wp_json_encode( $data ) : json_encode( $data );
 		}
-		if ( $token ) {
+		if ( null !== $token ) {
 			$params[ CURLOPT_HTTPHEADER ][] = 'authorization: PrintApiKey ' . $token;
 		}
 		curl_setopt_array( $curl, $params );
@@ -130,11 +155,11 @@ class APIClient {
 		$httpcode = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
 		curl_close( $curl );
 
-		if ( $httpcode != 200 ) {
+		if ( 200 !== $httpcode ) {
 			return new \WP_Error( $httpcode, $response );
 		}
 
-		if ( $err ) {
+		if ( ! empty( $err ) ) {
 			return new \WP_Error( $httpcode, $err );
 		}
 		return $response;
