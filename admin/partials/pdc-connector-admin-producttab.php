@@ -9,7 +9,12 @@
  * @since 1.0.0
  */
 
-/** @var WP_Post $post */
+/**
+ * Variables available in this file
+ *
+ * @global WP_Post $post   Global post object.
+ */
+global $post;
 
 $pdc_connector_sku          = get_post_meta( $post->ID, $this->get_meta_key( 'product_sku' ), true );
 $pdc_connector_sku_title    = get_post_meta( $post->ID, $this->get_meta_key( 'product_title' ), true );
@@ -34,6 +39,13 @@ $pdc_connector_preset_title = get_post_meta( $post->ID, $this->get_meta_key( 'pr
 			<span id="js-pdc-preset-search-spinner" class="spinner"></span>
 		</p>
 
-		<?php require __DIR__ . '/html-input-mediaupload.php'; ?>
+		<?php
+		/**
+		 * Include the media upload input partial.
+		 *
+		 * @since 1.0.0
+		 */
+		require_once __DIR__ . '/html-input-mediaupload.php';
+		?>
 	</div>
 </div>

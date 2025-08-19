@@ -9,6 +9,15 @@
  * @since 1.0.0
  */
 
+/**
+ * Variables available in this file
+ *
+ * @global array           variation_data
+ * @global int             $index
+ * @global WP_Post $post   Global post object.
+ */
+global $post;
+
 $pdc_connector_variation_id = isset( $variation->ID ) ? intval( $variation->ID ) : 0;
 $pdc_connector_parent_id    = isset( $variation->post_parent ) ? intval( $variation->post_parent ) : 0;
 

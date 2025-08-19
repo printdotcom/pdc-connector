@@ -437,8 +437,8 @@ class AdminCore {
 		) {
 			return;
 		}
-	
-		$search_term       = isset($_POST['searchTerm']) ? $_POST['searchTerm'] : '';
+
+		$search_term       = isset( $_POST['searchTerm'] ) ? $_POST['searchTerm'] : '';
 		$lc_search_term    = strtolower( $search_term );
 		$products          = $this->pdc_client->search_products();
 		$filtered_products = array_filter(

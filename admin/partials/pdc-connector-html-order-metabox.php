@@ -13,10 +13,10 @@
 <div class="wp-list-table pdc-table widefat fixed striped posts">
 	<div class="table-head">
 		<div class="table-head-col">
-			<strong>Information</strong>
+			<strong><?php esc_html_e( 'Information', 'pdc-connector' ); ?></strong>
 		</div>
 		<div class="table-head-col">
-			<strong>Actions</strong>
+			<strong><?php esc_html_e( 'Actions', 'pdc-connector' ); ?></strong>
 		</div>
 	</div>
 	<div class="table-body">
@@ -44,31 +44,31 @@
 			$pdc_connector_has_preset = $pdc_connector_preset_id ? true : false;
 			$pdc_connector_filename   = basename( $pdc_connector_pdf_url );
 			?>
-			<div class="table-row" id="pdc_order_item_<?php echo $pdc_connector_order_item_id; ?>">
-				<div class="table-row-contents" id="pdc_order_item_<?php echo $pdc_connector_order_item_id; ?>_inner">
+			<div class="table-row" id="pdc_order_item_<?php echo esc_attr( $pdc_connector_order_item_id ); ?>">
+				<div class="table-row-contents" id="pdc_order_item_<?php echo esc_attr( $pdc_connector_order_item_id ); ?>_inner">
 					<div class="table-cell">
 						<?php if ( $pdc_connector_order_item_number ) { ?>
-							<span><strong>Order item number</strong> #<?php echo $pdc_connector_order_item_number; ?></span><br>
-							<span data-testid="pdc-ordered-copies"><strong>Copies</strong> <?php echo $pdc_connector_order_item->options->copies; ?></span><br>
-							<span><strong>Purchase Date</strong> <?php echo $pdc_connector_purchase_date; ?></span><br>
-							<span><strong>Item Status</strong> <?php echo $pdc_connector_order_item_status; ?></span><br>
-							<span><strong>Price</strong> <?php echo wc_price( $pdc_connector_order_item_grand_total ); ?></span><br>
-							<span><strong>Track & Trace</strong> <a href="<?php echo $pdc_connector_tnt_url; ?>"><?php echo $pdc_connector_tnt_url; ?></a></span><br>
+							<span><strong><?php esc_html_e( 'Order item number', 'pdc-connector' ); ?></strong> #<?php echo esc_html( $pdc_connector_order_item_number ); ?></span><br>
+							<span data-testid="pdc-ordered-copies"><strong><?php esc_html_e( 'Copies', 'pdc-connector' ); ?></strong> <?php echo esc_html( $pdc_connector_order_item->options->copies ); ?></span><br>
+							<span><strong><?php esc_html_e( 'Purchase Date', 'pdc-connector' ); ?></strong> <?php echo esc_html( $pdc_connector_purchase_date ); ?></span><br>
+							<span><strong><?php esc_html_e( 'Item Status', 'pdc-connector' ); ?></strong> <?php echo esc_html( $pdc_connector_order_item_status ); ?></span><br>
+							<span><strong><?php esc_html_e( 'Price', 'pdc-connector' ); ?></strong> <?php echo wp_kses_post( wc_price( $pdc_connector_order_item_grand_total ) ); ?></span><br>
+							<span><strong><?php esc_html_e( 'Track & Trace', 'pdc-connector' ); ?></strong> <a href="<?php echo esc_url( $pdc_connector_tnt_url ); ?>"><?php echo esc_html( $pdc_connector_tnt_url ); ?></a></span><br>
 						<?php } ?>
 
 						<?php if ( $pdc_connector_pdf_url ) { ?>
-							<span><strong>File</strong> <a target="_blank" href="<?php echo $pdc_connector_pdf_url; ?>"><?php echo $pdc_connector_filename; ?></span></a><br>
+							<span><strong><?php esc_html_e( 'File', 'pdc-connector' ); ?></strong> <a target="_blank" rel="noopener noreferrer" href="<?php echo esc_url( $pdc_connector_pdf_url ); ?>"><?php echo esc_html( $pdc_connector_filename ); ?></a></span><br>
 						<?php } ?>
 
 						<div class="notifications">
 							<?php
 							if ( ! $pdc_connector_has_file ) {
 								?>
-								<p>Missing file. Upload one to purchase.</p> <?php } ?>
+								<p><?php esc_html_e( 'Missing file. Upload one to purchase.', 'pdc-connector' ); ?></p> <?php } ?>
 							<?php
 							if ( ! $pdc_connector_has_preset ) {
 								?>
-								<p> Missing preset. You need a connected preset on the product to purchase. </p><?php } ?>
+								<p><?php esc_html_e( 'Missing preset. You need a connected preset on the product to purchase.', 'pdc-connector' ); ?></p><?php } ?>
 						</div>
 					</div>
 					<div class="table-cell">
@@ -78,13 +78,13 @@
 								<?php
 								if ( empty( $pdc_connector_pdf_url ) ) {
 									?>
-								<a href="#" id="pdc-file-upload" data-order-item-id="<?php echo $pdc_connector_order_item_id; ?>" class="button button-secondary">Upload PDF</a><?php } ?>
+								<a href="#" id="pdc-file-upload" data-order-item-id="<?php echo esc_attr( $pdc_connector_order_item_id ); ?>" class="button button-secondary"><?php esc_html_e( 'Upload PDF', 'pdc-connector' ); ?></a><?php } ?>
 								<?php
 								if ( $pdc_connector_pdf_url ) {
 									?>
-								<a href="#" id="pdc-file-upload" data-order-item-id="<?php echo $pdc_connector_order_item_id; ?>" class="button button-secondary">Replace PDF</a><?php } ?>
+								<a href="#" id="pdc-file-upload" data-order-item-id="<?php echo esc_attr( $pdc_connector_order_item_id ); ?>" class="button button-secondary"><?php esc_html_e( 'Replace PDF', 'pdc-connector' ); ?></a><?php } ?>
 								<?php if ( $pdc_connector_has_preset ) { ?>
-									<a id="pdc-order" data-testid="pdc-purchase-orderitem" data-order-item-id="<?php echo $pdc_connector_order_item_id; ?>" href="#" class="button button-primary"> Purchase</a
+									<a id="pdc-order" data-testid="pdc-purchase-orderitem" data-order-item-id="<?php echo esc_attr( $pdc_connector_order_item_id ); ?>" href="#" class="button button-primary"><?php esc_html_e( 'Purchase', 'pdc-connector' ); ?></a>
 								<?php } ?>
 								<span class="spinner" id="js-pdc-action-spinner"></span>
 								<div class="notice-warning"><span id="js-pdc-request-response"></span></div>
