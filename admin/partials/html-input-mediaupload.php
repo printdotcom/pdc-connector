@@ -9,14 +9,14 @@
  * @since 1.0.0
  */
 
-$file_url_meta_key = $this->get_meta_key( 'pdf_url' );
-$file_url          = get_post_meta( $thepostid, $file_url_meta_key, true );
+$pdc_connector_file_url_meta_key = $this->get_meta_key( 'pdf_url' );
+$pdc_connector_file_url          = get_post_meta( $thepostid, $pdc_connector_file_url_meta_key, true );
 ?>
 <p class="form-field _pdc_editable_field">
 	<label for="_pdc_file_url">PDF</label>
 	<span class="form-flex-box">
-		<input data-testid="pdc-file-upload" type="text" class="input_text pdc_input_pdf" id="_pdc-file_url" placeholder="<?php esc_attr_e( 'http://', 'pdc-connector' ); ?>" name="<?php echo $file_url_meta_key; ?>" value="<?php echo esc_attr( $file_url ); ?>" />
-		<a href="#" class="button button-select-pdf-file" id="pdc-product-file-upload" data-choose="<?php esc_attr_e( 'Choose file', 'pdc-connector' ); ?>" data-update="<?php esc_attr_e( 'Insert file URL', 'pdc-connector' ); ?>"><?php echo esc_html__( 'Choose file', 'pdc-connector' ); ?></a>
+		<input data-testid="pdc-file-upload" type="text" class="input_text pdc_input_pdf" id="_pdc-file_url" placeholder="<?php esc_attr_e( 'http://', 'pdc-connector' ); ?>" name="<?php echo esc_attr( $pdc_connector_file_url_meta_key ); ?>" value="<?php echo esc_attr( $pdc_connector_file_url ); ?>" />
+		<a href="#" class="button button-select-pdf-file" id="pdc-product-file-upload" data-choose="<?php esc_attr_e( 'Choose file', 'pdc-connector' ); ?>" data-update="<?php esc_attr_e( 'Insert file URL', 'pdc-connector' ); ?>"><?php esc_html_e( 'Choose file', 'pdc-connector' ); ?></a>
 	</span>
 </p>
 <script>

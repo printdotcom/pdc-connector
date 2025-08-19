@@ -69,39 +69,65 @@ class FrontCore {
 
 
 	/**
-	 * Adds additional values to the cart item
-	 * Filter cart item data for add to cart requests.
-	 * Hooks into woocommerce_add_cart_item_data
+	 * Adds additional values to the cart item.
 	 *
-	 * @since    1.0.0
+	 * Filter cart item data for add to cart requests. Hooks into woocommerce_add_cart_item_data.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $cart_item_data The existing cart item data.
+	 * @param int   $product_id     The product ID being added to the cart.
+	 * @return array Modified cart item data.
 	 */
 	public function capture_cart_item_data( $cart_item_data, $product_id ) {
+		// $product_id is required by the WooCommerce hook signature but is not used here.
+		unset( $product_id );
 		$cart_item_data[ Core::get_meta_key( 'pdf_url' ) ] = $this->capture_cart_item_pdf_url();
 		return $cart_item_data;
 	}
 
+	/**
+	 * Captures the PDF URL for a cart item from the current request context.
+	 *
+	 * This checks for a direct PDF URL in the request, or falls back to a PitchPrint
+	 * project reference if present.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string The detected PDF URL or empty string when none is available.
+	 */
 	private function capture_cart_item_pdf_url() {
 		$pdc_pdf_url_metakey = Core::get_meta_key( 'pdf_url' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Reading value to attach to cart item; non-destructive.
 		if ( isset( $_REQUEST[ $pdc_pdf_url_metakey ] ) && ! empty( $_REQUEST[ $pdc_pdf_url_metakey ] ) ) {
-			// Request contains a pdf_url so we use that.
-			return $_REQUEST[ $pdc_pdf_url_metakey ];
+			// Request contains a pdf_url, so we use that.
+			return esc_url_raw( wp_unslash( $_REQUEST[ $pdc_pdf_url_metakey ] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Reading value to attach to cart item; non-destructive.
 		if ( isset( $_REQUEST['_w2p_set_option'] ) && ! empty( $_REQUEST['_w2p_set_option'] ) ) {
-			// pitch print has a PDF url, so we use that.
-			$pitch_print_data = json_decode( urldecode( $_REQUEST['_w2p_set_option'] ) );
-			return 'https://pdf.pitchprint.com/' . $pitch_print_data->projectId;
+			// PitchPrint has a PDF URL, so we use that.
+			$raw_option       = wp_unslash( $_REQUEST['_w2p_set_option'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$pitch_print_data = json_decode( urldecode( $raw_option ) );
+			if ( $pitch_print_data && isset( $pitch_print_data->projectId ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				return esc_url_raw( 'https://pdf.pitchprint.com/' . $pitch_print_data->projectId ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			}
 		}
 
 		return '';
 	}
 
 	/**
-	 * Saves the PDC values on the order item
-	 * Hooks into woocommerce_checkout_create_order_line_item
+	 * Saves the PDC values on the order item.
 	 *
-	 * @since       1.0.0
-	 * @return      void
+	 * Hooks into woocommerce_checkout_create_order_line_item.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param \\WC_Order_Item_Product $order_item    The WooCommerce order item object.
+	 * @param string                  $cart_item_key The cart item key.
+	 * @param array                   $values        The cart item values.
+	 * @return void
 	 */
 	public function save_pdc_values_order_meta( \WC_Order_Item_Product $order_item, $cart_item_key, $values ) {
 		$product_id   = $values['product_id'];
@@ -111,7 +137,7 @@ class FrontCore {
 		$pdc_preset_id = isset( $values[ Core::get_meta_key( 'preset_id' ) ] ) ? $values[ Core::get_meta_key( 'preset_id' ) ] : null;
 
 		if ( empty( $pdc_pdf_url ) ) {
-			// there is no preconfigured pdf on the cart item
+			// There is no preconfigured PDF on the cart item.
 			if ( $variation_id ) {
 				$variation_pdf_url = get_post_meta( $variation_id, Core::get_meta_key( 'pdf_url' ), true );
 				if ( ! empty( $variation_pdf_url ) ) {
@@ -119,14 +145,14 @@ class FrontCore {
 				}
 			}
 
-			// if variant did not set the pdc_pdf_url, get it from product
+			// If the variation did not set the PDF URL, get it from the product.
 			if ( empty( $pdc_pdf_url ) ) {
 				$pdc_pdf_url = get_post_meta( $product_id, Core::get_meta_key( 'pdf_url' ), true );
 			}
 		}
 
 		if ( empty( $pdc_preset_id ) ) {
-			// there is no preconfigured preset on the cart item
+			// There is no preconfigured preset on the cart item.
 			if ( $variation_id ) {
 				$variation_preset_id = get_post_meta( $variation_id, Core::get_meta_key( 'preset_id' ), true );
 				if ( ! empty( $variation_preset_id ) ) {
@@ -134,18 +160,20 @@ class FrontCore {
 				}
 
 				if ( empty( $pdc_preset_id ) ) {
-					// variation did not have a preset id so get it from product
+					// Variation did not have a preset ID, so get it from the product.
 					$pdc_preset_id = get_post_meta( $product_id, Core::get_meta_key( 'preset_id' ), true );
 				}
 			}
 		}
 
-		// check if we have pitch print
+		// Check if we have PitchPrint data in the cart item.
 		$cart_item       = WC()->cart->get_cart_item( $cart_item_key );
-		$pitchprint_data = $cart_item['_pda_w2p_set_option'];
+		$pitchprint_data = isset( $cart_item['_pda_w2p_set_option'] ) ? $cart_item['_pda_w2p_set_option'] : '';
 		if ( ! empty( $pitchprint_data ) ) {
 			$decoded_data = json_decode( urldecode( $pitchprint_data ) );
-			$pdc_pdf_url  = 'https://pdf.print.app/' . $decoded_data->projectId;
+			if ( $decoded_data && isset( $decoded_data->projectId ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				$pdc_pdf_url = 'https://pdf.print.app/' . $decoded_data->projectId; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			}
 		}
 
 		$order_item->add_meta_data( Core::get_meta_key( 'pdf_url' ), $pdc_pdf_url );

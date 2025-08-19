@@ -52,6 +52,12 @@ class AdminCore {
 	 */
 	private $version;
 
+	/**
+	 * Print.com API client instance.
+	 *
+	 * @since 1.0.0
+	 * @var APIClient
+	 */
 	private APIClient $pdc_client;
 
 	/**
@@ -73,8 +79,8 @@ class AdminCore {
 	 * Plug-in meta keys should not be shown to the public so are always prefixed
 	 * with an underscore. They are also namespaced by using the plug-in name.
 	 *
-	 * @since    1.0.1
-	 * @param      string $key    The meta key, ex. 'pdf_url'
+	 * @since 1.0.1
+	 * @param string $key The meta key, ex. 'pdf_url'.
 	 */
 	private function get_meta_key( $key ) {
 		return Core::get_meta_key( $key );
@@ -99,15 +105,14 @@ class AdminCore {
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/pdc-connector-admin.css', array(), time(), 'all' );
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/pdc-connector-admin.css', array(), $this->version, 'all' );
 		wp_enqueue_style(
 			'accessible-autocomplete',
 			plugin_dir_url( __FILE__ ) . 'css/accessible-autocomplete.min.css',
 			array(),
-			'3.0.1',
+			$this->version,
 			'all',
 		);
-		// wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/pdc-connector-admin.css', array(), time(), 'all');
 	}
 
 	/**
@@ -129,10 +134,10 @@ class AdminCore {
 		 * class.
 		 */
 
-		// Make sure we can use the media file uploader
+		// Make sure we can use the media file uploader.
 		wp_enqueue_media();
 
-		// Register admin JS scripts
+		// Register admin JS scripts.
 		wp_enqueue_script( $this->plugin_name . '-admin', plugin_dir_url( __FILE__ ) . 'js/pdc-connector-admin.js', array( 'jquery' ), $this->version, false );
 		wp_localize_script(
 			$this->plugin_name . '-admin',
@@ -180,6 +185,12 @@ class AdminCore {
 		add_menu_page( 'General Settings', 'Print.com', 'manage_options', $this->plugin_name, array( $this, 'page_general_settings' ), 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJMYWFnXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeD0iMCIgeT0iMCIgdmlld0JveD0iMCAwIDY5IDY5IiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA2OSA2OSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CiAgPHN0eWxlPgogICAgLnN0MXtmaWxsOiNmZmZ9CiAgPC9zdHlsZT4KICA8cGF0aCBpZD0iUGF0aF82MDQiIGQ9Ik01MC4zIDY1LjVjLTIzLjIgOS4zLTQxIC4yLTQ4LjUtMjcuMS01LjUtMjAgMi0yNS4xIDIyLjctMzQuNEM0OC43LTYuOSA2Mi44IDUuNyA2Ny43IDI4LjJjMy44IDE3LjQtLjYgMzAuNS0xNy40IDM3LjN6IiBzdHlsZT0iZmlsbDojZmYwMDQ4Ii8+CiAgPGcgaWQ9Ikdyb3VwXzgxMzQiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE2LjM3MiAyNC43MjgpIj4KICAgIDxnIGlkPSJHcm91cF84MTMyIj4KICAgICAgPHBhdGggaWQ9IlBhdGhfNjA1IiBjbGFzcz0ic3QxIiBkPSJNNC4xIDcuNVYxLjRDNC4yLjIgMy43LTEgMi44LTEuOCAxLjctMi42LjQtMy0uOS0yLjloLTVWMTVjMCAuNS4zLjguOS44aDIuN1YxMWMuNi42IDEuNC45IDIuMy44IDEuMSAwIDIuMi0uNCAzLTEuMS43LS45IDEuMS0yIDEuMS0zLjJ6TS41IDYuN2MwIC42LS4xIDEuMi0uMyAxLjctLjIuNC0uNy42LTEuMS42LS41IDAtMS0uMi0xLjQtLjZWMGgxLjRDMCAwIC41LjUuNSAxLjV2NS4yeiIvPgogICAgICA8cGF0aCBpZD0iUGF0aF82MDYiIGNsYXNzPSJzdDEiIGQ9Ik0xMi44LTMuMmMtMS4yLS4xLTIuMy43LTIuNiAxLjh2LS43YzAtLjUtLjMtLjgtLjktLjhINi41djEzLjdjMCAuNS4zLjguOS44aDIuN1YzLjFjLjEtMS4zIDEtMi41IDIuMy0yLjcuMiAwIC40LS4yLjUtLjR2LTMuMWMwLS4xIDAtLjEtLjEtLjF6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYwNyIgY2xhc3M9InN0MSIgZD0iTTIzLjUgMTEuNWgyLjdWLjVjLjItLjYuOC0xIDEuNC0uOS44IDAgMS4yLjUgMS4yIDEuNHY5LjdjMCAuNS4zLjcuOC43aDIuOFYuOGMuMS0xLjEtLjMtMi4xLTEtMi45LS41LS44LTEuNC0xLjItMi40LTEuMS0xLjEtLjEtMi4yLjUtMi43IDEuNXYtLjRjMC0uNS0uMy0uOC0uOS0uOGgtMy44djIuM2MwIC4zLjMuNi42LjZoLjR2MTAuOGMuMS40LjMuNy45Ljd6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYwOCIgY2xhc3M9InN0MSIgZD0iTTIwLjIgMTEuNVY5LjJjMC0uMy0uMy0uNi0uNi0uNkgxOVYtMi4yYzAtLjUtLjMtLjgtLjktLjhoLTIuN3YxMy43YzAgLjUuMy43LjkuN2gzLjl6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYwOSIgY2xhc3M9InN0MSIgZD0iTTQwLjIgOC43aC0uNGMtLjggMC0xLjMtLjQtMS4zLTEuM1YwaDIuMXYtMi4xYzAtLjUtLjMtLjctLjgtLjdoLTEuNHYtMS4xYzAtLjUtLjMtLjgtLjktLjhIMzVWNi45YzAgMS42LjMgMi44IDEgMy41LjcuNyAxLjcgMS4xIDMuMiAxLjFoMS45VjkuNGMwLS41LS4zLS43LS45LS43eiIvPgogICAgICA8cGF0aCBpZD0iUGF0aF82MTAiIGNsYXNzPSJzdDEiIGQ9Ik0xOC4xLTQuOWMtMS40LjYtMi41IDAtMy0xLjctLjMtMS4yLjEtMS41IDEuNC0yLjEgMS41LS43IDIuNC4xIDIuNyAxLjUuMyAxIDAgMS44LTEuMSAyLjN6Ii8+CiAgICA8L2c+CiAgICA8ZyBpZD0iR3JvdXBfODEzMyIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTguODI0IDM4LjQwNikiPgogICAgICA8cGF0aCBpZD0iUGF0aF82MTEiIGNsYXNzPSJzdDEiIGQ9Ik0tMS42LTIyYy0xLjctMS4xLTMuOS0xLjEtNS41IDAtLjcuNi0xIDEuNS0xIDIuNHY0LjVjLS4xLjkuMyAxLjggMSAyLjQgMS43IDEuMSAzLjkgMS4xIDUuNSAwIC43LS42IDEtMS41IDEtMi40di0uNmMwLS40LS4yLS42LS43LS42aC0xLjRjLS40IDAtLjcuMi0uNy42di42YzAgLjctLjMgMS4xLTEgMS4xcy0xLS40LTEtMS4xdi00LjZjMC0uNy4zLTEuMSAxLTEuMXMxIC40IDEgMS4xdi42YzAgLjQuMi42LjcuNmgxLjRjLjQgMCAuNy0uMi43LS42di0uNmMuMS0uOC0uMy0xLjctMS0yLjN6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYxMiIgY2xhc3M9InN0MSIgZD0iTTcuNS0yMmMtMS43LTEuMS0zLjktMS4xLTUuNSAwLS43LjYtMSAxLjUtMSAyLjR2NC41Yy0uMS45LjMgMS44IDEgMi40IDEuNyAxLjEgMy45IDEuMSA1LjUgMCAuNy0uNiAxLTEuNSAxLTIuNHYtNC41YzAtLjktLjQtMS44LTEtMi40em0tMS44IDYuOWMwIC43LS4zIDEuMS0xIDEuMXMtMS0uNC0xLTEuMXYtNC42YzAtLjcuMy0xLjEgMS0xLjFzMSAuNCAxIDEuMXY0LjZ6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYxMyIgY2xhc3M9InN0MSIgZD0iTS0xMC4zLTEyYy0xLjEuNS0yIDAtMi40LTEuMy0uMy0xIC4xLTEuMiAxLjEtMS43IDEuMi0uNSAxLjkuMSAyLjEgMS4yLjQuNyAwIDEuNS0uOCAxLjguMS0uMS4xLS4xIDAgMHoiLz4KICAgICAgPHBhdGggaWQ9IlBhdGhfNjE0IiBjbGFzcz0ic3QxIiBkPSJNMjIuNi0xNC4zaC0uNHYtNS42YzAtLjgtLjItMS42LS43LTIuMi0uNS0uNS0xLjItLjgtMi0uOC0xIDAtMS45LjUtMi40IDEuMy0uNC0uOC0xLjMtMS4zLTIuMy0xLjItLjgtLjEtMS42LjMtMiAxLjF2LS4zYzAtLjQtLjItLjYtLjctLjZIOS40djEuOGMwIC4yLjIuNC40LjRoLjN2Ny44YzAgLjQuMi41LjcuNWgydi04Yy4xLS40LjYtLjcgMS0uNy42IDAgLjkuNC45IDEuMXY3LjFjMCAuNC4yLjUuNi41aDIuMXYtOGMuMi0uNC42LS43IDEtLjcuNiAwIC45LjQuOSAxLjF2Ny4xYzAgLjQuMi41LjYuNWgyLjl2LTEuN2MuMy0uMy4xLS41LS4yLS41eiIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+' );
 	}
 
+	/**
+	 * Registers settings sections for the plugin admin page.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
 	public function register_sections() {
 		add_settings_section(
 			$this->plugin_name . '-credentials',
@@ -195,6 +206,12 @@ class AdminCore {
 		);
 	}
 
+	/**
+	 * Registers plugin settings.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
 	public function register_settings() {
 		register_setting(
 			$this->plugin_name . '-options',
@@ -210,6 +227,13 @@ class AdminCore {
 		);
 	}
 
+	/**
+	 * Adds a Print.com tab to the product data tabs.
+	 *
+	 * @since 1.0.0
+	 * @param array $tabs Existing product tabs.
+	 * @return array Modified tabs.
+	 */
 	public function add_product_data_tab( $tabs ) {
 		$tabs['pdc_printtab'] = array(
 			'label'    => 'Print.com',
@@ -224,10 +248,11 @@ class AdminCore {
 
 
 	/**
-	 * Saves the product settings
+	 * Saves the product settings.
 	 *
-	 * @since       1.0.0
-	 * @return      void
+	 * @since 1.0.0
+	 * @param int $post_id The product post ID.
+	 * @return void
 	 */
 	public function save_product_data_fields( $post_id ) {
 		$this->save_text_field( $post_id, $this->get_meta_key( 'product_sku' ) );
@@ -237,18 +262,38 @@ class AdminCore {
 		$this->save_text_field( $post_id, $this->get_meta_key( 'pdf_url' ) );
 	}
 
+	/**
+	 * Renders metabox for legacy WooCommerce order screen.
+	 *
+	 * @since 1.0.0
+	 * @param \WP_Post $post Post object.
+	 * @return void
+	 */
 	public function pdc_meta_box_shop_order( $post ) {
 		$order = wc_get_order( $post->ID );
 		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-html-order-metabox.php';
 	}
 
+	/**
+	 * Renders metabox for WooCommerce 7.8+ orders page.
+	 *
+	 * @since 1.0.0
+	 * @param \WP_Post $post Post object.
+	 * @return void
+	 */
 	public function pdc_meta_box_page_wc_orders( $post ) {
 		$order = wc_get_order( $post->get_ID() );
 		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-html-order-metabox.php';
 	}
 
+	/**
+	 * Registers order metaboxes for various WooCommerce screens.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
 	public function pdc_order_meta_box() {
-		// WooCommerce 7.7 and lower
+		// WooCommerce 7.7 and lower.
 		add_meta_box(
 			'pdc_order_meta_box',
 			'Print.com',
@@ -258,7 +303,7 @@ class AdminCore {
 			'core'
 		);
 
-		// WooCommerce 7.8+
+		// WooCommerce 7.8+.
 		add_meta_box(
 			'pdc_order_meta_box',
 			'Print.com',
@@ -269,12 +314,26 @@ class AdminCore {
 		);
 	}
 
+	/**
+	 * Saves a POST text field to post meta when present.
+	 *
+	 * @since 1.0.0
+	 * @param int    $post_id   Post ID.
+	 * @param string $fieldname Meta key to save from POST.
+	 * @return void
+	 */
 	private function save_text_field( $post_id, $fieldname ) {
 		if ( isset( $_POST[ $fieldname ] ) ) :
 			update_post_meta( $post_id, $fieldname, $_POST[ $fieldname ] );
 		endif;
 	}
 
+	/**
+	 * Renders the product data tab content.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
 	public function render_product_data_tab() {
 		global $post, $thepostid, $product_object;
 		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-admin-producttab.php';
@@ -316,6 +375,13 @@ class AdminCore {
 	 * @since       1.0.0
 	 * @return      void
 	 */
+	/**
+	 * Saves order item metadata on order save.
+	 *
+	 * @since 1.0.0
+	 * @param int $order_item_id Order item ID.
+	 * @return void
+	 */
 	public function on_order_save( int $order_item_id ) {
 		$meta_pdf_url = $this->get_meta_key( 'pdf_url' );
 		update_post_meta( $order_item_id, $meta_pdf_url, $_POST[ $meta_pdf_url ] );
@@ -351,10 +417,16 @@ class AdminCore {
 		);
 	}
 
+	/**
+	 * AJAX handler for listing products with a search term.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
 	public function pdc_list_products() {
 		$search_term       = $_POST['searchTerm'];
 		$lc_search_term    = strtolower( $search_term );
-		$products          = $this->pdc_client->searchProducts();
+		$products          = $this->pdc_client->search_products();
 		$filtered_products = array_filter(
 			$products,
 			function ( $item ) use ( $lc_search_term ) {
@@ -367,25 +439,25 @@ class AdminCore {
 			$filtered_products,
 			function ( $a, $b ) use ( $lc_search_term ) {
 				$lc_a_title = strtolower( $a->title );
-				$lc_b_title = strtolower( $a->title );
+				$lc_b_title = strtolower( $b->title );
 
 				// Check if the string starts with the search string
-				$aStartsWith = strpos( $lc_a_title, $lc_search_term ) === 0;
-				$bStartsWith = strpos( $lc_b_title, $lc_search_term ) === 0;
+				$a_starts_with = 0 === strpos( $lc_a_title, $lc_search_term );
+				$b_starts_with = 0 === strpos( $lc_b_title, $lc_search_term );
 
 				// Give priority to strings that start with the search string
-				if ( $aStartsWith && ! $bStartsWith ) {
-					return -1; // $a comes before $b
-				} elseif ( ! $aStartsWith && $bStartsWith ) {
-					return 1; // $b comes before $a
+				if ( $a_starts_with && ! $b_starts_with ) {
+					return -1; // $a comes before $b.
+				} elseif ( ! $a_starts_with && $b_starts_with ) {
+					return 1; // $b comes before $a.
 				} else {
-					// If both start or neither starts with the prefix, maintain default order
+					// If both start or neither starts with the prefix, maintain default order.
 					return strcmp( $lc_a_title, $lc_b_title );
 				}
 			}
 		);
 
-		// Re-index the filtered and sorted array to get a flat array
+		// Re-index the filtered and sorted array to get a flat array.
 		$sorted_products = array_values( $filtered_products );
 
 		wp_send_json_success(
@@ -395,27 +467,41 @@ class AdminCore {
 		);
 	}
 
+	/**
+	 * Handles incoming webhooks from Print.com.
+	 *
+	 * @since 1.0.0
+	 * @param \WP_REST_Request $request The REST request.
+	 * @return void
+	 */
 	public function pdc_order_webhook( \WP_REST_Request $request ) {
 		$body       = json_decode( $request->get_body() );
 		$event_type = $body->event_type;
 		$payload    = $body->payload;
 
-		if ( $event_type === 'ORDER_STATUS_CHANGED' ) {
+		if ( 'ORDER_STATUS_CHANGED' === $event_type ) {
 			$order_id      = $request->get_param( 'order_id' );
 			$order_item_id = $request->get_param( 'order_item_id' );
 
-			if ( $payload->status === 'ACCEPTEDBYSUPPLIER' ) {
+			if ( 'ACCEPTEDBYSUPPLIER' === $payload->status ) {
 				$this->on_webhook_in_production( $order_id, $order_item_id );
 			}
 		}
 
-		if ( $event_type === 'SHIPMENT_CREATED' ) {
+		if ( 'SHIPMENT_CREATED' === $event_type ) {
 			$this->on_webhook_shipped( $payload->order_item_number, $payload->tracking_code );
 		}
 
-		return;
 	}
 
+	/**
+	 * Sets an order item to 'production' when the webhook event is received.
+	 *
+	 * @since 1.0.0
+	 * @param string $order_id      The WooCommerce order ID.
+	 * @param string $order_item_id The WooCommerce order item ID.
+	 * @return void
+	 */
 	private function on_webhook_in_production( string $order_id, string $order_item_id ) {
 		$order_item = new \WC_Order_Item_Product( $order_item_id );
 		$order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), 'production' );
@@ -432,6 +518,13 @@ class AdminCore {
 	 *
 	 * @param [type] $pdc_order_item_number ex. 6000012345-1
 	 * @return WC_Order_Item_Product
+	 */
+	/**
+	 * Retrieves a WC_Order_Item_Product by Print.com order item number.
+	 *
+	 * @since 1.0.0
+	 * @param string $pdc_order_item_number ex. 6000012345-1.
+	 * @return \WC_Order_Item_Product|null
 	 */
 	private function get_order_item_by_order_item_number( $pdc_order_item_number ) {
 		global $wpdb;
@@ -451,10 +544,18 @@ class AdminCore {
 			return null;
 		}
 		$result     = $results[0];
-		$order_item = new \WC_Order_Item_Product( $result->wp_order_item_id );
+		$order_item = new \WC_Order_Item_Product( $result->order_item_id );
 		return $order_item;
 	}
 
+	/**
+	 * Marks an order item as shipped and stores the tracking URL when the webhook event is received.
+	 *
+	 * @since 1.0.0
+	 * @param string $order_item_number Print.com order item number.
+	 * @param string $tracking_url      Tracking URL provided by Print.com.
+	 * @return void
+	 */
 	private function on_webhook_shipped( string $order_item_number, string $tracking_url ) {
 		$order_item = $this->get_order_item_by_order_item_number( $order_item_number );
 		$order_item->update_meta_data( $this->get_meta_key( 'order_item_tnt_url' ), $tracking_url );
@@ -472,6 +573,13 @@ class AdminCore {
 		$order->save();
 	}
 
+	/**
+	 * REST callback to attach a PDF URL to an order item.
+	 *
+	 * @since 1.0.0
+	 * @param \WP_REST_Request $request The REST request.
+	 * @return string The stored PDF URL.
+	 */
 	public function pdc_attach_pdf( \WP_REST_Request $request ) {
 		$order_item_id = $request->get_param( 'orderItemId' );
 		$pdf_url       = $request->get_param( 'pdfUrl' );
@@ -494,7 +602,7 @@ class AdminCore {
 		if ( empty( $sku ) ) {
 			return new \WP_Error( 'no_sku', 'No SKU provided', array( 'sku' => $sku ) );
 		}
-		$result = $this->pdc_client->getPresets( $sku );
+		$result = $this->pdc_client->get_presets( $sku );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
@@ -505,12 +613,18 @@ class AdminCore {
 		);
 	}
 
+	/**
+	 * Initiates a purchase at Print.com for an order item.
+	 *
+	 * @since 1.0.0
+	 * @return \WP_Error|void Error on failure, outputs success JSON on success.
+	 */
 	public function pdc_place_order() {
 		$order_item_id = $_POST['order_item_id'];
 
 		$pdc_product_config = get_option( $this->plugin_name . '-product' );
 
-		$result = $this->pdc_client->purchaseOrderItem( $order_item_id, $pdc_product_config );
+		$result = $this->pdc_client->purchase_order_item( $order_item_id, $pdc_product_config );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
@@ -520,34 +634,57 @@ class AdminCore {
 		$order_item              = new \WC_Order_Item_Product( $order_item_id );
 
 		$order_item->update_meta_data( $this->get_meta_key( 'order' ), $pdc_order );
-		$order_item->update_meta_data( $this->get_meta_key( 'purchase_date' ), date( 'c' ) );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_number' ), $pdc_order->orderNumber );
-		$order_item->update_meta_data( $this->get_meta_key( 'grand_total' ), $pdc_order->grandTotal );
+		$order_item->update_meta_data( $this->get_meta_key( 'purchase_date' ), gmdate( 'c' ) );
+		// Map external API fields to local snake_case variables for linting compliance.
+		$order_number = $pdc_order->orderNumber; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$grand_total  = $pdc_order->grandTotal; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$order_item->update_meta_data( $this->get_meta_key( 'order_number' ), $order_number );
+		$order_item->update_meta_data( $this->get_meta_key( 'grand_total' ), $grand_total );
 		$order_item->update_meta_data( $this->get_meta_key( 'order_status' ), $pdc_order->status );
 		$order_item->update_meta_data( $this->get_meta_key( 'order_item' ), $pdc_order_item );
 		$order_item->update_meta_data( $this->get_meta_key( 'order_item_shipment' ), $pdc_order_item_shipment );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_number' ), $pdc_order_item->orderItemNumber );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), $pdc_order_item->status );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_grand_total' ), $pdc_order_item->grandTotal );
+		$order_item_number = $pdc_order_item->orderItemNumber; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$order_item_status = $pdc_order_item->status; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$order_item_total  = $pdc_order_item->grandTotal; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$order_item->update_meta_data( $this->get_meta_key( 'order_item_number' ), $order_item_number );
+		$order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), $order_item_status );
+		$order_item->update_meta_data( $this->get_meta_key( 'order_item_grand_total' ), $order_item_total );
 		$order_item->save();
 
 		$order_id = wc_get_order_id_by_order_item_id( $order_item_id );
 		$order    = wc_get_order( $order_id );
 
 		$note = sprintf(
-			// translators: placeholder is the order number
+			// translators: placeholder is the order number.
 			__( 'Item purchased at Print.com with order number: %s.', 'pdc-connector' ),
-			$pdc_order->orderNumber
+			$order_number
 		);
 		$order->add_order_note( $note );
 
 		wp_send_json_success( $pdc_order );
 	}
 
+	/**
+	 * Renders variation data fields partial in the product editor.
+	 *
+	 * @since 1.0.0
+	 * @param int      $index          Variation index.
+	 * @param array    $variation_data Variation data.
+	 * @param \WP_Post $variation      Variation post object.
+	 * @return void
+	 */
 	public function render_variation_data_fields( int $index, array $variation_data, \WP_Post $variation ) {
 		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-admin-variation-data.php';
 	}
 
+	/**
+	 * Saves variation data fields from the product editor.
+	 *
+	 * @since 1.0.0
+	 * @param int $variation_id Variation ID.
+	 * @param int $i            Index in submitted arrays.
+	 * @return void
+	 */
 	public function save_variation_data_fields( $variation_id, $i ) {
 		$fieldname_preset_id    = $this->get_meta_key( 'preset_id' );
 		$fieldname_preset_title = $this->get_meta_key( 'preset_title' );
@@ -557,6 +694,15 @@ class AdminCore {
 		$this->save_variation_data_field( $variation_id, $fieldname_preset_title, $i );
 		$this->save_variation_data_field( $variation_id, $fieldname_pdf_url, $i );
 	}
+	/**
+	 * Saves a single variation data field from POST.
+	 *
+	 * @since 1.0.0
+	 * @param int    $variation_id Variation ID.
+	 * @param string $fieldname    Field meta key.
+	 * @param int    $it           Submitted array index.
+	 * @return void
+	 */
 	private function save_variation_data_field( $variation_id, $fieldname, $it ) {
 		if ( isset( $_POST[ $fieldname ] ) && $_POST[ $fieldname ][ $it ] ) :
 			update_post_meta( $variation_id, $fieldname, $_POST[ $fieldname ][ $it ] );

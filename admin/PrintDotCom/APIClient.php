@@ -108,10 +108,10 @@ class APIClient {
 	 * @param array      $headers Optional headers to send with the request.
 	 * @return string|WP_Error The unparsed response from the API.
 	 */
-	private function performAuthenticatedRequest( $method, $path, $data = null, $headers = array() ) {
+	private function perform_authenticated_request( $method, $path, $data = null, $headers = array() ) {
 		$url   = $this->pdc_api_base_url . $path;
 		$token = $this->get_token();
-		return $this->performHttpRequest( $method, $url, $data, $token, $headers );
+		return $this->perform_http_request( $method, $url, $data, $token, $headers );
 	}
 
 	/**
@@ -126,54 +126,80 @@ class APIClient {
 	 * @param array      $headers Additional headers to send with the request.
 	 * @return string|WP_Error The unparsed response from the API.
 	 */
-	private function performHttpRequest( $method, $url, $data = null, $token = null, $headers = array() ) {
-		$curl   = curl_init( $url );
-		$params = array(
-			CURLOPT_TIMEOUT        => 30,
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_CUSTOMREQUEST  => $method,
-			CURLOPT_HTTPHEADER     => array(
-				'accept: application/json',
-				'content-type: application/json',
+	/**
+	 * Performs an HTTP request to the Print.com API using WordPress HTTP API.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string      $method  The HTTP method to use.
+	 * @param string      $url     The URL to request.
+	 * @param array|null  $data    The data to send in the request.
+	 * @param string|null $token   The access token to use.
+	 * @param array       $headers Additional headers to send with the request.
+	 * @return string|WP_Error The unparsed response from the API.
+	 */
+	private function perform_http_request( $method, $url, $data = null, $token = null, $headers = array() ) {
+		$method = strtoupper( $method );
+
+		$args = array(
+			'timeout' => 30,
+			'headers' => array(
+				'Accept' => 'application/json',
 			),
 		);
 
-		if ( ! empty( $headers ) ) {
-			$params[ CURLOPT_HTTPHEADER ] = array_merge( $params[ CURLOPT_HTTPHEADER ], $headers );
-		}
-
-		if ( 'POST' === $method && ! empty( $data ) ) {
-			$params[ CURLOPT_POSTFIELDS ] = function_exists( 'wp_json_encode' ) ? wp_json_encode( $data ) : json_encode( $data );
-		}
 		if ( null !== $token ) {
-			$params[ CURLOPT_HTTPHEADER ][] = 'authorization: PrintApiKey ' . $token;
-		}
-		curl_setopt_array( $curl, $params );
-
-		$response = curl_exec( $curl );
-		$err      = curl_error( $curl );
-		$httpcode = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
-		curl_close( $curl );
-
-		if ( 200 !== $httpcode ) {
-			return new \WP_Error( $httpcode, $response );
+			$args['headers']['Authorization'] = 'PrintApiKey ' . $token;
 		}
 
-		if ( ! empty( $err ) ) {
-			return new \WP_Error( $httpcode, $err );
+		if ( ! empty( $headers ) ) {
+			// Merge string header formats like 'key: value' or associative arrays.
+			foreach ( $headers as $h ) {
+				if ( is_string( $h ) && false !== strpos( $h, ':' ) ) {
+					list( $k, $v ) = array_map( 'trim', explode( ':', $h, 2 ) );
+					if ( $k ) {
+						$args['headers'][ $k ] = $v;
+					}
+				} elseif ( is_array( $h ) ) {
+					$args['headers'] = array_merge( $args['headers'], $h );
+				}
+			}
 		}
-		return $response;
+
+		if ( 'GET' === $method && ! empty( $data ) && is_array( $data ) ) {
+			$query = http_build_query( $data );
+			$url   = $url . ( false === strpos( $url, '?' ) ? '?' : '&' ) . $query;
+		} elseif ( ! empty( $data ) ) {
+			$args['headers']['Content-Type'] = 'application/json';
+			$args['body']                    = function_exists( 'wp_json_encode' ) ? wp_json_encode( $data ) : json_encode( $data ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
+		}
+
+		$response = wp_remote_request( $url, array_merge( $args, array( 'method' => $method ) ) );
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+		$body = wp_remote_retrieve_body( $response );
+
+		if ( $code < 200 || $code >= 300 ) {
+			return new \WP_Error( $code, $body );
+		}
+
+		return $body;
 	}
 
 
 	/**
 	 * Retrieves a list of Print.com Presets
 	 *
-	 * @param string $sku The SKU of the product to retrieve the Presets for
+	 * @param string $sku The SKU of the product to retrieve the Presets for.
 	 * @return Pdc_Preset[] A list of Print.com Presets
+	 *
+	 * @phpcsSuppress WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
 	 */
-	public function getPresets( $sku ) {
-		$result = $this->performAuthenticatedRequest( 'GET', '/customerpresets' );
+	public function get_presets( $sku ) {
+		$result = $this->perform_authenticated_request( 'GET', '/customerpresets' );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
@@ -186,23 +212,30 @@ class APIClient {
 			$decoded_result->items
 		);
 
-		$filteredBySku = array_filter(
+		$filtered_by_sku = array_filter(
 			$presets,
 			function ( $preset ) use ( $sku ) {
 				return $preset->sku === $sku;
 			}
 		);
-		return array_values( $filteredBySku );
+		return array_values( $filtered_by_sku );
 	}
 
 
-	public function searchProducts() {
+	/**
+	 * Searches products from the Print.com API.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return Product[]|WP_Error A list of products or WP_Error on failure.
+	 */
+	public function search_products() {
 		$result = null;
 		$cached = get_transient( $this->plugin_name . '-products' );
 		if ( $cached ) {
 			$result = json_decode( $cached );
 		} else {
-			$response = $this->performAuthenticatedRequest( 'GET', '/products', null );
+			$response = $this->perform_authenticated_request( 'GET', '/products', null );
 			if ( is_wp_error( $response ) ) {
 				return $response;
 			}
@@ -215,7 +248,8 @@ class APIClient {
 
 		$products = array_map(
 			function ( $result_item ) {
-				return new Product( $result_item->sku, $result_item->titlePlural );
+				// Accessing external API property using camelCase as provided by API.
+				return new Product( $result_item->sku, $result_item->titlePlural ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			},
 			$result
 		);
@@ -243,8 +277,10 @@ class APIClient {
 	 *
 	 * @return object|WP_Error Returns the Print.com order response object on success,
 	 *                         or WP_Error on failure with error details.
+	 *
+	 * @phpcsSuppress WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
 	 */
-	public function purchaseOrderItem( $order_item_id, $args ) {
+	public function purchase_order_item( $order_item_id, $args ) {
 		$order_item       = new \WC_Order_Item_Product( $order_item_id );
 		$order_id         = wc_get_order_id_by_order_item_id( $order_item_id );
 		$order            = wc_get_order( $order_id );
@@ -253,11 +289,11 @@ class APIClient {
 			return new \WP_Error( 'no_shipping_address', 'No shipping address found', array( 'order' => $order ) );
 		}
 
-		$product       = wc_get_product( $order_item['product_id'] );
+		$product       = wc_get_product( $order_item->get_product_id() );
 		$pdc_preset_id = $product->get_meta( Core::get_meta_key( 'preset_id' ) );
 		$pdc_pdf_url   = wc_get_order_item_meta( $order_item_id, Core::get_meta_key( 'pdf_url' ), true );
 
-		$result = $this->performAuthenticatedRequest( 'GET', '/customerpresets/' . urlencode( $pdc_preset_id ), null );
+		$result = $this->perform_authenticated_request( 'GET', '/customerpresets/' . rawurlencode( $pdc_preset_id ), null );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -273,10 +309,10 @@ class APIClient {
 			$item_options->copies = $order_item->get_quantity();
 		}
 
-		// remove unwanted options
+		// Remove unwanted options.
 		unset( $item_options->_accessories );
 		unset( $item_options->variants );
-		unset( $item_options->deliveryPromise );
+		unset( $item_options->deliveryPromise ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 
 		$restapi_url   = esc_url_raw( rest_url() );
 		$order_request = array(
@@ -307,9 +343,8 @@ class APIClient {
 			),
 		);
 
-		$order_body = apply_filters( $this->plugin_name . '_before_place_order', $order_request );
-
-		$result = $this->performAuthenticatedRequest(
+		$order_body = apply_filters( $this->plugin_name . '_before_place_order', $order_request ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		$result     = $this->perform_authenticated_request(
 			'POST',
 			'/orders',
 			$order_body,
