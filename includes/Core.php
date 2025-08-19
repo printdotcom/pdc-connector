@@ -124,7 +124,7 @@ class Core {
 	 * Include the following files that make up the plugin:
 	 *
 	 * - Pdc_Connector_Loader. Orchestrates the hooks of the plugin.
-	 * - Pdc_Connector_i18n. Defines internationalization functionality.
+	 * - Pdc_Connector_I18n. Defines internationalization functionality.
 	 * - Pdc_Connector_Admin. Defines all hooks for the admin area.
 	 * - Pdc_Connector_Public. Defines all hooks for the public side of the site.
 	 *
@@ -141,7 +141,7 @@ class Core {
 	/**
 	 * Define the locale for this plugin for internationalization.
 	 *
-	 * Uses the Pdc_Connector_i18n class in order to set the domain and to register the hook
+	 * Uses the Pdc_Connector_I18n class in order to set the domain and to register the hook
 	 * with WordPress.
 	 *
 	 * @since    1.0.0
@@ -149,7 +149,7 @@ class Core {
 	 */
 	private function set_locale() {
 
-		$plugin_i18n = new i18n();
+		$plugin_i18n = new I18n();
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 	}
