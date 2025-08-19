@@ -5,9 +5,12 @@ package-lock.json
 debug.log
 
 # PHP/composer dev
-composer.json
 composer.lock
-/vendor
+# Exclude all of vendor except the autoloader pieces needed at runtime
+vendor/*
+!vendor/autoload.php
+!vendor/composer/**
+phpcs.xml.dist
 
 # tests & reports
 test

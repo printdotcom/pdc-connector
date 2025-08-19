@@ -213,17 +213,35 @@ class AdminCore {
 	 * @return void
 	 */
 	public function register_settings() {
+		// API key setting: simple string sanitized via sanitize_text_field.
 		register_setting(
 			$this->plugin_name . '-options',
 			$this->plugin_name . '-api_key',
+			array(
+				'type'              => 'string',
+				'default'           => '',
+				'sanitize_callback' => array( $this, 'sanitize_api_key' ),
+			)
 		);
+		// Environment setting: only allow 'stg' or 'prod'.
 		register_setting(
 			$this->plugin_name . '-options',
 			$this->plugin_name . '-env',
+			array(
+				'type'              => 'string',
+				'default'           => 'stg',
+				'sanitize_callback' => array( $this, 'sanitize_env' ),
+			)
 		);
+		// Product configuration: array of options; currently supports a boolean flag.
 		register_setting(
 			$this->plugin_name . '-options',
 			$this->plugin_name . '-product',
+			array(
+				'type'              => 'array',
+				'default'           => array( 'use_preset_copies' => false ),
+				'sanitize_callback' => array( $this, 'sanitize_product' ),
+			)
 		);
 	}
 
@@ -344,6 +362,57 @@ class AdminCore {
 	}
 
 	/**
+	 * Sanitizes the API key option value.
+	 *
+	 * Ensures a trimmed string without unsafe characters is stored.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed $value Raw option value.
+	 * @return string Sanitized API key string.
+	 */
+	public function sanitize_api_key( $value ) {
+		if ( is_string( $value ) ) {
+			return sanitize_text_field( $value );
+		}
+		return '';
+	}
+
+	/**
+	 * Sanitizes the environment option value.
+	 *
+	 * Only 'stg' (test) and 'prod' (live) are accepted. Falls back to 'stg'.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed $value Raw option value.
+	 * @return string 'stg' or 'prod'.
+	 */
+	public function sanitize_env( $value ) {
+		$val = is_string( $value ) ? strtolower( sanitize_text_field( $value ) ) : '';
+		return in_array( $val, array( 'stg', 'prod' ), true ) ? $val : 'stg';
+	}
+
+	/**
+	 * Sanitizes the product configuration option value.
+	 *
+	 * Currently supports:
+	 * - use_preset_copies: bool. Checkbox style input.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed $value Raw option value.
+	 * @return array Sanitized configuration array.
+	 */
+	public function sanitize_product( $value ) {
+		$sanitized = array( 'use_preset_copies' => false );
+		if ( is_array( $value ) ) {
+			$sanitized['use_preset_copies'] = ! empty( $value['use_preset_copies'] ) ? (bool) intval( $value['use_preset_copies'] ) : false;
+		}
+		return $sanitized;
+	}
+
+	/**
 	 * Creates the settings page
 	 *
 	 * @since       1.0.0
@@ -388,7 +457,13 @@ class AdminCore {
 	 */
 	public function on_order_save( int $order_item_id ) {
 		$meta_pdf_url = $this->get_meta_key( 'pdf_url' );
-		update_post_meta( $order_item_id, $meta_pdf_url, $_POST[ $meta_pdf_url ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by WooCommerce before woocommerce_process_shop_order_meta.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by WooCommerce before woocommerce_process_shop_order_meta.
+		if ( isset( $_POST[ $meta_pdf_url ] ) ) {
+			// URLs should be sanitized with esc_url_raw; always unslash first.
+			$raw_pdf = wp_unslash( $_POST[ $meta_pdf_url ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$val_pdf = is_array( $raw_pdf ) ? array_map( 'esc_url_raw', $raw_pdf ) : esc_url_raw( $raw_pdf );
+			update_post_meta( $order_item_id, $meta_pdf_url, $val_pdf );
+		}
 	}
 
 
@@ -438,7 +513,7 @@ class AdminCore {
 			return;
 		}
 
-		$search_term       = isset( $_POST['searchTerm'] ) ? $_POST['searchTerm'] : '';
+		$search_term       = isset( $_POST['searchTerm'] ) ? sanitize_text_field( wp_unslash( $_POST['searchTerm'] ) ) : '';
 		$lc_search_term    = strtolower( $search_term );
 		$products          = $this->pdc_client->search_products();
 		$filtered_products = array_filter(
@@ -534,13 +609,20 @@ class AdminCore {
 	 */
 	/**
 	 * Retrieves a WC_Order_Item_Product by Print.com order item number.
+	 * We have to do this by direct query as WooCommerce does not expose
+	 * a possiblity to get an order item by a meta key. 
 	 *
 	 * @since 1.0.0
 	 * @param string $pdc_order_item_number ex. 6000012345-1.
-	 * @return \WC_Order_Item_Product|null
+	 * @return integer|null
 	 */
-	private function get_order_item_by_order_item_number( $pdc_order_item_number ) {
+	private function get_order_item_id_by_order_item_number( $pdc_order_item_number ) {
 		global $wpdb;
+
+		$cached_order_item_id = wp_cache_get( $this->plugin_name . '_order_item_' . $pdc_order_item_number );
+		if ( $cached_order_item_id ) {
+			return $cached_order_item_id;
+		}
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
 				"
@@ -557,7 +639,7 @@ class AdminCore {
 			return null;
 		}
 		$result     = $results[0];
-		$order_item = new \WC_Order_Item_Product( $result->order_item_id );
+		return $result->order_item_id;
 		return $order_item;
 	}
 
@@ -570,12 +652,13 @@ class AdminCore {
 	 * @return void
 	 */
 	private function on_webhook_shipped( string $order_item_number, string $tracking_url ) {
-		$order_item = $this->get_order_item_by_order_item_number( $order_item_number );
+		$order_item_id = $this->get_order_item_id_by_order_item_number( $order_item_number );
+		$order_item = new \WC_Order_Item_Product( $order_item_id );
 		$order_item->update_meta_data( $this->get_meta_key( 'order_item_tnt_url' ), $tracking_url );
 		$order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), 'shipped' );
 		$order_item->save();
 
-		$order = wc_get_order( $pdc_order->wp_order_id );
+		$order = wc_get_order( $order_item->wp_order_id );
 		$note  = sprintf(
 			// translators: placeholder is a URL to the track & trace page.
 			__( 'Item has been shipped by Print.com. Track & Trace code: <a href="%1$s">%2$s</a>.', 'pdc-connector' ),
@@ -611,7 +694,7 @@ class AdminCore {
 	 * @since      1.0.0
 	 */
 	public function pdc_list_presets() {
-		$sku = $_POST['sku'];
+		$sku = isset( $_POST['sku'] ) ? sanitize_text_field( wp_unslash( $_POST['sku'] ) ) : '';
 		if ( empty( $sku ) ) {
 			return new \WP_Error( 'no_sku', 'No SKU provided', array( 'sku' => $sku ) );
 		}
@@ -633,7 +716,7 @@ class AdminCore {
 	 * @return \WP_Error|void Error on failure, outputs success JSON on success.
 	 */
 	public function pdc_place_order() {
-		$order_item_id = $_POST['order_item_id'];
+		$order_item_id = isset( $_POST['order_item_id'] ) ? absint( wp_unslash( $_POST['order_item_id'] ) ) : 0;
 
 		$pdc_product_config = get_option( $this->plugin_name . '-product' );
 
@@ -718,8 +801,11 @@ class AdminCore {
 	 */
 	private function save_variation_data_field( $variation_id, $fieldname, $it ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by WooCommerce during product variation save.
-		if ( isset( $_POST[ $fieldname ] ) && $_POST[ $fieldname ][ $it ] ) :
-			update_post_meta( $variation_id, $fieldname, $_POST[ $fieldname ][ $it ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by WooCommerce during product variation save.
+		if ( isset( $_POST[ $fieldname ] ) && isset( $_POST[ $fieldname ][ $it ] ) ) :
+			// Always unslash POST and sanitize text; support array inputs too.
+			$raw_val = wp_unslash( $_POST[ $fieldname ][ $it ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$val     = is_array( $raw_val ) ? array_map( 'sanitize_text_field', $raw_val ) : sanitize_text_field( $raw_val );
+			update_post_meta( $variation_id, $fieldname, $val );
 		endif;
 	}
 }
