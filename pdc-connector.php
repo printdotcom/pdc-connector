@@ -27,12 +27,10 @@ require_once __DIR__ . '/vendor/autoload.php';
  * Domain Path:       /languages
  */
 
-use PdcConnector\Includes\Activator;
-use PdcConnector\Includes\Deactivator;
 use PdcConnector\Includes\Core;
 
 // If this file is called directly, abort.
-if (! defined('WPINC')) {
+if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
@@ -41,28 +39,7 @@ if (! defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('PDC_CONNECTOR_VERSION', '1.0.0');
-
-/**
- * The code that runs during plugin activation.
- * This action is documented in includes/class-pdc-connector-activator.php
- */
-function activate_pdc_connector()
-{
-	Activator::activate();
-}
-
-/**
- * The code that runs during plugin deactivation.
- * This action is documented in includes/class-pdc-connector-deactivator.php
- */
-function deactivate_pdc_connector()
-{
-	Deactivator::deactivate();
-}
-
-register_activation_hook(__FILE__, 'activate_pdc_connector');
-register_deactivation_hook(__FILE__, 'deactivate_pdc_connector');
+define( 'PDC_CONNECTOR_VERSION', '1.0.0' );
 
 /**
  * Begins execution of the plugin.
@@ -73,8 +50,7 @@ register_deactivation_hook(__FILE__, 'deactivate_pdc_connector');
  *
  * @since    1.0.0
  */
-function run_pdc_connector()
-{
+function run_pdc_connector() {
 
 	$plugin = new Core();
 	$plugin->run();

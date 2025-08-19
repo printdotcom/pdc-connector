@@ -12,16 +12,15 @@ namespace PdcConnector\Admin\PrintDotCom;
  * @subpackage Pdc_Connector/admin
  */
 
-class Preset
-{
-    public string $id;
-    public string $sku;
-    public string $title;
+class Preset {
 
-    public function __construct($sku, $title, $id)
-    {
-        $this->id = $id;
-        $this->sku = $sku ?? "";
-        $this->title = $title ?? "";
-    }
+	public string $id;
+	public string $sku;
+	public string $title;
+
+	public function __construct( $sku, $title, $id ) {
+		$this->id    = $id;
+		$this->sku   = $sku ?? '';
+		$this->title = $title ?? '';
+	}
 }

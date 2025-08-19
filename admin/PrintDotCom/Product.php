@@ -12,14 +12,13 @@ namespace PdcConnector\Admin\PrintDotCom;
  * @subpackage Pdc_Connector/admin
  */
 
-class Product
-{
-    public string $sku;
-    public string $title;
+class Product {
 
-    public function __construct($sku, $title)
-    {
-        $this->sku = $sku ?? "";
-        $this->title = $title ?? "";
-    }
+	public string $sku;
+	public string $title;
+
+	public function __construct( $sku, $title ) {
+		$this->sku   = $sku ?? '';
+		$this->title = $title ?? '';
+	}
 }

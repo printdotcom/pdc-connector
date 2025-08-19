@@ -34,8 +34,8 @@ const PLUGIN_NAME = 'pdc-connector';
  * @subpackage Pdc_Connector/includes
  * @author     Tijmen <tijmen@print.com>
  */
-class Core
-{
+class Core {
+
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -74,9 +74,8 @@ class Core
 	 *
 	 * @since    1.0.0
 	 */
-	public function __construct()
-	{
-		if (defined('PDC_CONNECTOR_VERSION')) {
+	public function __construct() {
+		if ( defined( 'PDC_CONNECTOR_VERSION' ) ) {
 			$this->version = PDC_CONNECTOR_VERSION;
 		} else {
 			$this->version = '1.0.0';
@@ -89,10 +88,9 @@ class Core
 		$this->define_public_hooks();
 	}
 
-	public static function get_meta_key($name, $public = false)
-	{
+	public static function get_meta_key( $name, $public = false ) {
 		$meta_key_name = PLUGIN_NAME . '_' . $name;
-		if ($public) {
+		if ( $public ) {
 			return $meta_key_name;
 		}
 		return '_' . $meta_key_name;
@@ -115,8 +113,7 @@ class Core
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function load_dependencies()
-	{
+	private function load_dependencies() {
 		$this->loader = new Loader();
 	}
 
@@ -129,12 +126,11 @@ class Core
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function set_locale()
-	{
+	private function set_locale() {
 
 		$plugin_i18n = new i18n();
 
-		$this->loader->add_action('plugins_loaded', $plugin_i18n, 'load_plugin_textdomain');
+		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 	}
 
 	/**
@@ -144,28 +140,27 @@ class Core
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function define_admin_hooks()
-	{
+	private function define_admin_hooks() {
 
-		$plugin_admin = new \PdcConnector\Admin\AdminCore($this->get_plugin_name(), $this->get_version());
+		$plugin_admin = new \PdcConnector\Admin\AdminCore( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
-		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
-		$this->loader->add_action('admin_menu', $plugin_admin, 'add_menu_pages');
-		$this->loader->add_action('admin_init', $plugin_admin, 'register_sections');
-		$this->loader->add_action('admin_init', $plugin_admin, 'register_settings');
-		$this->loader->add_filter('woocommerce_product_data_tabs', $plugin_admin, 'add_product_data_tab');
-		$this->loader->add_action('woocommerce_product_data_panels', $plugin_admin, 'render_product_data_tab');
-		$this->loader->add_action('woocommerce_variation_options', $plugin_admin, 'render_variation_data_fields', 10, 3);
-		$this->loader->add_action('woocommerce_save_product_variation', $plugin_admin, 'save_variation_data_fields', 10, 2);
-		$this->loader->add_action('woocommerce_process_product_meta_simple', $plugin_admin, 'save_product_data_fields', 10);
-		$this->loader->add_action('woocommerce_process_product_meta_variable', $plugin_admin, 'save_product_data_fields', 10);
-		$this->loader->add_action('add_meta_boxes', $plugin_admin, 'pdc_order_meta_box');
-		$this->loader->add_action('woocommerce_process_shop_order_meta', $plugin_admin, 'on_order_save');
-		$this->loader->add_action('rest_api_init', $plugin_admin, 'register_pdc_purchase_endpoint');
-		$this->loader->add_action('wp_ajax_pdc-list-products', $plugin_admin, 'pdc_list_products');
-		$this->loader->add_action('wp_ajax_pdc-list-presets', $plugin_admin, 'pdc_list_presets');
-		$this->loader->add_action('wp_ajax_pdc-place-order', $plugin_admin, 'pdc_place_order');
+		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_menu_pages' );
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_sections' );
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_settings' );
+		$this->loader->add_filter( 'woocommerce_product_data_tabs', $plugin_admin, 'add_product_data_tab' );
+		$this->loader->add_action( 'woocommerce_product_data_panels', $plugin_admin, 'render_product_data_tab' );
+		$this->loader->add_action( 'woocommerce_variation_options', $plugin_admin, 'render_variation_data_fields', 10, 3 );
+		$this->loader->add_action( 'woocommerce_save_product_variation', $plugin_admin, 'save_variation_data_fields', 10, 2 );
+		$this->loader->add_action( 'woocommerce_process_product_meta_simple', $plugin_admin, 'save_product_data_fields', 10 );
+		$this->loader->add_action( 'woocommerce_process_product_meta_variable', $plugin_admin, 'save_product_data_fields', 10 );
+		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'pdc_order_meta_box' );
+		$this->loader->add_action( 'woocommerce_process_shop_order_meta', $plugin_admin, 'on_order_save' );
+		$this->loader->add_action( 'rest_api_init', $plugin_admin, 'register_pdc_purchase_endpoint' );
+		$this->loader->add_action( 'wp_ajax_pdc-list-products', $plugin_admin, 'pdc_list_products' );
+		$this->loader->add_action( 'wp_ajax_pdc-list-presets', $plugin_admin, 'pdc_list_presets' );
+		$this->loader->add_action( 'wp_ajax_pdc-place-order', $plugin_admin, 'pdc_place_order' );
 	}
 
 	/**
@@ -175,12 +170,11 @@ class Core
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function define_public_hooks()
-	{
-		$plugin_public = new FrontCore($this->get_plugin_name(), $this->get_version());
+	private function define_public_hooks() {
+		$plugin_public = new FrontCore( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_filter('woocommerce_add_cart_item_data', $plugin_public, 'capture_cart_item_data', 10, 2);
-		$this->loader->add_filter('woocommerce_checkout_create_order_line_item', $plugin_public, 'save_pdc_values_order_meta', 80, 4);
+		$this->loader->add_filter( 'woocommerce_add_cart_item_data', $plugin_public, 'capture_cart_item_data', 10, 2 );
+		$this->loader->add_filter( 'woocommerce_checkout_create_order_line_item', $plugin_public, 'save_pdc_values_order_meta', 80, 4 );
 	}
 
 	/**
@@ -188,8 +182,7 @@ class Core
 	 *
 	 * @since    1.0.0
 	 */
-	public function run()
-	{
+	public function run() {
 		$this->loader->run();
 	}
 
@@ -200,8 +193,7 @@ class Core
 	 * @since     1.0.0
 	 * @return    string    The name of the plugin.
 	 */
-	public function get_plugin_name()
-	{
+	public function get_plugin_name() {
 		return $this->plugin_name;
 	}
 
@@ -211,8 +203,7 @@ class Core
 	 * @since     1.0.0
 	 * @return    Pdc_Connector_Loader    Orchestrates the hooks of the plugin.
 	 */
-	public function get_loader()
-	{
+	public function get_loader() {
 		return $this->loader;
 	}
 
@@ -222,8 +213,7 @@ class Core
 	 * @since     1.0.0
 	 * @return    string    The version number of the plugin.
 	 */
-	public function get_version()
-	{
+	public function get_version() {
 		return $this->version;
 	}
 }
