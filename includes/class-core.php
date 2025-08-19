@@ -97,9 +97,21 @@ class Core {
 		$this->define_public_hooks();
 	}
 
-	public static function get_meta_key( $name, $public = false ) {
+	/**
+	 * Retrieves a namespaced meta key for this plugin.
+	 *
+	 * Prepends the plugin name and, unless $public is true, an underscore to hide the
+	 * meta key from public display in WordPress admin UI.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $name   Base meta key name, e.g. 'pdf_url'.
+	 * @param bool   $public_meta_key Optional. Whether the meta key should be publicly visible (no leading underscore). Default false.
+	 * @return string Fully qualified meta key for storage.
+	 */
+	public static function get_meta_key( $name, $public_meta_key = false ) {
 		$meta_key_name = PLUGIN_NAME . '_' . $name;
-		if ( $public ) {
+		if ( $public_meta_key ) {
 			return $meta_key_name;
 		}
 		return '_' . $meta_key_name;

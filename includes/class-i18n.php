@@ -35,7 +35,7 @@ namespace PdcConnector\Includes;
  * @subpackage Pdc_Connector/includes
  * @author     Tijmen <tijmen@print.com>
  */
-class i18n {
+class I18n {
 
 
 
