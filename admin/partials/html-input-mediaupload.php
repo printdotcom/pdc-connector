@@ -1,4 +1,13 @@
 <?php
+/**
+ * Admin HTML partial: media upload input
+ *
+ * Provides a reusable input with media uploader for selecting a PDF URL.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/admin/partials
+ * @since 1.0.0
+ */
 
 $file_url_meta_key = $this->get_meta_key( 'pdf_url' );
 $file_url          = get_post_meta( $thepostid, $file_url_meta_key, true );

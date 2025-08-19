@@ -1,4 +1,13 @@
 <?php
+/**
+ * Print.com API client (admin)
+ *
+ * Provides a client for communicating with the Print.com API from the admin area.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/admin/PrintDotCom
+ * @since 1.0.0
+ */
 
 namespace PdcConnector\Admin\PrintDotCom;
 

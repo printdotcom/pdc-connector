@@ -1,3 +1,15 @@
+<?php
+/**
+ * Admin HTML partial: order metabox
+ *
+ * Renders the order item details and actions in the WooCommerce order screen.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/admin/partials
+ * @since 1.0.0
+ */
+?>
+
 <div class="wp-list-table pdc-table widefat fixed striped posts">
 	<div class="table-head">
 		<div class="table-head-col">

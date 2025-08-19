@@ -1,4 +1,13 @@
 <?php
+/**
+ * Print.com Preset model
+ *
+ * Provides a data structure for representing a Print.com Preset within the admin context.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/admin/PrintDotCom
+ * @since 1.0.0
+ */
 
 namespace PdcConnector\Admin\PrintDotCom;
 

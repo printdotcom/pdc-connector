@@ -1,4 +1,13 @@
 <?php
+/**
+ * Internationalization bootstrap
+ *
+ * Defines and loads the plugin text domain.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/includes
+ * @since 1.0.0
+ */
 
 namespace PdcConnector\Includes;
 

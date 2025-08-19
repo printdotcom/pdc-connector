@@ -1,4 +1,14 @@
 <?php
+/**
+ * Admin product data tab
+ *
+ * Renders the WooCommerce product data tab for connecting to Print.com.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/admin/partials
+ * @since 1.0.0
+ */
+
 /** @var WP_Post $post */
 
 $sku          = get_post_meta( $post->ID, $this->get_meta_key( 'product_sku' ), true );

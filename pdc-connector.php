@@ -1,6 +1,12 @@
 <?php
-
-require_once __DIR__ . '/vendor/autoload.php';
+/**
+ * Plugin entry
+ *
+ * File that bootstraps the plugin.
+ *
+ * @package Pdc_Connector
+ * @since 1.0.0
+ */
 
 /**
  * The plugin bootstrap file
@@ -27,6 +33,8 @@ require_once __DIR__ . '/vendor/autoload.php';
  * Domain Path:       /languages
  */
 
+require_once __DIR__ . '/vendor/autoload.php';
+
 use PdcConnector\Includes\Core;
 
 // If this file is called directly, abort.
@@ -35,9 +43,10 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Currently plugin version.
- * Start at version 1.0.0 and use SemVer - https://semver.org
- * Rename this for your plugin and update it as you release new versions.
+ * Current plugin version.
+ *
+ * @since 1.0.0
+ * @var string PDC_CONNECTOR_VERSION Plugin version.
  */
 define( 'PDC_CONNECTOR_VERSION', '1.0.0' );
 
@@ -50,9 +59,9 @@ define( 'PDC_CONNECTOR_VERSION', '1.0.0' );
  *
  * @since    1.0.0
  */
-function run_pdc_connector() {
+function pdc_connector_run() {
 
 	$plugin = new Core();
 	$plugin->run();
 }
-run_pdc_connector();
+pdc_connector_run();

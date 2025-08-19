@@ -45,8 +45,8 @@
     <!-- Set your project-specific prefix to avoid false positives. -->
     <properties>
       <property name="prefixes" type="array">
-        <element value="pdc"/>
         <element value="pdc_connector"/>
+        <element value="PdcConnector"/>
       </property>
     </properties>
   </rule>

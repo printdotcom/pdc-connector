@@ -1,4 +1,13 @@
 <?php
+/**
+ * Print.com Product model
+ *
+ * Provides a data structure for representing a Print.com Product within the admin context.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/admin/PrintDotCom
+ * @since 1.0.0
+ */
 
 namespace PdcConnector\Admin\PrintDotCom;
 

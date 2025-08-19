@@ -1,4 +1,13 @@
 <?php
+/**
+ * Front core
+ *
+ * Provides public-facing hooks and behavior for the plugin.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/front
+ * @since 1.0.0
+ */
 
 namespace PdcConnector\Front;
 
@@ -94,7 +103,7 @@ class FrontCore {
 	 * @since       1.0.0
 	 * @return      void
 	 */
-	public function save_pdc_values_order_meta( \WC_Order_Item_Product $order_item, $cart_item_key, $values, \WC_Order $order ) {
+	public function save_pdc_values_order_meta( \WC_Order_Item_Product $order_item, $cart_item_key, $values ) {
 		$product_id   = $values['product_id'];
 		$variation_id = $order_item->get_variation_id();
 

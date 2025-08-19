@@ -1,4 +1,14 @@
 <?php
+/**
+ * Admin variation data fields
+ *
+ * Renders additional variation fields used to connect variations to Print.com.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/admin/partials
+ * @since 1.0.0
+ */
+
 $variantion_ID = $variation->ID;
 $parent_ID     = $variation->post_parent;
 

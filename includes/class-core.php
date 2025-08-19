@@ -1,4 +1,13 @@
 <?php
+/**
+ * Core
+ *
+ * Defines the core plugin class and bootstraps both admin and public hooks.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/includes
+ * @since 1.0.0
+ */
 
 namespace PdcConnector\Includes;
 

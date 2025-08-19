@@ -1,4 +1,13 @@
 <?php
+/**
+ * Admin core
+ *
+ * Provides admin-specific hooks, pages, and integrations for the plugin.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/admin
+ * @since 1.0.0
+ */
 
 namespace PdcConnector\Admin;
 

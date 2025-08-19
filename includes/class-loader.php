@@ -1,4 +1,13 @@
 <?php
+/**
+ * Loader
+ *
+ * Registers all actions and filters for the plugin.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/includes
+ * @since 1.0.0
+ */
 
 namespace PdcConnector\Includes;
 
