@@ -15,5 +15,20 @@
       "email": "tijmen@print.com"
     }
   ],
-  "require": {}
+  "require": {},
+  "require-dev": {
+    "squizlabs/php_codesniffer": "^3.10",
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "wp-coding-standards/wpcs": "^3.1"
+  },
+  "scripts": {
+    "lint": "bin/lint",
+    "lint:fix": "bin/lint-fix"
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  }
 }

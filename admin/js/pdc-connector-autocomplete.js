@@ -30,6 +30,7 @@ jQuery(function ($) {
     return wp.ajax
       .post('pdc-list-products', {
         searchTerm: searchTerm?.toLowerCase(),
+        pdc_connector_nonce: pdcAdminApi.nonce,
       })
       .promise();
   }

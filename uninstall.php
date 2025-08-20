@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Fired when the plugin is uninstalled.
  *
@@ -22,7 +21,7 @@
  * @link       https://print.com
  * @since      1.0.0
  *
- * @package    Pdc_Connector
+ * @package    PrintDotCom
  */
 
 // If uninstall not called from WordPress, then exit.

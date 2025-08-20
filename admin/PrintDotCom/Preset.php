@@ -1,4 +1,13 @@
 <?php
+/**
+ * Print.com Preset model
+ *
+ * Provides a data structure for representing a Print.com Preset within the admin context.
+ *
+ * @package Pdc_Connector
+ * @subpackage Pdc_Connector/admin/PrintDotCom
+ * @since 1.0.0
+ */
 
 namespace PdcConnector\Admin\PrintDotCom;
 
@@ -11,17 +20,44 @@ namespace PdcConnector\Admin\PrintDotCom;
  * @package    Pdc_Connector
  * @subpackage Pdc_Connector/admin
  */
+class Preset {
 
-class Preset
-{
-    public string $id;
-    public string $sku;
-    public string $title;
+	/**
+	 * The preset identifier.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	public string $id;
 
-    public function __construct($sku, $title, $id)
-    {
-        $this->id = $id;
-        $this->sku = $sku ?? "";
-        $this->title = $title ?? "";
-    }
+	/**
+	 * The product SKU associated with this preset.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	public string $sku;
+
+	/**
+	 * The preset title.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	public string $title;
+
+	/**
+	 * Constructs a new Preset instance.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $sku   The product SKU.
+	 * @param string $title The preset title.
+	 * @param string $id    The preset identifier.
+	 */
+	public function __construct( $sku, $title, $id ) {
+		$this->id    = $id;
+		$this->sku   = $sku ?? '';
+		$this->title = $title ?? '';
+	}
 }

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Lint PHP files using PHPCS with WordPress standards.
+# Usage:
+#   bin/lint [path ...]
+#
+# Examples:
+#   bin/lint                 # lint default paths from phpcs.xml.dist
+#   bin/lint admin includes  # lint specific directories
+
+ROOT_DIR="$(cd "$(dirname "$0")"/.. && pwd)"
+PHPCS="$ROOT_DIR/vendor/bin/phpcs"
+CONFIG="$ROOT_DIR/phpcs.xml.dist"
+
+if [ ! -x "$PHPCS" ]; then
+  echo "PHP_CodeSniffer not found. Installing dev dependencies..." 1>&2
+  if command -v composer >/dev/null 2>&1; then
+    composer install --no-interaction --no-progress
+  else
+    echo "composer is not installed or not in PATH." 1>&2
+    exit 1
+  fi
+fi
+
+# Prefer project config if present
+if [ -f "$CONFIG" ]; then
+  exec "$PHPCS" --standard="$CONFIG" "$@"
+else
+  exec "$PHPCS" "$@"
+fi
+fi
+

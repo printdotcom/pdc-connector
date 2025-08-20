@@ -33,20 +33,20 @@ A WordPress plugin that integrates with the Print.com API to enable custom print
 
 2. **Start the development environment:**
    ```bash
-   # Start WordPress with PHP 8.2 and WordPress 6.7
-   bin/run-wordpress 67 82
+   # Start WordPress with PHP 8.2 and WordPress 6.8
+   bin/run-wordpress 68 82
    ```
 
 3. **Seed WooCommerce with sample data:**
    ```bash
    # Configure WooCommerce and create sample products
-   bin/seed-woocommerce 67 82
+   bin/seed-woocommerce 68 82
    ```
 
 4. **Access your site:**
-   - **Frontend:** http://localhost:8067
-   - **Admin:** http://localhost:8067/wp-admin (admin/password)
-   - **Shop:** http://localhost:8067/shop
+   - **Frontend:** http://localhost:8068
+   - **Admin:** http://localhost:8068/wp-admin (admin/password)
+   - **Shop:** http://localhost:8068/shop
 
 ## 🐳 Local Environment
 
@@ -54,9 +54,9 @@ A WordPress plugin that integrates with the Print.com API to enable custom print
 
 | Command | Description | Example |
 |---------|-------------|----------|
-| `bin/run-wordpress [WP_VER] [PHP_VER]` | Start WordPress environment | `bin/run-wordpress 67 82` |
-| `bin/stop-wordpress [WP_VER] [PHP_VER]` | Stop WordPress environment | `bin/stop-wordpress 67 82` |
-| `bin/seed-woocommerce [WP_VER] [PHP_VER]` | Seed WooCommerce with sample data | `bin/seed-woocommerce 67 82` |
+| `bin/run-wordpress [WP_VER] [PHP_VER]` | Start WordPress environment | `bin/run-wordpress 68 82` |
+| `bin/stop-wordpress [WP_VER] [PHP_VER]` | Stop WordPress environment | `bin/stop-wordpress 68 82` |
+| `bin/seed-woocommerce [WP_VER] [PHP_VER]` | Seed WooCommerce with sample data | `bin/seed-woocommerce 68 82` |
 | `bin/run-mock-api {start\|stop\|status}` | Manage Print.com Mock API | `bin/run-mock-api start` |
 
 ### Supported Versions
@@ -201,17 +201,17 @@ The project uses PSR-4 autoloading via Composer:
 
 1. **Start environment and seed data:**
    ```bash
-   bin/run-wordpress 67 82
-   bin/seed-woocommerce 67 82
+   bin/run-wordpress 68 82
+   bin/seed-woocommerce 68 82
    ```
 
 2. **Test WooCommerce integration:**
-   - Visit shop page: http://localhost:8067/shop
+   - Visit shop page: http://localhost:8068/shop
    - Add products to cart
    - Test checkout process
 
 3. **Test admin functionality:**
-   - Visit admin: http://localhost:8067/wp-admin
+   - Visit admin: http://localhost:8068/wp-admin
    - Check PDC Connector settings
    - Verify product configurations
 
