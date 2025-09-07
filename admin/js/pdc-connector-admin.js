@@ -119,9 +119,8 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
         .promise();
       await refreshOrderItem(orderItemId);
     } catch (err) {
-      const message = err?.responseJSON?.message || err?.responseText || 'Something went wrong. Please try again.';
-      console.error('AJAX error:', message);
-      $('#js-pdc-request-response').text(message);
+      const response = err?.responseJSON;
+      $('#js-pdc-request-response').text(response.data?.message);
     } finally {
       loading = false;
       $('#pdc-order').removeClass('button-disabled');

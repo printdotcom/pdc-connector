@@ -286,7 +286,7 @@ class APIClient {
 		$order            = wc_get_order( $order_id );
 		$shipping_address = $order->get_address( 'shipping' );
 		if ( empty( $shipping_address ) ) {
-			return new \WP_Error( 'no_shipping_address', 'No shipping address found', array( 'order' => $order ) );
+			return new \WP_Error( 400, 'No shipping address found', array( 'order' => $order ));
 		}
 
 		$product       = wc_get_product( $order_item->get_product_id() );
@@ -294,12 +294,20 @@ class APIClient {
 		$pdc_pdf_url   = wc_get_order_item_meta( $order_item_id, Core::get_meta_key( 'pdf_url' ), true );
 
 		$result = $this->perform_authenticated_request( 'GET', '/customerpresets/' . rawurlencode( $pdc_preset_id ), null );
-
 		if ( is_wp_error( $result ) ) {
-			return $result;
+			if ($result->get_error_message() === '[404] Preset not found.') {
+				return new \WP_Error( 404, 'Preset does not exist.', array(
+					'preset_id' => $pdc_preset_id,
+					'environment' => $this->pdc_api_base_url,
+				) );
+			}
+			return new \WP_Error(500, $result->get_error_message());
 		}
 		if ( empty( $result ) ) {
-			return new \WP_Error( 'no_preset', 'No preset found', array( 'preset_id' => $pdc_preset_id ) );
+			return new \WP_Error( 404, 'Preset does not exist.', array(
+				'preset_id' => $pdc_preset_id,
+				'environment' => $this->pdc_api_base_url,
+			) );
 		}
 
 		$preset = json_decode( $result );
@@ -354,11 +362,11 @@ class APIClient {
 		);
 
 		if ( is_wp_error( $result ) ) {
-			return new \WP_Error( 'place_order_failed', 'failed placing the order', array( 'result' => $result ) );
+			return new \WP_Error( 500, 'failed placing the order', array( 'result' => $result ) );
 		}
 
 		if ( empty( $result ) ) {
-			return new \WP_Error( 'order_failed', 'unable to place order', array( 'order' => $order_request ) );
+			return new \WP_Error( 500, 'unable to place order', array( 'order' => $order_request ) );
 		}
 
 		return json_decode( $result );
