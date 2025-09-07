@@ -22,7 +22,7 @@
  *
  * @wordpress-plugin
  * Plugin Name:       Print.com Print on Demand
- * Plugin URI:        https://print.com
+ * Plugin URI:        https://github.com/printdotcom/pdc-connector
  * Description:       Allows customers to configure, edit and purchase products via the Print.com API.
  * Version:           1.0.0
  * Author:            Print.com
