@@ -721,10 +721,13 @@ class AdminCore {
 
 		$result = $this->pdc_client->purchase_order_item( $order_item_id, $pdc_product_config );
 		if ( is_wp_error( $result ) ) {
-			return wp_send_json_error(array(
-				'message' => $result->get_error_message(),
-				'details' => $result->get_error_data(),
-			), $result->get_error_code());
+			return wp_send_json_error(
+				array(
+					'message' => $result->get_error_message(),
+					'details' => $result->get_error_data(),
+				),
+				$result->get_error_code()
+			);
 		}
 		$pdc_order               = $result->order;
 		$pdc_order_item          = $pdc_order->items[0];
