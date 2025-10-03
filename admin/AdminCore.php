@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Admin core
  *
@@ -31,7 +32,8 @@ use PdcConnector\Includes\Core;
  * @subpackage Pdc_Connector/admin
  * @author     Tijmen <tijmen@print.com>
  */
-class AdminCore {
+class AdminCore
+{
 
 
 	/**
@@ -67,11 +69,12 @@ class AdminCore {
 	 * @param      string $plugin_name       The name of this plugin.
 	 * @param      string $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct($plugin_name, $version)
+	{
 
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
-		$this->pdc_client  = new APIClient( $plugin_name );
+		$this->pdc_client  = new APIClient($plugin_name);
 	}
 
 	/**
@@ -82,8 +85,9 @@ class AdminCore {
 	 * @since 1.0.1
 	 * @param string $key The meta key, ex. 'pdf_url'.
 	 */
-	private function get_meta_key( $key ) {
-		return Core::get_meta_key( $key );
+	private function get_meta_key($key)
+	{
+		return Core::get_meta_key($key);
 	}
 
 	/**
@@ -91,7 +95,8 @@ class AdminCore {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_styles() {
+	public function enqueue_styles()
+	{
 
 		/**
 		 * This function is provided for demonstration purposes only.
@@ -105,14 +110,7 @@ class AdminCore {
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/pdc-connector-admin.css', array(), $this->version, 'all' );
-		wp_enqueue_style(
-			'accessible-autocomplete',
-			plugin_dir_url( __FILE__ ) . 'css/accessible-autocomplete.min.css',
-			array(),
-			$this->version,
-			'all',
-		);
+		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/pdc-connector-admin.css', array(), $this->version, 'all');
 	}
 
 	/**
@@ -120,7 +118,8 @@ class AdminCore {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_scripts() {
+	public function enqueue_scripts()
+	{
 
 		/**
 		 * This function is provided for demonstration purposes only.
@@ -138,39 +137,15 @@ class AdminCore {
 		wp_enqueue_media();
 
 		// Register admin JS scripts.
-		wp_enqueue_script( $this->plugin_name . '-admin', plugin_dir_url( __FILE__ ) . 'js/pdc-connector-admin.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script($this->plugin_name . '-admin', plugin_dir_url(__FILE__) . 'js/pdc-connector-admin.js', array('jquery'), $this->version, false);
 		wp_localize_script(
 			$this->plugin_name . '-admin',
 			'pdcAdminApi',
 			array(
-				'root'        => esc_url_raw( rest_url() ),
+				'root'        => esc_url_raw(rest_url()),
 				'nonce'       => wp_create_nonce(),
 				'plugin_name' => $this->plugin_name,
-				'ajax_url'    => admin_url( 'admin-ajax.php' ),
-				'pdc_url'     => $this->pdc_client->get_api_base_url(),
-			)
-		);
-		wp_enqueue_script(
-			'accessible-autocomplete',
-			plugin_dir_url( __FILE__ ) . 'js/accessible-autocomplete.min.js',
-			array(),
-			'3.0.1',
-			array(),
-		);
-		wp_enqueue_script(
-			$this->plugin_name . '-autocomplete-search',
-			plugin_dir_url( __FILE__ ) . 'js/pdc-connector-autocomplete.js',
-			array( 'jquery', 'accessible-autocomplete' ),
-			time(),
-			array(),
-		);
-		wp_localize_script(
-			$this->plugin_name . '-autocomplete-search',
-			'pdcAdminApi',
-			array(
-				'root'        => esc_url_raw( rest_url() ),
-				'nonce'       => wp_create_nonce(),
-				'plugin_name' => $this->plugin_name,
+				'ajax_url'    => admin_url('admin-ajax.php'),
 				'pdc_url'     => $this->pdc_client->get_api_base_url(),
 			)
 		);
@@ -181,8 +156,9 @@ class AdminCore {
 	 *
 	 * @since    1.0.0
 	 */
-	public function add_menu_pages() {
-		add_menu_page( 'General Settings', 'Print.com', 'manage_options', $this->plugin_name, array( $this, 'page_general_settings' ), 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJMYWFnXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeD0iMCIgeT0iMCIgdmlld0JveD0iMCAwIDY5IDY5IiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA2OSA2OSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CiAgPHN0eWxlPgogICAgLnN0MXtmaWxsOiNmZmZ9CiAgPC9zdHlsZT4KICA8cGF0aCBpZD0iUGF0aF82MDQiIGQ9Ik01MC4zIDY1LjVjLTIzLjIgOS4zLTQxIC4yLTQ4LjUtMjcuMS01LjUtMjAgMi0yNS4xIDIyLjctMzQuNEM0OC43LTYuOSA2Mi44IDUuNyA2Ny43IDI4LjJjMy44IDE3LjQtLjYgMzAuNS0xNy40IDM3LjN6IiBzdHlsZT0iZmlsbDojZmYwMDQ4Ii8+CiAgPGcgaWQ9Ikdyb3VwXzgxMzQiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE2LjM3MiAyNC43MjgpIj4KICAgIDxnIGlkPSJHcm91cF84MTMyIj4KICAgICAgPHBhdGggaWQ9IlBhdGhfNjA1IiBjbGFzcz0ic3QxIiBkPSJNNC4xIDcuNVYxLjRDNC4yLjIgMy43LTEgMi44LTEuOCAxLjctMi42LjQtMy0uOS0yLjloLTVWMTVjMCAuNS4zLjguOS44aDIuN1YxMWMuNi42IDEuNC45IDIuMy44IDEuMSAwIDIuMi0uNCAzLTEuMS43LS45IDEuMS0yIDEuMS0zLjJ6TS41IDYuN2MwIC42LS4xIDEuMi0uMyAxLjctLjIuNC0uNy42LTEuMS42LS41IDAtMS0uMi0xLjQtLjZWMGgxLjRDMCAwIC41LjUuNSAxLjV2NS4yeiIvPgogICAgICA8cGF0aCBpZD0iUGF0aF82MDYiIGNsYXNzPSJzdDEiIGQ9Ik0xMi44LTMuMmMtMS4yLS4xLTIuMy43LTIuNiAxLjh2LS43YzAtLjUtLjMtLjgtLjktLjhINi41djEzLjdjMCAuNS4zLjguOS44aDIuN1YzLjFjLjEtMS4zIDEtMi41IDIuMy0yLjcuMiAwIC40LS4yLjUtLjR2LTMuMWMwLS4xIDAtLjEtLjEtLjF6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYwNyIgY2xhc3M9InN0MSIgZD0iTTIzLjUgMTEuNWgyLjdWLjVjLjItLjYuOC0xIDEuNC0uOS44IDAgMS4yLjUgMS4yIDEuNHY5LjdjMCAuNS4zLjcuOC43aDIuOFYuOGMuMS0xLjEtLjMtMi4xLTEtMi45LS41LS44LTEuNC0xLjItMi40LTEuMS0xLjEtLjEtMi4yLjUtMi43IDEuNXYtLjRjMC0uNS0uMy0uOC0uOS0uOGgtMy44djIuM2MwIC4zLjMuNi42LjZoLjR2MTAuOGMuMS40LjMuNy45Ljd6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYwOCIgY2xhc3M9InN0MSIgZD0iTTIwLjIgMTEuNVY5LjJjMC0uMy0uMy0uNi0uNi0uNkgxOVYtMi4yYzAtLjUtLjMtLjgtLjktLjhoLTIuN3YxMy43YzAgLjUuMy43LjkuN2gzLjl6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYwOSIgY2xhc3M9InN0MSIgZD0iTTQwLjIgOC43aC0uNGMtLjggMC0xLjMtLjQtMS4zLTEuM1YwaDIuMXYtMi4xYzAtLjUtLjMtLjctLjgtLjdoLTEuNHYtMS4xYzAtLjUtLjMtLjgtLjktLjhIMzVWNi45YzAgMS42LjMgMi44IDEgMy41LjcuNyAxLjcgMS4xIDMuMiAxLjFoMS45VjkuNGMwLS41LS4zLS43LS45LS43eiIvPgogICAgICA8cGF0aCBpZD0iUGF0aF82MTAiIGNsYXNzPSJzdDEiIGQ9Ik0xOC4xLTQuOWMtMS40LjYtMi41IDAtMy0xLjctLjMtMS4yLjEtMS41IDEuNC0yLjEgMS41LS43IDIuNC4xIDIuNyAxLjUuMyAxIDAgMS44LTEuMSAyLjN6Ii8+CiAgICA8L2c+CiAgICA8ZyBpZD0iR3JvdXBfODEzMyIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTguODI0IDM4LjQwNikiPgogICAgICA8cGF0aCBpZD0iUGF0aF82MTEiIGNsYXNzPSJzdDEiIGQ9Ik0tMS42LTIyYy0xLjctMS4xLTMuOS0xLjEtNS41IDAtLjcuNi0xIDEuNS0xIDIuNHY0LjVjLS4xLjkuMyAxLjggMSAyLjQgMS43IDEuMSAzLjkgMS4xIDUuNSAwIC43LS42IDEtMS41IDEtMi40di0uNmMwLS40LS4yLS42LS43LS42aC0xLjRjLS40IDAtLjcuMi0uNy42di42YzAgLjctLjMgMS4xLTEgMS4xcy0xLS40LTEtMS4xdi00LjZjMC0uNy4zLTEuMSAxLTEuMXMxIC40IDEgMS4xdi42YzAgLjQuMi42LjcuNmgxLjRjLjQgMCAuNy0uMi43LS42di0uNmMuMS0uOC0uMy0xLjctMS0yLjN6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYxMiIgY2xhc3M9InN0MSIgZD0iTTcuNS0yMmMtMS43LTEuMS0zLjktMS4xLTUuNSAwLS43LjYtMSAxLjUtMSAyLjR2NC41Yy0uMS45LjMgMS44IDEgMi40IDEuNyAxLjEgMy45IDEuMSA1LjUgMCAuNy0uNiAxLTEuNSAxLTIuNHYtNC41YzAtLjktLjQtMS44LTEtMi40em0tMS44IDYuOWMwIC43LS4zIDEuMS0xIDEuMXMtMS0uNC0xLTEuMXYtNC42YzAtLjcuMy0xLjEgMS0xLjFzMSAuNCAxIDEuMXY0LjZ6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYxMyIgY2xhc3M9InN0MSIgZD0iTS0xMC4zLTEyYy0xLjEuNS0yIDAtMi40LTEuMy0uMy0xIC4xLTEuMiAxLjEtMS43IDEuMi0uNSAxLjkuMSAyLjEgMS4yLjQuNyAwIDEuNS0uOCAxLjguMS0uMS4xLS4xIDAgMHoiLz4KICAgICAgPHBhdGggaWQ9IlBhdGhfNjE0IiBjbGFzcz0ic3QxIiBkPSJNMjIuNi0xNC4zaC0uNHYtNS42YzAtLjgtLjItMS42LS43LTIuMi0uNS0uNS0xLjItLjgtMi0uOC0xIDAtMS45LjUtMi40IDEuMy0uNC0uOC0xLjMtMS4zLTIuMy0xLjItLjgtLjEtMS42LjMtMiAxLjF2LS4zYzAtLjQtLjItLjYtLjctLjZIOS40djEuOGMwIC4yLjIuNC40LjRoLjN2Ny44YzAgLjQuMi41LjcuNWgydi04Yy4xLS40LjYtLjcgMS0uNy42IDAgLjkuNC45IDEuMXY3LjFjMCAuNC4yLjUuNi41aDIuMXYtOGMuMi0uNC42LS43IDEtLjcuNiAwIC45LjQuOSAxLjF2Ny4xYzAgLjQuMi41LjYuNWgyLjl2LTEuN2MuMy0uMy4xLS41LS4yLS41eiIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+' );
+	public function add_menu_pages()
+	{
+		add_menu_page('General Settings', 'Print.com', 'manage_options', $this->plugin_name, array($this, 'page_general_settings'), 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJMYWFnXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeD0iMCIgeT0iMCIgdmlld0JveD0iMCAwIDY5IDY5IiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA2OSA2OSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CiAgPHN0eWxlPgogICAgLnN0MXtmaWxsOiNmZmZ9CiAgPC9zdHlsZT4KICA8cGF0aCBpZD0iUGF0aF82MDQiIGQ9Ik01MC4zIDY1LjVjLTIzLjIgOS4zLTQxIC4yLTQ4LjUtMjcuMS01LjUtMjAgMi0yNS4xIDIyLjctMzQuNEM0OC43LTYuOSA2Mi44IDUuNyA2Ny43IDI4LjJjMy44IDE3LjQtLjYgMzAuNS0xNy40IDM3LjN6IiBzdHlsZT0iZmlsbDojZmYwMDQ4Ii8+CiAgPGcgaWQ9Ikdyb3VwXzgxMzQiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE2LjM3MiAyNC43MjgpIj4KICAgIDxnIGlkPSJHcm91cF84MTMyIj4KICAgICAgPHBhdGggaWQ9IlBhdGhfNjA1IiBjbGFzcz0ic3QxIiBkPSJNNC4xIDcuNVYxLjRDNC4yLjIgMy43LTEgMi44LTEuOCAxLjctMi42LjQtMy0uOS0yLjloLTVWMTVjMCAuNS4zLjguOS44aDIuN1YxMWMuNi42IDEuNC45IDIuMy44IDEuMSAwIDIuMi0uNCAzLTEuMS43LS45IDEuMS0yIDEuMS0zLjJ6TS41IDYuN2MwIC42LS4xIDEuMi0uMyAxLjctLjIuNC0uNy42LTEuMS42LS41IDAtMS0uMi0xLjQtLjZWMGgxLjRDMCAwIC41LjUuNSAxLjV2NS4yeiIvPgogICAgICA8cGF0aCBpZD0iUGF0aF82MDYiIGNsYXNzPSJzdDEiIGQ9Ik0xMi44LTMuMmMtMS4yLS4xLTIuMy43LTIuNiAxLjh2LS43YzAtLjUtLjMtLjgtLjktLjhINi41djEzLjdjMCAuNS4zLjguOS44aDIuN1YzLjFjLjEtMS4zIDEtMi41IDIuMy0yLjcuMiAwIC40LS4yLjUtLjR2LTMuMWMwLS4xIDAtLjEtLjEtLjF6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYwNyIgY2xhc3M9InN0MSIgZD0iTTIzLjUgMTEuNWgyLjdWLjVjLjItLjYuOC0xIDEuNC0uOS44IDAgMS4yLjUgMS4yIDEuNHY5LjdjMCAuNS4zLjcuOC43aDIuOFYuOGMuMS0xLjEtLjMtMi4xLTEtMi45LS41LS44LTEuNC0xLjItMi40LTEuMS0xLjEtLjEtMi4yLjUtMi43IDEuNXYtLjRjMC0uNS0uMy0uOC0uOS0uOGgtMy44djIuM2MwIC4zLjMuNi42LjZoLjR2MTAuOGMuMS40LjMuNy45Ljd6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYwOCIgY2xhc3M9InN0MSIgZD0iTTIwLjIgMTEuNVY5LjJjMC0uMy0uMy0uNi0uNi0uNkgxOVYtMi4yYzAtLjUtLjMtLjgtLjktLjhoLTIuN3YxMy43YzAgLjUuMy43LjkuN2gzLjl6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYwOSIgY2xhc3M9InN0MSIgZD0iTTQwLjIgOC43aC0uNGMtLjggMC0xLjMtLjQtMS4zLTEuM1YwaDIuMXYtMi4xYzAtLjUtLjMtLjctLjgtLjdoLTEuNHYtMS4xYzAtLjUtLjMtLjgtLjktLjhIMzVWNi45YzAgMS42LjMgMi44IDEgMy41LjcuNyAxLjcgMS4xIDMuMiAxLjFoMS45VjkuNGMwLS41LS4zLS43LS45LS43eiIvPgogICAgICA8cGF0aCBpZD0iUGF0aF82MTAiIGNsYXNzPSJzdDEiIGQ9Ik0xOC4xLTQuOWMtMS40LjYtMi41IDAtMy0xLjctLjMtMS4yLjEtMS41IDEuNC0yLjEgMS41LS43IDIuNC4xIDIuNyAxLjUuMyAxIDAgMS44LTEuMSAyLjN6Ii8+CiAgICA8L2c+CiAgICA8ZyBpZD0iR3JvdXBfODEzMyIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTguODI0IDM4LjQwNikiPgogICAgICA8cGF0aCBpZD0iUGF0aF82MTEiIGNsYXNzPSJzdDEiIGQ9Ik0tMS42LTIyYy0xLjctMS4xLTMuOS0xLjEtNS41IDAtLjcuNi0xIDEuNS0xIDIuNHY0LjVjLS4xLjkuMyAxLjggMSAyLjQgMS43IDEuMSAzLjkgMS4xIDUuNSAwIC43LS42IDEtMS41IDEtMi40di0uNmMwLS40LS4yLS42LS43LS42aC0xLjRjLS40IDAtLjcuMi0uNy42di42YzAgLjctLjMgMS4xLTEgMS4xcy0xLS40LTEtMS4xdi00LjZjMC0uNy4zLTEuMSAxLTEuMXMxIC40IDEgMS4xdi42YzAgLjQuMi42LjcuNmgxLjRjLjQgMCAuNy0uMi43LS42di0uNmMuMS0uOC0uMy0xLjctMS0yLjN6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYxMiIgY2xhc3M9InN0MSIgZD0iTTcuNS0yMmMtMS43LTEuMS0zLjktMS4xLTUuNSAwLS43LjYtMSAxLjUtMSAyLjR2NC41Yy0uMS45LjMgMS44IDEgMi40IDEuNyAxLjEgMy45IDEuMSA1LjUgMCAuNy0uNiAxLTEuNSAxLTIuNHYtNC41YzAtLjktLjQtMS44LTEtMi40em0tMS44IDYuOWMwIC43LS4zIDEuMS0xIDEuMXMtMS0uNC0xLTEuMXYtNC42YzAtLjcuMy0xLjEgMS0xLjFzMSAuNCAxIDEuMXY0LjZ6Ii8+CiAgICAgIDxwYXRoIGlkPSJQYXRoXzYxMyIgY2xhc3M9InN0MSIgZD0iTS0xMC4zLTEyYy0xLjEuNS0yIDAtMi40LTEuMy0uMy0xIC4xLTEuMiAxLjEtMS43IDEuMi0uNSAxLjkuMSAyLjEgMS4yLjQuNyAwIDEuNS0uOCAxLjguMS0uMS4xLS4xIDAgMHoiLz4KICAgICAgPHBhdGggaWQ9IlBhdGhfNjE0IiBjbGFzcz0ic3QxIiBkPSJNMjIuNi0xNC4zaC0uNHYtNS42YzAtLjgtLjItMS42LS43LTIuMi0uNS0uNS0xLjItLjgtMi0uOC0xIDAtMS45LjUtMi40IDEuMy0uNC0uOC0xLjMtMS4zLTIuMy0xLjItLjgtLjEtMS42LjMtMiAxLjF2LS4zYzAtLjQtLjItLjYtLjctLjZIOS40djEuOGMwIC4yLjIuNC40LjRoLjN2Ny44YzAgLjQuMi41LjcuNWgydi04Yy4xLS40LjYtLjcgMS0uNy42IDAgLjkuNC45IDEuMXY3LjFjMCAuNC4yLjUuNi41aDIuMXYtOGMuMi0uNC42LS43IDEtLjcuNiAwIC45LjQuOSAxLjF2Ny4xYzAgLjQuMi41LjYuNWgyLjl2LTEuN2MuMy0uMy4xLS41LS4yLS41eiIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+');
 	}
 
 	/**
@@ -191,17 +167,18 @@ class AdminCore {
 	 * @since 1.0.0
 	 * @return void
 	 */
-	public function register_sections() {
+	public function register_sections()
+	{
 		add_settings_section(
 			$this->plugin_name . '-credentials',
 			'Credentials',
-			array( $this, 'section_credentials' ),
+			array($this, 'section_credentials'),
 			$this->plugin_name,
 		);
 		add_settings_section(
 			$this->plugin_name . '-product',
 			'Product',
-			array( $this, 'section_product' ),
+			array($this, 'section_product'),
 			$this->plugin_name,
 		);
 	}
@@ -212,7 +189,8 @@ class AdminCore {
 	 * @since 1.0.0
 	 * @return void
 	 */
-	public function register_settings() {
+	public function register_settings()
+	{
 		// API key setting: simple string sanitized via sanitize_text_field.
 		register_setting(
 			$this->plugin_name . '-options',
@@ -220,7 +198,7 @@ class AdminCore {
 			array(
 				'type'              => 'string',
 				'default'           => '',
-				'sanitize_callback' => array( $this, 'sanitize_api_key' ),
+				'sanitize_callback' => array($this, 'sanitize_api_key'),
 			)
 		);
 		// Environment setting: only allow 'stg' or 'prod'.
@@ -230,7 +208,7 @@ class AdminCore {
 			array(
 				'type'              => 'string',
 				'default'           => 'stg',
-				'sanitize_callback' => array( $this, 'sanitize_env' ),
+				'sanitize_callback' => array($this, 'sanitize_env'),
 			)
 		);
 		// Product configuration: array of options; currently supports a boolean flag.
@@ -239,8 +217,8 @@ class AdminCore {
 			$this->plugin_name . '-product',
 			array(
 				'type'              => 'array',
-				'default'           => array( 'use_preset_copies' => false ),
-				'sanitize_callback' => array( $this, 'sanitize_product' ),
+				'default'           => array('use_preset_copies' => false),
+				'sanitize_callback' => array($this, 'sanitize_product'),
 			)
 		);
 	}
@@ -252,12 +230,13 @@ class AdminCore {
 	 * @param array $tabs Existing product tabs.
 	 * @return array Modified tabs.
 	 */
-	public function add_product_data_tab( $tabs ) {
+	public function add_product_data_tab($tabs)
+	{
 		$tabs['pdc_printtab'] = array(
 			'label'    => 'Print.com',
 			'priority' => 60,
 			'target'   => 'pdc_product_data_tab',
-			'class'    => array( 'show_if_simple', 'show_if_variable' ),
+			'class'    => array('show_if_simple', 'show_if_variable'),
 		);
 
 		return $tabs;
@@ -272,12 +251,11 @@ class AdminCore {
 	 * @param int $post_id The product post ID.
 	 * @return void
 	 */
-	public function save_product_data_fields( $post_id ) {
-		$this->save_text_field( $post_id, $this->get_meta_key( 'product_sku' ) );
-		$this->save_text_field( $post_id, $this->get_meta_key( 'product_title' ) );
-		$this->save_text_field( $post_id, $this->get_meta_key( 'preset_id' ) );
-		$this->save_text_field( $post_id, $this->get_meta_key( 'preset_title' ) );
-		$this->save_text_field( $post_id, $this->get_meta_key( 'pdf_url' ) );
+	public function save_product_data_fields($post_id)
+	{
+		$this->save_text_field($post_id, $this->get_meta_key('product_sku'));
+		$this->save_text_field($post_id, $this->get_meta_key('preset_id'));
+		$this->save_text_field($post_id, $this->get_meta_key('pdf_url'));
 	}
 
 	/**
@@ -287,9 +265,10 @@ class AdminCore {
 	 * @param \WP_Post $post Post object.
 	 * @return void
 	 */
-	public function pdc_meta_box_shop_order( $post ) {
-		$order = wc_get_order( $post->ID );
-		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-html-order-metabox.php';
+	public function pdc_meta_box_shop_order($post)
+	{
+		$order = wc_get_order($post->ID);
+		include plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-html-order-metabox.php';
 	}
 
 	/**
@@ -299,9 +278,10 @@ class AdminCore {
 	 * @param \WP_Post $post Post object.
 	 * @return void
 	 */
-	public function pdc_meta_box_page_wc_orders( $post ) {
-		$order = wc_get_order( $post->get_ID() );
-		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-html-order-metabox.php';
+	public function pdc_meta_box_page_wc_orders($post)
+	{
+		$order = wc_get_order($post->get_ID());
+		include plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-html-order-metabox.php';
 	}
 
 	/**
@@ -310,12 +290,13 @@ class AdminCore {
 	 * @since 1.0.0
 	 * @return void
 	 */
-	public function pdc_order_meta_box() {
+	public function pdc_order_meta_box()
+	{
 		// WooCommerce 7.7 and lower.
 		add_meta_box(
 			'pdc_order_meta_box',
 			'Print.com',
-			array( $this, 'pdc_meta_box_shop_order' ),
+			array($this, 'pdc_meta_box_shop_order'),
 			'shop_order',
 			'normal',
 			'core'
@@ -325,7 +306,7 @@ class AdminCore {
 		add_meta_box(
 			'pdc_order_meta_box',
 			'Print.com',
-			array( $this, 'pdc_meta_box_page_wc_orders' ),
+			array($this, 'pdc_meta_box_page_wc_orders'),
 			'woocommerce_page_wc-orders',
 			'normal',
 			'core'
@@ -340,13 +321,14 @@ class AdminCore {
 	 * @param string $fieldname Meta key to save from POST.
 	 * @return void
 	 */
-	private function save_text_field( $post_id, $fieldname ) {
+	private function save_text_field($post_id, $fieldname)
+	{
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in save_product_data_fields().
-		if ( isset( $_POST[ $fieldname ] ) ) :
+		if (isset($_POST[$fieldname])) :
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in save_product_data_fields().
-			$raw_value = $_POST[ $fieldname ];
-			$sanitized = is_array( $raw_value ) ? array_map( 'sanitize_text_field', wp_unslash( $raw_value ) ) : sanitize_text_field( wp_unslash( $raw_value ) );
-			update_post_meta( $post_id, $fieldname, $sanitized );
+			$raw_value = wp_unslash($_POST[$fieldname]);
+			$sanitized = is_array($raw_value) ? array_map('sanitize_text_field', $raw_value) : sanitize_text_field($raw_value);
+			update_post_meta($post_id, $fieldname, $sanitized);
 		endif;
 	}
 
@@ -356,9 +338,23 @@ class AdminCore {
 	 * @since 1.0.0
 	 * @return void
 	 */
-	public function render_product_data_tab() {
+	public function render_product_data_tab()
+	{
 		global $post, $thepostid, $product_object;
-		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-admin-producttab.php';
+
+		$pdc_connector_sku          = get_post_meta($post->ID, $this->get_meta_key('product_sku'), true);
+		$pdc_connector_sku_title    = get_post_meta($post->ID, $this->get_meta_key('product_title'), true);
+		$pdc_connector_preset_id    = get_post_meta($post->ID, $this->get_meta_key('preset_id'), true);
+		$pdc_connector_preset_title = get_post_meta($post->ID, $this->get_meta_key('preset_title'), true);
+		$preset_input_name 			= $this->get_meta_key('preset_id');
+
+		$pdc_connector_presets_for_sku = array();
+		if (!empty($pdc_connector_sku)) {
+			$pdc_connector_presets_for_sku = $this->pdc_client->get_presets($pdc_connector_sku);
+		}
+
+		$pdc_products = $this->pdc_client->search_products();
+		include plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-producttab.php';
 	}
 
 	/**
@@ -371,9 +367,10 @@ class AdminCore {
 	 * @param mixed $value Raw option value.
 	 * @return string Sanitized API key string.
 	 */
-	public function sanitize_api_key( $value ) {
-		if ( is_string( $value ) ) {
-			return sanitize_text_field( $value );
+	public function sanitize_api_key($value)
+	{
+		if (is_string($value)) {
+			return sanitize_text_field($value);
 		}
 		return '';
 	}
@@ -388,9 +385,10 @@ class AdminCore {
 	 * @param mixed $value Raw option value.
 	 * @return string 'stg' or 'prod'.
 	 */
-	public function sanitize_env( $value ) {
-		$val = is_string( $value ) ? strtolower( sanitize_text_field( $value ) ) : '';
-		return in_array( $val, array( 'stg', 'prod' ), true ) ? $val : 'stg';
+	public function sanitize_env($value)
+	{
+		$val = is_string($value) ? strtolower(sanitize_text_field($value)) : '';
+		return in_array($val, array('stg', 'prod'), true) ? $val : 'stg';
 	}
 
 	/**
@@ -404,10 +402,11 @@ class AdminCore {
 	 * @param mixed $value Raw option value.
 	 * @return array Sanitized configuration array.
 	 */
-	public function sanitize_product( $value ) {
-		$sanitized = array( 'use_preset_copies' => false );
-		if ( is_array( $value ) ) {
-			$sanitized['use_preset_copies'] = ! empty( $value['use_preset_copies'] ) ? (bool) intval( $value['use_preset_copies'] ) : false;
+	public function sanitize_product($value)
+	{
+		$sanitized = array('use_preset_copies' => false);
+		if (is_array($value)) {
+			$sanitized['use_preset_copies'] = ! empty($value['use_preset_copies']) ? (bool) intval($value['use_preset_copies']) : false;
 		}
 		return $sanitized;
 	}
@@ -418,8 +417,9 @@ class AdminCore {
 	 * @since       1.0.0
 	 * @return      void
 	 */
-	public function page_general_settings() {
-		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-admin-general.php';
+	public function page_general_settings()
+	{
+		include plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-general.php';
 	}
 
 	/**
@@ -428,8 +428,9 @@ class AdminCore {
 	 * @since       1.0.0
 	 * @return      void
 	 */
-	public function section_credentials() {
-		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-admin-section-credentials.php';
+	public function section_credentials()
+	{
+		include plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-section-credentials.php';
 	}
 
 	/**
@@ -438,8 +439,9 @@ class AdminCore {
 	 * @since       1.0.0
 	 * @return      void
 	 */
-	public function section_product() {
-		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-admin-section-product.php';
+	public function section_product()
+	{
+		include plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-section-product.php';
 	}
 
 	/**
@@ -455,14 +457,15 @@ class AdminCore {
 	 * @param int $order_item_id Order item ID.
 	 * @return void
 	 */
-	public function on_order_save( int $order_item_id ) {
-		$meta_pdf_url = $this->get_meta_key( 'pdf_url' );
+	public function on_order_save(int $order_item_id)
+	{
+		$meta_pdf_url = $this->get_meta_key('pdf_url');
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by WooCommerce before woocommerce_process_shop_order_meta.
-		if ( isset( $_POST[ $meta_pdf_url ] ) ) {
+		if (isset($_POST[$meta_pdf_url])) {
 			// URLs should be sanitized with esc_url_raw; always unslash first.
-			$raw_pdf = wp_unslash( $_POST[ $meta_pdf_url ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$val_pdf = is_array( $raw_pdf ) ? array_map( 'esc_url_raw', $raw_pdf ) : esc_url_raw( $raw_pdf );
-			update_post_meta( $order_item_id, $meta_pdf_url, $val_pdf );
+			$raw_pdf = wp_unslash($_POST[$meta_pdf_url]); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$val_pdf = is_array($raw_pdf) ? array_map('esc_url_raw', $raw_pdf) : esc_url_raw($raw_pdf);
+			update_post_meta($order_item_id, $meta_pdf_url, $val_pdf);
 		}
 	}
 
@@ -473,15 +476,16 @@ class AdminCore {
 	 * @since       1.0.0
 	 * @return      void
 	 */
-	public function register_pdc_purchase_endpoint() {
+	public function register_pdc_purchase_endpoint()
+	{
 		register_rest_route(
 			'pdc/v1',
 			'/orders/(?P<id>\d+)/attach-pdf',
 			array(
 				'methods'             => 'POST',
-				'callback'            => array( $this, 'pdc_attach_pdf' ),
+				'callback'            => array($this, 'pdc_attach_pdf'),
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return current_user_can('manage_options');
 				},
 			)
 		);
@@ -490,67 +494,8 @@ class AdminCore {
 			'/orders/webhook',
 			array(
 				'methods'             => 'POST',
-				'callback'            => array( $this, 'pdc_order_webhook' ),
+				'callback'            => array($this, 'pdc_order_webhook'),
 				'permission_callback' => '__return_true',
-			)
-		);
-	}
-
-	/**
-	 * AJAX handler for listing products with a search term.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function pdc_list_products() {
-		if (
-			! isset( $_POST['pdc_connector_nonce'] ) ||
-			! wp_verify_nonce(
-				sanitize_text_field( wp_unslash( $_POST['pdc_connector_nonce'] ) )
-			)
-				) {
-			return;
-		}
-
-		$search_term       = isset( $_POST['searchTerm'] ) ? sanitize_text_field( wp_unslash( $_POST['searchTerm'] ) ) : '';
-		$lc_search_term    = strtolower( $search_term );
-		$products          = $this->pdc_client->search_products();
-		$filtered_products = array_filter(
-			$products,
-			function ( $item ) use ( $lc_search_term ) {
-				$lc_title = strtolower( $item->title );
-				return strpos( $lc_title, $lc_search_term ) !== false || strpos( $item->sku, $lc_search_term ) !== false;
-			}
-		);
-
-		usort(
-			$filtered_products,
-			function ( $a, $b ) use ( $lc_search_term ) {
-				$lc_a_title = strtolower( $a->title );
-				$lc_b_title = strtolower( $b->title );
-
-				// Check if the string starts with the search string.
-				$a_starts_with = 0 === strpos( $lc_a_title, $lc_search_term );
-				$b_starts_with = 0 === strpos( $lc_b_title, $lc_search_term );
-
-				// Give priority to strings that start with the search string.
-				if ( $a_starts_with && ! $b_starts_with ) {
-					return -1; // $a comes before $b.
-				} elseif ( ! $a_starts_with && $b_starts_with ) {
-					return 1; // $b comes before $a.
-				} else {
-					// If both start or neither starts with the prefix, maintain default order.
-					return strcmp( $lc_a_title, $lc_b_title );
-				}
-			}
-		);
-
-		// Re-index the filtered and sorted array to get a flat array.
-		$sorted_products = array_values( $filtered_products );
-
-		wp_send_json_success(
-			array(
-				'products' => $sorted_products,
 			)
 		);
 	}
@@ -562,22 +507,23 @@ class AdminCore {
 	 * @param \WP_REST_Request $request The REST request.
 	 * @return void
 	 */
-	public function pdc_order_webhook( \WP_REST_Request $request ) {
-		$body       = json_decode( $request->get_body() );
+	public function pdc_order_webhook(\WP_REST_Request $request)
+	{
+		$body       = json_decode($request->get_body());
 		$event_type = $body->event_type;
 		$payload    = $body->payload;
 
-		if ( 'ORDER_STATUS_CHANGED' === $event_type ) {
-			$order_id      = $request->get_param( 'order_id' );
-			$order_item_id = $request->get_param( 'order_item_id' );
+		if ('ORDER_STATUS_CHANGED' === $event_type) {
+			$order_id      = $request->get_param('order_id');
+			$order_item_id = $request->get_param('order_item_id');
 
-			if ( 'ACCEPTEDBYSUPPLIER' === $payload->status ) {
-				$this->on_webhook_in_production( $order_id, $order_item_id );
+			if ('ACCEPTEDBYSUPPLIER' === $payload->status) {
+				$this->on_webhook_in_production($order_id, $order_item_id);
 			}
 		}
 
-		if ( 'SHIPMENT_CREATED' === $event_type ) {
-			$this->on_webhook_shipped( $payload->order_item_number, $payload->tracking_code );
+		if ('SHIPMENT_CREATED' === $event_type) {
+			$this->on_webhook_shipped($payload->order_item_number, $payload->tracking_code);
 		}
 	}
 
@@ -589,14 +535,15 @@ class AdminCore {
 	 * @param string $order_item_id The WooCommerce order item ID.
 	 * @return void
 	 */
-	private function on_webhook_in_production( string $order_id, string $order_item_id ) {
-		$order_item = new \WC_Order_Item_Product( $order_item_id );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), 'production' );
+	private function on_webhook_in_production(string $order_id, string $order_item_id)
+	{
+		$order_item = new \WC_Order_Item_Product($order_item_id);
+		$order_item->update_meta_data($this->get_meta_key('order_item_status'), 'production');
 		$order_item->save();
 
-		$order = wc_get_order( $order_id );
-		$note  = __( 'Item is being produced at Print.com.', 'pdc-connector' );
-		$order->add_order_note( $note );
+		$order = wc_get_order($order_id);
+		$note  = __('Item is being produced at Print.com.', 'pdc-connector');
+		$order->add_order_note($note);
 		$order->save();
 	}
 
@@ -615,11 +562,12 @@ class AdminCore {
 	 * @param string $pdc_order_item_number ex. 6000012345-1.
 	 * @return integer|null
 	 */
-	private function get_order_item_id_by_order_item_number( $pdc_order_item_number ) {
+	private function get_order_item_id_by_order_item_number($pdc_order_item_number)
+	{
 		global $wpdb;
 
-		$cached_order_item_id = wp_cache_get( $this->plugin_name . '_order_item_' . $pdc_order_item_number );
-		if ( $cached_order_item_id ) {
+		$cached_order_item_id = wp_cache_get($this->plugin_name . '_order_item_' . $pdc_order_item_number);
+		if ($cached_order_item_id) {
 			return $cached_order_item_id;
 		}
 		$results = $wpdb->get_results(
@@ -630,16 +578,15 @@ class AdminCore {
 				JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS im ON i.order_item_id = im.order_item_id
 				WHERE im.meta_key = %s AND im.meta_value = %s
 				",
-				$this->get_meta_key( 'order_item_number' ),
+				$this->get_meta_key('order_item_number'),
 				$pdc_order_item_number
 			)
 		);
-		if ( empty( $results ) ) {
+		if (empty($results)) {
 			return null;
 		}
 		$result = $results[0];
 		return $result->order_item_id;
-		return $order_item;
 	}
 
 	/**
@@ -650,21 +597,22 @@ class AdminCore {
 	 * @param string $tracking_url      Tracking URL provided by Print.com.
 	 * @return void
 	 */
-	private function on_webhook_shipped( string $order_item_number, string $tracking_url ) {
-		$order_item_id = $this->get_order_item_id_by_order_item_number( $order_item_number );
-		$order_item    = new \WC_Order_Item_Product( $order_item_id );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_tnt_url' ), $tracking_url );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), 'shipped' );
+	private function on_webhook_shipped(string $order_item_number, string $tracking_url)
+	{
+		$order_item_id = $this->get_order_item_id_by_order_item_number($order_item_number);
+		$order_item    = new \WC_Order_Item_Product($order_item_id);
+		$order_item->update_meta_data($this->get_meta_key('order_item_tnt_url'), $tracking_url);
+		$order_item->update_meta_data($this->get_meta_key('order_item_status'), 'shipped');
 		$order_item->save();
 
-		$order = wc_get_order( $order_item->wp_order_id );
+		$order = wc_get_order($order_item->wp_order_id);
 		$note  = sprintf(
 			// translators: placeholder is a URL to the track & trace page.
-			__( 'Item has been shipped by Print.com. Track & Trace code: <a href="%1$s">%2$s</a>.', 'pdc-connector' ),
+			__('Item has been shipped by Print.com. Track & Trace code: <a href="%1$s">%2$s</a>.', 'pdc-connector'),
 			$tracking_url,
 			$tracking_url,
 		);
-		$order->add_order_note( $note );
+		$order->add_order_note($note);
 		$order->save();
 	}
 
@@ -675,13 +623,14 @@ class AdminCore {
 	 * @param \WP_REST_Request $request The REST request.
 	 * @return string The stored PDF URL.
 	 */
-	public function pdc_attach_pdf( \WP_REST_Request $request ) {
-		$order_item_id = $request->get_param( 'orderItemId' );
-		$pdf_url       = $request->get_param( 'pdfUrl' );
+	public function pdc_attach_pdf(\WP_REST_Request $request)
+	{
+		$order_item_id = $request->get_param('orderItemId');
+		$pdf_url       = $request->get_param('pdfUrl');
 
-		$meta_key_pdf_url = $this->get_meta_key( 'pdf_url' );
-		$order_item       = new \WC_Order_Item_Product( $order_item_id );
-		$order_item->update_meta_data( $meta_key_pdf_url, $pdf_url );
+		$meta_key_pdf_url = $this->get_meta_key('pdf_url');
+		$order_item       = new \WC_Order_Item_Product($order_item_id);
+		$order_item->update_meta_data($meta_key_pdf_url, $pdf_url);
 		$order_item->save_meta_data();
 		return $pdf_url;
 	}
@@ -692,20 +641,27 @@ class AdminCore {
 	 *
 	 * @since      1.0.0
 	 */
-	public function pdc_list_presets() {
-		$sku = isset( $_POST['sku'] ) ? sanitize_text_field( wp_unslash( $_POST['sku'] ) ) : '';
-		if ( empty( $sku ) ) {
-			return new \WP_Error( 'no_sku', 'No SKU provided', array( 'sku' => $sku ) );
+	public function pdc_render_preset_select()
+	{
+		$sku = isset($_POST['sku']) ? sanitize_text_field(wp_unslash($_POST['sku'])) : '';
+		if (empty($sku)) {
+			wp_send_json_error('no_sku', 400);
+			return;
 		}
-		$result = $this->pdc_client->get_presets( $sku );
-		if ( is_wp_error( $result ) ) {
-			return $result;
+
+		$response = $this->pdc_client->get_presets($sku);
+		if (is_wp_error($response)) {
+			wp_send_json_error('Could not retrieve presets: ' . $response->get_error_message(), 500);
+			return;
 		}
-		wp_send_json_success(
-			array(
-				'presets' => $result,
-			)
-		);
+
+		$pdc_connector_presets_for_sku = $response;
+		// need to get current value for possible variation because it doesn't show the current selected preset
+		ob_start();
+		include plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-preset-select.php';
+		$preset_select_html = ob_get_contents();
+		ob_end_clean();
+		wp_send_json_success($preset_select_html);
 	}
 
 	/**
@@ -714,13 +670,14 @@ class AdminCore {
 	 * @since 1.0.0
 	 * @return \WP_Error|void Error on failure, outputs success JSON on success.
 	 */
-	public function pdc_place_order() {
-		$order_item_id = isset( $_POST['order_item_id'] ) ? absint( wp_unslash( $_POST['order_item_id'] ) ) : 0;
+	public function pdc_place_order()
+	{
+		$order_item_id = isset($_POST['order_item_id']) ? absint(wp_unslash($_POST['order_item_id'])) : 0;
 
-		$pdc_product_config = get_option( $this->plugin_name . '-product' );
+		$pdc_product_config = get_option($this->plugin_name . '-product');
 
-		$result = $this->pdc_client->purchase_order_item( $order_item_id, $pdc_product_config );
-		if ( is_wp_error( $result ) ) {
+		$result = $this->pdc_client->purchase_order_item($order_item_id, $pdc_product_config);
+		if (is_wp_error($result)) {
 			return wp_send_json_error(
 				array(
 					'message' => $result->get_error_message(),
@@ -732,37 +689,37 @@ class AdminCore {
 		$pdc_order               = $result->order;
 		$pdc_order_item          = $pdc_order->items[0];
 		$pdc_order_item_shipment = $pdc_order_item->shipments[0];
-		$order_item              = new \WC_Order_Item_Product( $order_item_id );
+		$order_item              = new \WC_Order_Item_Product($order_item_id);
 
-		$order_item->update_meta_data( $this->get_meta_key( 'order' ), $pdc_order );
-		$order_item->update_meta_data( $this->get_meta_key( 'purchase_date' ), gmdate( 'c' ) );
+		$order_item->update_meta_data($this->get_meta_key('order'), $pdc_order);
+		$order_item->update_meta_data($this->get_meta_key('purchase_date'), gmdate('c'));
 		// Map external API fields to local snake_case variables for linting compliance.
 		$order_number = $pdc_order->orderNumber; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		$grand_total  = $pdc_order->grandTotal; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$order_item->update_meta_data( $this->get_meta_key( 'order_number' ), $order_number );
-		$order_item->update_meta_data( $this->get_meta_key( 'grand_total' ), $grand_total );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_status' ), $pdc_order->status );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item' ), $pdc_order_item );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_shipment' ), $pdc_order_item_shipment );
+		$order_item->update_meta_data($this->get_meta_key('order_number'), $order_number);
+		$order_item->update_meta_data($this->get_meta_key('grand_total'), $grand_total);
+		$order_item->update_meta_data($this->get_meta_key('order_status'), $pdc_order->status);
+		$order_item->update_meta_data($this->get_meta_key('order_item'), $pdc_order_item);
+		$order_item->update_meta_data($this->get_meta_key('order_item_shipment'), $pdc_order_item_shipment);
 		$order_item_number = $pdc_order_item->orderItemNumber; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		$order_item_status = $pdc_order_item->status; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		$order_item_total  = $pdc_order_item->grandTotal; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_number' ), $order_item_number );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), $order_item_status );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_grand_total' ), $order_item_total );
+		$order_item->update_meta_data($this->get_meta_key('order_item_number'), $order_item_number);
+		$order_item->update_meta_data($this->get_meta_key('order_item_status'), $order_item_status);
+		$order_item->update_meta_data($this->get_meta_key('order_item_grand_total'), $order_item_total);
 		$order_item->save();
 
-		$order_id = wc_get_order_id_by_order_item_id( $order_item_id );
-		$order    = wc_get_order( $order_id );
+		$order_id = wc_get_order_id_by_order_item_id($order_item_id);
+		$order    = wc_get_order($order_id);
 
 		$note = sprintf(
 			// translators: placeholder is the order number.
-			__( 'Item purchased at Print.com with order number: %s.', 'pdc-connector' ),
+			__('Item purchased at Print.com with order number: %s.', 'pdc-connector'),
 			$order_number
 		);
-		$order->add_order_note( $note );
+		$order->add_order_note($note);
 
-		wp_send_json_success( $pdc_order );
+		wp_send_json_success($pdc_order);
 	}
 
 	/**
@@ -774,8 +731,28 @@ class AdminCore {
 	 * @param \WP_Post $variation      Variation post object.
 	 * @return void
 	 */
-	public function render_variation_data_fields( int $index, array $variation_data, \WP_Post $variation ) {
-		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-admin-variation-data.php';
+	public function render_variation_data_fields(int $index, array $variation_data, \WP_Post $variation)
+	{
+		global $post;
+
+		$pdc_connector_variation_id = isset($variation->ID) ? intval($variation->ID) : 0;
+		$pdc_connector_parent_id    = isset($variation->post_parent) ? intval($variation->post_parent) : 0;
+
+		$pdc_connector_meta_key_pdf_url      = $this->get_meta_key('pdf_url');
+		$pdc_connector_meta_key_sku          = $this->get_meta_key('product_sku');
+		$pdc_connector_meta_key_preset_id    = $this->get_meta_key('preset_id');
+
+		$pdc_connector_index = isset($index) ? intval($index) : 0;
+
+		$pdc_connector_sku          = get_post_meta($pdc_connector_parent_id, $pdc_connector_meta_key_sku, true);
+		$pdc_connector_preset_id    = get_post_meta($pdc_connector_variation_id, $pdc_connector_meta_key_preset_id, true);
+
+		$pdc_connector_presets_for_sku = array();
+		if (!empty($pdc_connector_sku)) {
+			$pdc_connector_presets_for_sku = $this->pdc_client->get_presets($pdc_connector_sku);
+		}
+
+		include plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-variation-data.php';
 	}
 
 	/**
@@ -786,14 +763,12 @@ class AdminCore {
 	 * @param int $i            Index in submitted arrays.
 	 * @return void
 	 */
-	public function save_variation_data_fields( $variation_id, $i ) {
-		$fieldname_preset_id    = $this->get_meta_key( 'preset_id' );
-		$fieldname_preset_title = $this->get_meta_key( 'preset_title' );
-		$fieldname_pdf_url      = $this->get_meta_key( 'pdf_url' );
-
-		$this->save_variation_data_field( $variation_id, $fieldname_preset_id, $i );
-		$this->save_variation_data_field( $variation_id, $fieldname_preset_title, $i );
-		$this->save_variation_data_field( $variation_id, $fieldname_pdf_url, $i );
+	public function save_variation_data_fields($variation_id, $i)
+	{
+		$fieldname_preset_id    = $this->get_meta_key('preset_id');
+		$fieldname_pdf_url      = $this->get_meta_key('pdf_url');
+		$this->save_variation_data_field($variation_id, $fieldname_preset_id, $i);
+		$this->save_variation_data_field($variation_id, $fieldname_pdf_url, $i);
 	}
 	/**
 	 * Saves a single variation data field from POST.
@@ -804,13 +779,13 @@ class AdminCore {
 	 * @param int    $it           Submitted array index.
 	 * @return void
 	 */
-	private function save_variation_data_field( $variation_id, $fieldname, $it ) {
+	private function save_variation_data_field($variation_id, $fieldname, $it)
+	{
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by WooCommerce during product variation save.
-		if ( isset( $_POST[ $fieldname ] ) && isset( $_POST[ $fieldname ][ $it ] ) ) :
-			// Always unslash POST and sanitize text; support array inputs too.
-			$raw_val = wp_unslash( $_POST[ $fieldname ][ $it ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$val     = is_array( $raw_val ) ? array_map( 'sanitize_text_field', $raw_val ) : sanitize_text_field( $raw_val );
-			update_post_meta( $variation_id, $fieldname, $val );
+		if (isset($_POST[$fieldname]) && isset($_POST[$fieldname][$it])) :
+			$raw_val = wp_unslash($_POST[$fieldname][$it]); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$val     = is_array($raw_val) ? array_map('sanitize_text_field', $raw_val) : sanitize_text_field($raw_val);
+			update_post_meta($variation_id, $fieldname, $val);
 		endif;
 	}
 }

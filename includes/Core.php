@@ -179,8 +179,7 @@ class Core {
 		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'pdc_order_meta_box' );
 		$this->loader->add_action( 'woocommerce_process_shop_order_meta', $plugin_admin, 'on_order_save' );
 		$this->loader->add_action( 'rest_api_init', $plugin_admin, 'register_pdc_purchase_endpoint' );
-		$this->loader->add_action( 'wp_ajax_pdc-list-products', $plugin_admin, 'pdc_list_products' );
-		$this->loader->add_action( 'wp_ajax_pdc-list-presets', $plugin_admin, 'pdc_list_presets' );
+		$this->loader->add_action( 'wp_ajax_pdc-list-presets', $plugin_admin, 'pdc_render_preset_select' );
 		$this->loader->add_action( 'wp_ajax_pdc-place-order', $plugin_admin, 'pdc_place_order' );
 	}
 

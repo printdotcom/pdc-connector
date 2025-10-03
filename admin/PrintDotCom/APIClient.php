@@ -194,7 +194,7 @@ class APIClient {
 	 * Retrieves a list of Print.com Presets
 	 *
 	 * @param string $sku The SKU of the product to retrieve the Presets for.
-	 * @return Pdc_Preset[] A list of Print.com Presets
+	 * @return Pdc_Preset[] | WP_Error A list of Print.com Presets
 	 *
 	 * @phpcsSuppress WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
 	 */
