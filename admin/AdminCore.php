@@ -656,7 +656,6 @@ class AdminCore
 		}
 
 		$pdc_connector_presets_for_sku = $response;
-		// need to get current value for possible variation because it doesn't show the current selected preset
 		ob_start();
 		include plugin_dir_path(__FILE__) . 'partials/' . $this->plugin_name . '-admin-preset-select.php';
 		$preset_select_html = ob_get_contents();

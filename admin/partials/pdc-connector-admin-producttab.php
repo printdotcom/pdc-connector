@@ -31,6 +31,7 @@
 				data-testid="pdc-product-sku"
 				name="<?php echo esc_attr($this->get_meta_key('product_sku')); ?>"
 				value="<?php echo esc_attr((string) $pdc_connector_sku); ?>">
+				<option disabled selected value><?php esc_html_e('Choose a product', 'pdc-connector'); ?></option>
 				<?php foreach ($pdc_products as $product) { ?>
 					<option value="<?php echo esc_attr($product->sku); ?>" <?php selected($product->sku, $pdc_connector_sku); ?>><?php echo esc_attr($product->title); ?></option>
 				<?php } ?>
@@ -54,30 +55,3 @@
 		?>
 	</div>
 </div>
-
-<script type="text/javascript">
-	(function($) {
-		$(document).on('woocommerce_variations_loaded', showPresetForSku);
-		$('#js-pdc-product-selector').on('change', showPresetForSku);
-
-		async function showPresetForSku() {
-			const sku = $('#js-pdc-product-selector').val();
-			if (!sku) return;
-			try {
-				const presetOptionsHTML = await wp.ajax
-					.post('pdc-list-presets', {
-						sku,
-					})
-					.promise();
-				document.getElementById('js-pdc-preset-list').innerHTML = presetOptionsHTML;
-
-				const variationPresetInputs = document.querySelectorAll('.pdc_variation_preset_select');
-				variationPresetInputs.forEach((selectInput) => {
-					selectInput.innerHTML = presetOptionsHTML;
-				});
-			} catch (err) {
-				console.error('err:', err);
-			}
-		}
-	})(jQuery);
-</script>

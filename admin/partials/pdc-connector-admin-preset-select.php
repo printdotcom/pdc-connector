@@ -18,8 +18,7 @@
  */
 ?>
 
-<option disabled selected value><?php esc_html_e('Select a preset', 'pdc-connector'); ?></option>
-<?php foreach ($pdc_connector_presets_for_sku as $preset) {
-?>
+<option value><?php esc_html_e('Select a preset', 'pdc-connector'); ?></option>
+<?php foreach ($pdc_connector_presets_for_sku as $preset) { ?>
 	<option value="<?php echo esc_attr($preset->id); ?>" <?php selected($preset->id, $pdc_connector_preset_id); ?>><?php echo esc_html($preset->title); ?></option>
 <?php } ?>

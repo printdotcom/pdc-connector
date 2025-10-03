@@ -144,4 +144,78 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
     $(`#js-${PLUGIN_NAME}-verify_key`).click(checkCredentials);
     observeFormChanges(`#js-${PLUGIN_NAME}-general-form`);
   });
+
+  // Upload file button click event for simple products
+  $('#pdc-product-file-upload').on('click', function (e) {
+    e.preventDefault();
+    const mediaUploadModal = wp.media({
+      title: 'Select or Upload a Custom PDF',
+      button: {
+        text: 'Select File',
+      },
+      library: {
+        type: 'document',
+        post_mime_type: ['application/pdf'],
+      },
+      multiple: false,
+    });
+
+    mediaUploadModal.on('select', function () {
+      const attachment = mediaUploadModal.state().get('selection').first().toJSON();
+      $('#_pdc_file_id').val(attachment.id);
+      $('#_pdc-file_url').val(attachment.url);
+    });
+
+    mediaUploadModal.open();
+  });
+
+  // Upload file button click event for variations
+  $(document).on('woocommerce_variations_loaded', function hookFileUpload() {
+    $('.pdc-connector-js-upload-custom-file-btn').on('click', function (e) {
+      e.preventDefault();
+      const frame = wp.media({
+        title: 'Select or Upload a Custom File',
+        button: {
+          text: 'Use this file',
+        },
+        library: {
+          type: 'document',
+          post_mime_type: ['application/pdf'],
+        },
+        multiple: false,
+      });
+      frame.on('select', function () {
+        const attachment = frame.state().get('selection').first().toJSON();
+        // set value to result field from data
+        $(`#${e.target.dataset.pdcVariationFileField}`).val(attachment.url);
+        $('.woocommerce_variation').addClass('variation-needs-update');
+        $('button.cancel-variation-changes, button.save-variation-changes').prop('disabled', false);
+        $('#variable_product_options').trigger('woocommerce_variations_input_changed');
+      });
+      frame.open();
+    });
+  });
+
+  $(document).on('woocommerce_variations_loaded', showPresetForSku);
+  $('#js-pdc-product-selector').on('change', showPresetForSku);
+
+  async function showPresetForSku() {
+    const sku = $('#js-pdc-product-selector').val();
+    if (!sku) return;
+    try {
+      const presetOptionsHTML = await wp.ajax
+        .post('pdc-list-presets', {
+          sku,
+        })
+        .promise();
+      document.getElementById('js-pdc-preset-list').innerHTML = presetOptionsHTML;
+
+      const variationPresetInputs = document.querySelectorAll('.pdc_variation_preset_select');
+      variationPresetInputs.forEach((selectInput) => {
+        selectInput.innerHTML = presetOptionsHTML;
+      });
+    } catch (err) {
+      console.error('err:', err);
+    }
+  }
 })(jQuery);

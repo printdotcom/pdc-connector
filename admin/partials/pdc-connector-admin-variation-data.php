@@ -34,50 +34,25 @@ $preset_input_name = $pdc_connector_meta_key_preset_id . "[" . $pdc_connector_in
 
 			<?php
 			$pdc_connector_pdf_url         = get_post_meta($pdc_connector_variation_id, $pdc_connector_meta_key_pdf_url, true);
-			$pdc_connector_button_field_id = $pdc_connector_variation_id . '_upload_id';
-			$pdc_connector_file_field_id   = $pdc_connector_variation_id . '_pdf_url';
+			$pdc_connector_button_field_id = $this->plugin_name . '_' . $pdc_connector_variation_id . '_upload_id';
+			$pdc_connector_file_field_id   = $this->plugin_name . '_' . $pdc_connector_variation_id . '_pdf_url';
 			?>
 			<p class="form-row form-field _pdc_editable_field">
 				<label for="<?php echo esc_attr($pdc_connector_file_field_id); ?>"><?php esc_html_e('PDF', 'pdc-connector'); ?></label>
 				<span class="woocommerce-help-tip" tabindex="0" aria-label="<?php echo esc_attr__('Enter a URL or select a file which belongs to this variant. This file will be the design which the customer will order.', 'pdc-connector'); ?>"></span>
 				<span class="form-flex-box">
 					<input type="text" class="input_text" id="<?php echo esc_attr($pdc_connector_file_field_id); ?>" placeholder="<?php esc_attr_e('http://', 'pdc-connector'); ?>" name="<?php echo esc_attr($pdc_connector_meta_key_pdf_url); ?>[<?php echo esc_attr($pdc_connector_index); ?>]" value="<?php echo esc_attr($pdc_connector_pdf_url); ?>" />
-					<a href="#" class="button" id="<?php echo esc_attr($pdc_connector_button_field_id); ?>" data-choose="<?php esc_attr_e('Choose file', 'pdc-connector'); ?>" data-update="<?php esc_attr_e('Insert file URL', 'pdc-connector'); ?>"><?php echo esc_html__('Choose file', 'pdc-connector'); ?></a>
+					<a
+						href="#"
+						data-pdc-variation-file-field="<?php echo esc_attr($pdc_connector_file_field_id); ?>"
+						data-choose="<?php esc_attr_e('Choose file', 'pdc-connector'); ?>"
+						data-update="<?php esc_attr_e('Insert file URL', 'pdc-connector'); ?>"
+						class="button pdc-connector-js-upload-custom-file-btn"
+						id="<?php echo esc_attr($pdc_connector_button_field_id); ?>">
+						<?php echo esc_html__('Choose file', 'pdc-connector'); ?>
+					</a>
 				</span>
 			</p>
-			<script>
-				jQuery(document).ready(function($) {
-					// Upload file button click event.
-					$('#<?php echo esc_js($pdc_connector_button_field_id); ?>').on('click', function(e) {
-						e.preventDefault();
-						const frame = wp.media({
-							title: 'Select or Upload a Custom File',
-							button: {
-								text: 'Use this file'
-							},
-							library: {
-								type: 'document',
-								post_mime_type: ['application/pdf']
-							},
-							multiple: false
-						});
-						frame.on('select', function() {
-							const attachment = frame.state().get('selection').first().toJSON();
-							$("#<?php echo esc_js($pdc_connector_file_field_id); ?>").val(attachment.url);
-							$('.woocommerce_variation').addClass('variation-needs-update');
-							$('button.cancel-variation-changes, button.save-variation-changes').prop('disabled', false);
-							$('#variable_product_options').trigger('woocommerce_variations_input_changed');
-						});
-						frame.open();
-					});
-					$('.woocommerce_variations .woocommerce-help-tip').tipTip({
-						attribute: 'data-tip',
-						fadeIn: 50,
-						fadeOut: 50,
-						delay: 200
-					});
-				});
-			</script>
 		</div>
 	</div>
 <?php } else { ?>
