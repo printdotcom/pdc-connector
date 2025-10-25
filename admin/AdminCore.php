@@ -566,25 +566,28 @@ class AdminCore
 	{
 		global $wpdb;
 
-		$cached_order_item_id = wp_cache_get($this->plugin_name . '_order_item_' . $pdc_order_item_number);
-		if ($cached_order_item_id) {
-			return $cached_order_item_id;
+		$results = wp_cache_get($this->get_meta_key('order_item_number'), $pdc_order_item_number);
+		if (empty($results)) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$results = $wpdb->get_results(
+				$wpdb->prepare(
+					"
+					SELECT im.order_item_id 
+					FROM {$wpdb->prefix}woocommerce_order_items AS i
+					JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS im ON i.order_item_id = im.order_item_id
+					WHERE im.meta_key = %s AND im.meta_value = %s
+					",
+					$this->get_meta_key('order_item_number'),
+					$pdc_order_item_number
+				)
+			);
+			wp_cache_set($results, $results);
 		}
-		$results = $wpdb->get_results(
-			$wpdb->prepare(
-				"
-				SELECT im.order_item_id 
-				FROM {$wpdb->prefix}woocommerce_order_items AS i
-				JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS im ON i.order_item_id = im.order_item_id
-				WHERE im.meta_key = %s AND im.meta_value = %s
-				",
-				$this->get_meta_key('order_item_number'),
-				$pdc_order_item_number
-			)
-		);
+
 		if (empty($results)) {
 			return null;
 		}
+
 		$result = $results[0];
 		return $result->order_item_id;
 	}
