@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Admin preset list.
  *
@@ -18,7 +17,7 @@
  */
 ?>
 
-<option value><?php esc_html_e('Select a preset', 'pdc-connector'); ?></option>
-<?php foreach ($pdc_connector_presets_for_sku as $preset) { ?>
-	<option value="<?php echo esc_attr($preset->id); ?>" <?php selected($preset->id, $pdc_connector_preset_id); ?>><?php echo esc_html($preset->title); ?></option>
+<option value><?php esc_html_e( 'Select a preset', 'pdc-connector' ); ?></option>
+<?php foreach ( $pdc_connector_presets_for_sku as $pdc_connector_preset ) { ?>
+	<option value="<?php echo esc_attr( $pdc_connector_preset->id ); ?>" <?php selected( $pdc_connector_preset->id, $pdc_connector_preset_id ); ?>><?php echo esc_html( $pdc_connector_preset->title ); ?></option>
 <?php } ?>

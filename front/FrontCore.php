@@ -36,6 +36,7 @@ use PdcConnector\Includes\Core;
 class FrontCore {
 
 
+
 	/**
 	 * The ID of this plugin.
 	 *
@@ -67,6 +68,18 @@ class FrontCore {
 		$this->version     = $version;
 	}
 
+	/**
+	 * Because we are reading request values in the cart item data filter,
+	 * we need nonce verification.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function add_cart_item_data_nonce() {
+		wp_nonce_field( 'pdc_addtocart', 'pdc-nonce' );
+	}
+
 
 	/**
 	 * Adds additional values to the cart item.
@@ -80,8 +93,10 @@ class FrontCore {
 	 * @return array Modified cart item data.
 	 */
 	public function capture_cart_item_data( $cart_item_data, $product_id ) {
+
 		// $product_id is required by the WooCommerce hook signature but is not used here.
 		unset( $product_id );
+
 		$cart_item_data[ Core::get_meta_key( 'pdf_url' ) ] = $this->capture_cart_item_pdf_url();
 		return $cart_item_data;
 	}
@@ -97,17 +112,24 @@ class FrontCore {
 	 * @return string The detected PDF URL or empty string when none is available.
 	 */
 	private function capture_cart_item_pdf_url() {
-		$pdc_pdf_url_metakey = Core::get_meta_key( 'pdf_url' );
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Reading value to attach to cart item; non-destructive.
-		if ( isset( $_REQUEST[ $pdc_pdf_url_metakey ] ) && ! empty( $_REQUEST[ $pdc_pdf_url_metakey ] ) ) {
-			// Request contains a pdf_url, so we use that.
-			return esc_url_raw( wp_unslash( $_REQUEST[ $pdc_pdf_url_metakey ] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( ! isset( $_POST['pdc-nonce'] ) ) {
+			return '';
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Reading value to attach to cart item; non-destructive.
-		if ( isset( $_REQUEST['_w2p_set_option'] ) && ! empty( $_REQUEST['_w2p_set_option'] ) ) {
+		$nonce_verification = wp_verify_nonce( wp_unslash( sanitize_key( $_POST['pdc-nonce'] ) ), 'pdc_addtocart' );
+		if ( ! $nonce_verification ) {
+			return '';
+		}
+
+		$pdc_pdf_url_metakey = Core::get_meta_key( 'pdf_url' );
+		if ( isset( $_POST[ $pdc_pdf_url_metakey ] ) && ! empty( $_POST[ $pdc_pdf_url_metakey ] ) ) {
+			// Request contains a pdf_url, so we use that.
+			return esc_url_raw( wp_unslash( $_POST[ $pdc_pdf_url_metakey ] ) );
+		}
+
+		if ( isset( $_POST['_w2p_set_option'] ) && ! empty( $_POST['_w2p_set_option'] ) ) {
 			// PitchPrint has a PDF URL, so we use that.
-			$raw_option       = wp_unslash( $_REQUEST['_w2p_set_option'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$raw_option       = wp_unslash( sanitize_key( $_POST['_w2p_set_option'] ) );
 			$pitch_print_data = json_decode( urldecode( $raw_option ) );
 			if ( $pitch_print_data && isset( $pitch_print_data->projectId ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				return esc_url_raw( 'https://pdf.pitchprint.com/' . $pitch_print_data->projectId ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
