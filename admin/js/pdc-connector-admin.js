@@ -51,7 +51,7 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
     e.preventDefault();
     const orderItemId = e.target.getAttribute('data-order-item-id');
 
-    var frame = wp.media({
+    const frame = wp.media({
       title: 'Select or Upload a Custom File',
       button: {
         text: 'Use this file',
@@ -112,15 +112,20 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
     $('#js-pdc-request-response').text('');
     const orderItemId = e.target.getAttribute('data-order-item-id');
     try {
-      await wp.ajax
-        .post('pdc-place-order', {
-          order_item_id: orderItemId,
-        })
-        .promise();
+      const response = await fetch(`${pdcAdminApi.root}pdc/v1/orders/${encodeURIComponent(orderItemId)}/purchase`, {
+        method: 'POST',
+        headers: {
+          'X-WP-Nonce': pdcAdminApi.nonce,
+        },
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = payload?.message || payload?.data?.message || 'Failed to place order.';
+        throw new Error(message);
+      }
       await refreshOrderItem(orderItemId);
     } catch (err) {
-      const response = err?.responseJSON;
-      $('#js-pdc-request-response').text(response.data?.message);
+      $('#js-pdc-request-response').text(err.message || 'Failed to place order.');
     } finally {
       loading = false;
       $('#pdc-order').removeClass('button-disabled');

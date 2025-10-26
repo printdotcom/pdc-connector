@@ -479,6 +479,17 @@ class AdminCore {
 		);
 		register_rest_route(
 			'pdc/v1',
+			'/orders/(?P<id>\d+)/purchase',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'pdc_place_order' ),
+				'permission_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+		register_rest_route(
+			'pdc/v1',
 			'/orders/webhook',
 			array(
 				'methods'             => 'POST',
@@ -668,21 +679,36 @@ class AdminCore {
 	 * Initiates a purchase at Print.com for an order item.
 	 *
 	 * @since 1.0.0
-	 * @return \WP_Error|void Error on failure, outputs success JSON on success.
+	 * @param \WP_REST_Request $request REST request instance.
+	 * @return \WP_REST_Response|\WP_Error REST response or error.
 	 */
-	public function pdc_place_order() {
-		$order_item_id = isset( $_POST['order_item_id'] ) ? absint( wp_unslash( $_POST['order_item_id'] ) ) : 0;
+	public function pdc_place_order( \WP_REST_Request $request ) {
+		$order_item_id = absint( $request->get_param( 'id' ) );
+		if ( empty( $order_item_id ) ) {
+			return new \WP_Error(
+				'pdc_missing_order_item',
+				__( 'Order item ID is required.', 'pdc-connector' ),
+				array( 'status' => 400 )
+			);
+		}
 
 		$pdc_product_config = get_option( $this->plugin_name . '-product' );
 
 		$result = $this->pdc_client->purchase_order_item( $order_item_id, $pdc_product_config );
 		if ( is_wp_error( $result ) ) {
-			return wp_send_json_error(
-				array(
-					'message' => $result->get_error_message(),
-					'details' => $result->get_error_data(),
-				),
-				$result->get_error_code()
+			$status = absint( $result->get_error_code() );
+			if ( 0 === $status ) {
+				$status = 500;
+			}
+			return new \WP_Error(
+				$result->get_error_code(),
+				$result->get_error_message(),
+				array_merge(
+					array(
+						'status' => $status,
+					),
+					(array) $result->get_error_data()
+				)
 			);
 		}
 		$pdc_order               = $result->order;
@@ -718,7 +744,11 @@ class AdminCore {
 		);
 		$order->add_order_note( $note );
 
-		wp_send_json_success( $pdc_order );
+		return rest_ensure_response(
+			array(
+				'order' => $pdc_order,
+			)
+		);
 	}
 
 	/**
