@@ -13,8 +13,6 @@ namespace PdcConnector\Includes;
 
 use PdcConnector\Front\FrontCore;
 
-const PLUGIN_NAME = 'pdc-connector';
-
 
 /**
  * The file that defines the core plugin class
@@ -57,24 +55,6 @@ class Core {
 	protected $loader;
 
 	/**
-	 * The unique identifier of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 * @var      string    $plugin_name    The string used to uniquely identify this plugin.
-	 */
-	protected $plugin_name;
-
-	/**
-	 * The current version of the plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 * @var      string    $version    The current version of the plugin.
-	 */
-	protected $version;
-
-	/**
 	 * Define the core functionality of the plugin.
 	 *
 	 * Set the plugin name and the plugin version that can be used throughout the plugin.
@@ -84,13 +64,6 @@ class Core {
 	 * @since    1.0.0
 	 */
 	public function __construct() {
-		if ( defined( 'PDC_CONNECTOR_VERSION' ) ) {
-			$this->version = PDC_CONNECTOR_VERSION;
-		} else {
-			$this->version = '1.0.0';
-		}
-		$this->plugin_name = PLUGIN_NAME;
-
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
@@ -110,7 +83,7 @@ class Core {
 	 * @return string Fully qualified meta key for storage.
 	 */
 	public static function get_meta_key( $name, $public_meta_key = false ) {
-		$meta_key_name = PLUGIN_NAME . '_' . $name;
+		$meta_key_name = PDC_CONNECTOR_NAME . '_' . $name;
 		if ( $public_meta_key ) {
 			return $meta_key_name;
 		}
@@ -163,7 +136,7 @@ class Core {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new \PdcConnector\Admin\AdminCore( $this->get_plugin_name(), $this->get_version() );
+		$plugin_admin = new \PdcConnector\Admin\AdminCore();
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
@@ -189,7 +162,7 @@ class Core {
 	 * @access   private
 	 */
 	private function define_public_hooks() {
-		$plugin_public = new FrontCore( $this->get_plugin_name(), $this->get_version() );
+		$plugin_public = new FrontCore();
 
 		$this->loader->add_filter( 'woocommerce_add_cart_item_data', $plugin_public, 'capture_cart_item_data', 10, 2 );
 		$this->loader->add_filter( 'woocommerce_before_add_to_cart_button', $plugin_public, 'add_cart_item_data_nonce', 10, 2 );
@@ -206,17 +179,6 @@ class Core {
 	}
 
 	/**
-	 * The name of the plugin used to uniquely identify it within the context of
-	 * WordPress and to define internationalization functionality.
-	 *
-	 * @since     1.0.0
-	 * @return    string    The name of the plugin.
-	 */
-	public function get_plugin_name() {
-		return $this->plugin_name;
-	}
-
-	/**
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
 	 * @since     1.0.0
@@ -224,15 +186,5 @@ class Core {
 	 */
 	public function get_loader() {
 		return $this->loader;
-	}
-
-	/**
-	 * Retrieve the version number of the plugin.
-	 *
-	 * @since     1.0.0
-	 * @return    string    The version number of the plugin.
-	 */
-	public function get_version() {
-		return $this->version;
 	}
 }

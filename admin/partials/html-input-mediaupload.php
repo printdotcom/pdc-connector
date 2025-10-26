@@ -9,7 +9,9 @@
  * @since 1.0.0
  */
 
- if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 $pdc_connector_file_url_meta_key = $this->get_meta_key( 'pdf_url' );
 $pdc_connector_file_url          = get_post_meta( $thepostid, $pdc_connector_file_url_meta_key, true );

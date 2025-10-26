@@ -1,7 +1,8 @@
-const PLUGIN_NAME = pdcAdminApi.plugin_name;
 
 (function ($) {
   'use strict';
+  
+  const PLUGIN_NAME = pdcAdminApi.plugin_name;
 
   async function checkCredentials() {
     $(`#js-${PLUGIN_NAME}-auth-success`).hide();

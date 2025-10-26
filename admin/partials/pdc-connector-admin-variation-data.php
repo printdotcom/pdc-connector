@@ -9,7 +9,9 @@
  * @since 1.0.0
  */
 
- if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 /**
  * Variables available in this file
@@ -28,15 +30,15 @@ $pdc_connector_preset_input_name = $pdc_connector_meta_key_preset_id . '[' . $pd
 				<span class="woocommerce-help-tip" tabindex="0" aria-label="<?php echo esc_attr__( 'Select a preset for this variant. When no preset is selected, it will use the default preset of this product.', 'pdc-connector' ); ?>"></span>
 				<span class="pdc-ac-preset-list">
 					<select class="pdc_variation_preset_select" name="<?php echo esc_attr( $pdc_connector_preset_input_name ); ?>" value="<?php echo esc_attr( $pdc_connector_preset_id ); ?>">
-						<?php include plugin_dir_path( __FILE__ ) . '/' . $this->plugin_name . '-admin-preset-select.php'; ?>
+						<?php include plugin_dir_path( __FILE__ ) . '/' . PDC_CONNECTOR_NAME . '-admin-preset-select.php'; ?>
 					</select>
 				</span>
 			</p>
 
 			<?php
 			$pdc_connector_pdf_url         = get_post_meta( $pdc_connector_variation_id, $pdc_connector_meta_key_pdf_url, true );
-			$pdc_connector_button_field_id = $this->plugin_name . '_' . $pdc_connector_variation_id . '_upload_id';
-			$pdc_connector_file_field_id   = $this->plugin_name . '_' . $pdc_connector_variation_id . '_pdf_url';
+			$pdc_connector_button_field_id = PDC_CONNECTOR_NAME . '_' . $pdc_connector_variation_id . '_upload_id';
+			$pdc_connector_file_field_id   = PDC_CONNECTOR_NAME . '_' . $pdc_connector_variation_id . '_pdf_url';
 			?>
 			<p class="form-row form-field _pdc_editable_field">
 				<label for="<?php echo esc_attr( $pdc_connector_file_field_id ); ?>"><?php esc_html_e( 'PDF', 'pdc-connector' ); ?></label>

@@ -33,14 +33,6 @@ class APIClient {
 	private $pdc_api_base_url;
 
 	/**
-	 * Unique plugin name used for namespacing cache and hooks.
-	 *
-	 * @since 1.0.0
-	 * @var string
-	 */
-	private $plugin_name;
-
-	/**
 	 * API key for the Print.com API.
 	 *
 	 * @since 1.0.0
@@ -52,13 +44,10 @@ class APIClient {
 	 * Initializes the API client.
 	 *
 	 * @since 1.0.0
-	 *
-	 * @param string $plugin_name Unique reference for this client, typically the plugin slug.
 	 */
-	public function __construct( $plugin_name ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct() {
 
-		$env = get_option( $plugin_name . '-env' );
+		$env = get_option( PDC_CONNECTOR_NAME . '-env' );
 
 		// Allow environment variable override for testing.
 		if ( getenv( 'PDC_API_BASE_URL' ) ) {
@@ -71,7 +60,7 @@ class APIClient {
 		if ( getenv( 'PDC_API_KEY' ) ) {
 			$this->pdc_api_key = getenv( 'PDC_API_KEY' );
 		} else {
-			$api_key           = get_option( $plugin_name . '-api_key' );
+			$api_key           = get_option( PDC_CONNECTOR_NAME . '-api_key' );
 			$this->pdc_api_key = $api_key;
 		}
 	}
@@ -231,7 +220,7 @@ class APIClient {
 	 */
 	public function search_products() {
 		$result = null;
-		$cached = get_transient( $this->plugin_name . '-products' );
+		$cached = get_transient( PDC_CONNECTOR_NAME . '-products' );
 		if ( $cached ) {
 			$result = json_decode( $cached );
 		} else {
@@ -242,7 +231,7 @@ class APIClient {
 			if ( empty( $response ) ) {
 				return new \WP_Error( 'no result', 'No products found' );
 			}
-			set_transient( $this->plugin_name . '-products', $response, 60 * 60 * 24 ); // 1 day
+			set_transient( PDC_CONNECTOR_NAME . '-products', $response, 60 * 60 * 24 ); // 1 day
 			$result = json_decode( $response );
 		}
 
@@ -359,7 +348,7 @@ class APIClient {
 			),
 		);
 
-		$order_body = apply_filters( $this->plugin_name . '_before_place_order', $order_request ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		$order_body = apply_filters( PDC_CONNECTOR_NAME, $order_request );
 		$result     = $this->perform_authenticated_request(
 			'POST',
 			'/orders',

@@ -51,6 +51,14 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'PDC_CONNECTOR_VERSION', '1.0.0' );
 
 /**
+ * Plugin name
+ *
+ * @since 1.0.0
+ * @var string PDC_CONNECTOR_NAME Plugin name
+ */
+define( 'PDC_CONNECTOR_NAME', 'pdc-connector' );
+
+/**
  * Begins execution of the plugin.
  *
  * Since everything within the plugin is registered via hooks,
@@ -60,7 +68,6 @@ define( 'PDC_CONNECTOR_VERSION', '1.0.0' );
  * @since    1.0.0
  */
 function pdc_connector_run() {
-
 	$plugin = new Core();
 	$plugin->run();
 }
