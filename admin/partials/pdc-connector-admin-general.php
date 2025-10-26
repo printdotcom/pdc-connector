@@ -9,6 +9,8 @@
  * @since 1.0.0
  */
 
+ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 ?>
 <div class="wrap">
 	<h2><?php echo esc_html( get_admin_page_title() ); ?></h2>

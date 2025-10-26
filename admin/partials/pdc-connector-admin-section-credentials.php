@@ -9,6 +9,8 @@
  * @since 1.0.0
  */
 
+ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 $pdc_connector_api_key = get_option( $this->plugin_name . '-api_key' );
 $pdc_connector_env     = get_option( $this->plugin_name . '-env' );
 $pdc_connector_app_url = ( 'prod' === $pdc_connector_env ) ? 'app.print.com' : 'app.stg.print.com';

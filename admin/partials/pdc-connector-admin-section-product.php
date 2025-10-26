@@ -9,6 +9,8 @@
  * @since 1.0.0
  */
 
+ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 $pdc_connector_product_config = get_option( $this->plugin_name . '-product' );
 
 // Handle case where option doesn't exist yet or use_preset_copies is not set.
