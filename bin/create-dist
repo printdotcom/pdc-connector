@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+# Create a clean plugin archive using WP-CLI inside Docker
+# Usage: bin/create-dist [WORDPRESS_VERSION] [PHP_VERSION]
+# Examples:
+#   bin/create-dist            # defaults to 67 82
+#   bin/create-dist 67 82
+
+set -euo pipefail
+
+CONFIG_FILE="config/wp-version.conf"
+WORDPRESS_VERSION_ENV="${1:-${WORDPRESS_VERSION:-67}}"
+PHP_VERSION_ENV="${2:-${PHP_VERSION:-82}}"
+
+WORDPRESS_PORT="80${WORDPRESS_VERSION_ENV}"
+WP_IMAGE_KEY="${WORDPRESS_VERSION_ENV}_${PHP_VERSION_ENV}"
+WP_IMAGE=$(grep "^${WP_IMAGE_KEY}=" "$CONFIG_FILE" | cut -d'=' -f2)
+
+if [ -z "${WP_IMAGE}" ]; then
+  echo "Error: No WP image found for key ${WP_IMAGE_KEY} in ${CONFIG_FILE}" >&2
+  exit 1
+fi
+
+export WP_IMAGE
+export COMPOSE_PROJECT_NAME="pdc_${WORDPRESS_VERSION_ENV}_${PHP_VERSION_ENV}"
+export WORDPRESS_PORT
+
+PLUGIN_PATH="/var/www/html/wp-content/plugins/pdc-connector"
+PACKAGES_DIR="/var/www/.wp-cli-packages"
+CACHE_DIR="/var/www/.wp-cli-cache"
+
+echo "Creating distribution archive via WP-CLI in Docker (image=${WP_IMAGE})..."
+
+# Run a one-off wpcli container:
+# 1) Install minimal deps (zip, git, ca-certificates)
+# 2) Prepare WP-CLI packages dirs with correct ownership
+# 3) Configure git to use HTTPS instead of SSH for GitHub
+# 4) Install dist-archive package (using env so su preserves it)
+# 5) Create the archive inside the mounted plugin directory
+
+docker compose -f config/docker-compose.yml run --rm --user root \
+  -e WP_CLI_PACKAGES_DIR="${PACKAGES_DIR}" \
+  -e WP_CLI_CACHE_DIR="${CACHE_DIR}" \
+  wpcli sh -eu -c "\
+    apk add --no-cache zip git ca-certificates >/dev/null 2>&1 && \
+    update-ca-certificates >/dev/null 2>&1 || true && \
+    mkdir -p '${PACKAGES_DIR}' '${CACHE_DIR}' && \
+    chown -R www-data:www-data '${PACKAGES_DIR}' '${CACHE_DIR}' && \
+    su -s /bin/sh www-data -c \"\
+      git config --global url.https://github.com/.insteadOf git@github.com: && \
+      env WP_CLI_PACKAGES_DIR='${PACKAGES_DIR}' WP_CLI_CACHE_DIR='${CACHE_DIR}' \
+        wp package install wp-cli/dist-archive-command:v3.0.1 && \
+      env WP_CLI_PACKAGES_DIR='${PACKAGES_DIR}' WP_CLI_CACHE_DIR='${CACHE_DIR}' \
+        wp dist-archive '${PLUGIN_PATH}' '${PLUGIN_PATH}' --format=zip
+    \""
+
+echo "✓ Archive created in your plugin directory (host-mapped)."
