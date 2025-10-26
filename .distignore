@@ -11,6 +11,7 @@ vendor/*
 !vendor/autoload.php
 !vendor/composer/**
 phpcs.xml.dist
+.phpcs-cache
 
 # tests & reports
 test
