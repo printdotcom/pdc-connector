@@ -792,25 +792,23 @@ class AdminCore {
 	 * @return void
 	 */
 	public function save_variation_data_fields( $variation_id, $i ) {
-		$fieldname_preset_id = $this->get_meta_key( 'preset_id' );
-		$fieldname_pdf_url   = $this->get_meta_key( 'pdf_url' );
-		$this->save_variation_data_field( $variation_id, $fieldname_preset_id, $i );
-		$this->save_variation_data_field( $variation_id, $fieldname_pdf_url, $i );
-	}
-	/**
-	 * Saves a single variation data field from POST.
-	 *
-	 * @since 1.0.0
-	 * @param int    $variation_id Variation ID.
-	 * @param string $fieldname    Field meta key.
-	 * @param int    $it           Submitted array index.
-	 * @return void
-	 */
-	private function save_variation_data_field( $variation_id, $fieldname, $it ) {
-		if ( isset( $_POST[ $fieldname ] ) && isset( $_POST[ $fieldname ][ $it ] ) ) :
-			$raw_val = sanitize_text_field( wp_unslash( $_POST[ $fieldname ][ $it ] ) );
+		$nonce_value = isset( $_POST['woocommerce_meta_nonce'] ) ? wp_unslash( $_POST['woocommerce_meta_nonce'] ) : '';
+		if ( empty( $nonce_value ) || ! wp_verify_nonce( $nonce_value, 'woocommerce_save_data' ) ) {
+			return;
+		}
+
+		$fieldname_pdf_url = $this->get_meta_key( 'pdf_url' );
+		if ( isset( $_POST[ $fieldname_pdf_url ] ) && isset( $_POST[ $fieldname_pdf_url ][ $i ] ) ) {
+			$raw_val = sanitize_text_field( wp_unslash( $_POST[ $fieldname_pdf_url ][ $i ] ) );
 			$val     = is_array( $raw_val ) ? array_map( 'sanitize_text_field', $raw_val ) : $raw_val;
-			update_post_meta( $variation_id, $fieldname, $val );
-		endif;
+			update_post_meta( $variation_id, $fieldname_pdf_url, $val );
+		}
+
+		$fieldname_preset_id = $this->get_meta_key( 'preset_id' );
+		if ( isset( $_POST[ $fieldname_preset_id ] ) && isset( $_POST[ $fieldname_preset_id ][ $i ] ) ) {
+			$raw_val = sanitize_text_field( wp_unslash( $_POST[ $fieldname_preset_id ][ $i ] ) );
+			$val     = is_array( $raw_val ) ? array_map( 'sanitize_text_field', $raw_val ) : $raw_val;
+			update_post_meta( $variation_id, $fieldname_preset_id, $val );
+		}
 	}
 }
