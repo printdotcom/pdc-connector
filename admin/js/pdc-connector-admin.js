@@ -203,11 +203,17 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
     const sku = $('#js-pdc-product-selector').val();
     if (!sku) return;
     try {
-      const presetOptionsHTML = await wp.ajax
-        .post('pdc-list-presets', {
-          sku,
-        })
-        .promise();
+      const response = await fetch(`${pdcAdminApi.root}pdc/v1/products/${encodeURIComponent(sku)}/presets`, {
+        method: 'GET',
+        headers: {
+          'X-WP-Nonce': pdcAdminApi.nonce,
+        },
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.message || 'Failed to load presets.');
+      }
+      const presetOptionsHTML = payload?.html || '';
       document.getElementById('js-pdc-preset-list').innerHTML = presetOptionsHTML;
 
       const variationPresetInputs = document.querySelectorAll('.pdc_variation_preset_select');
@@ -215,7 +221,7 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
         selectInput.innerHTML = presetOptionsHTML;
       });
     } catch (err) {
-      console.error('err:', err);
+      console.error('Failed to load presets', err);
     }
   }
 })(jQuery);

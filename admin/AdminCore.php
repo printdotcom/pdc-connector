@@ -138,7 +138,7 @@ class AdminCore {
 			'pdcAdminApi',
 			array(
 				'root'        => esc_url_raw( rest_url() ),
-				'nonce'       => wp_create_nonce(),
+				'nonce'       => wp_create_nonce( 'wp_rest' ),
 				'plugin_name' => $this->plugin_name,
 				'ajax_url'    => admin_url( 'admin-ajax.php' ),
 				'pdc_url'     => $this->pdc_client->get_api_base_url(),
@@ -449,12 +449,23 @@ class AdminCore {
 
 
 	/**
-	 * Registers the PDC purchase item endpoint
+	 * Registers the PDC REST API endpoints.
 	 *
 	 * @since       1.0.0
 	 * @return      void
 	 */
-	public function register_pdc_purchase_endpoint() {
+	public function register_pdc_endpoints() {
+		register_rest_route(
+			'pdc/v1',
+			'/products/(?P<sku>[^/]+)/presets',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'pdc_render_preset_select' ),
+				'permission_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
 		register_rest_route(
 			'pdc/v1',
 			'/orders/(?P<id>\d+)/attach-pdf',
@@ -614,19 +625,31 @@ class AdminCore {
 	 * Implementation of API method attached to GET /products/:sku/presets
 	 * Will list the presets for a given product for each selection.
 	 *
+	 * @param       \WP_REST_Request $request the request.
 	 * @since      1.0.0
 	 */
-	public function pdc_render_preset_select() {
-		$sku = isset( $_POST['sku'] ) ? sanitize_text_field( wp_unslash( $_POST['sku'] ) ) : '';
+	public function pdc_render_preset_select( \WP_REST_Request $request ) {
+		$sku = $request->get_param( 'sku' );
+		$sku = is_string( $sku ) ? sanitize_text_field( $sku ) : '';
 		if ( empty( $sku ) ) {
-			wp_send_json_error( 'no_sku', 400 );
-			return;
+			return new \WP_Error(
+				'pdc_missing_sku',
+				__( 'Product SKU is required.', 'pdc-connector' ),
+				array( 'status' => 400 )
+			);
 		}
 
 		$response = $this->pdc_client->get_presets( $sku );
 		if ( is_wp_error( $response ) ) {
-			wp_send_json_error( 'Could not retrieve presets: ' . $response->get_error_message(), 500 );
-			return;
+			return new \WP_Error(
+				'pdc_presets_fetch_failed',
+				sprintf(
+					/* translators: %s is the error message returned by the Print.com API. */
+					__( 'Could not retrieve presets: %s', 'pdc-connector' ),
+					$response->get_error_message()
+				),
+				array( 'status' => 500 )
+			);
 		}
 
 		$pdc_connector_presets_for_sku = $response;
@@ -634,7 +657,11 @@ class AdminCore {
 		include plugin_dir_path( __FILE__ ) . 'partials/' . $this->plugin_name . '-admin-preset-select.php';
 		$preset_select_html = ob_get_contents();
 		ob_end_clean();
-		wp_send_json_success( $preset_select_html );
+		return rest_ensure_response(
+			array(
+				'html' => $preset_select_html,
+			)
+		);
 	}
 
 	/**
