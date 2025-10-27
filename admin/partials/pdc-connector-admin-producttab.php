@@ -9,36 +9,45 @@
  * @since 1.0.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
 /**
  * Variables available in this file
  *
  * @global WP_Post $post   Global post object.
+ * @var string $pdc_connector_sku
+ * @var string $pdc_connector_preset_id
+ * @var string $preset_input_name
+ * @var array<PdcConnector\Admin\PrintDotCom\Product> $pdc_products
+ * @var array<PdcConnector\Admin\PrintDotCom\Preset> $pdc_connector_presets_for_sku
  */
-global $post;
-
-$pdc_connector_sku          = get_post_meta( $post->ID, $this->get_meta_key( 'product_sku' ), true );
-$pdc_connector_sku_title    = get_post_meta( $post->ID, $this->get_meta_key( 'product_title' ), true );
-$pdc_connector_preset_id    = get_post_meta( $post->ID, $this->get_meta_key( 'preset_id' ), true );
-$pdc_connector_preset_title = get_post_meta( $post->ID, $this->get_meta_key( 'preset_title' ), true );
 ?>
 <div id="pdc_product_data_tab" class="panel woocommerce_options_panel">
 	<?php wp_nonce_field( 'pdc_connector_save_product', 'pdc_connector_nonce' ); ?>
-	<div class="options_group pdc_product_options" id="js-pdc-simple-options">
+	<div class="options_group pdc_product_options">
 		<p class="form-field">
-			<label for="pdc-products-label"><?php esc_html_e( 'Print.com SKU', 'pdc-connector' ); ?></label>
-			<span id="js-pdc-ac-product-list" class="pdc-ac-product-list"></span>
-			<input data-testid="pdc-product-sku" type="hidden" value="<?php echo esc_attr( (string) $pdc_connector_sku ); ?>" id="js-pdc-product-sku" name="<?php echo esc_attr( $this->get_meta_key( 'product_sku' ) ); ?>" />
-			<input data-testid="pdc-product-title" type="hidden" value="<?php echo esc_attr( (string) $pdc_connector_sku_title ); ?>" id="js-pdc-product-title" name="<?php echo esc_attr( $this->get_meta_key( 'product_title' ) ); ?>" />
-			<span class="spinner" id="js-pdc-product-search-spinner"></span>
+			<label for="js-pdc-product-selector"><?php esc_html_e( 'Print.com SKU', 'pdc-connector' ); ?></label>
+			<select
+				id="js-pdc-product-selector"
+				data-testid="pdc-product-sku"
+				name="<?php echo esc_attr( $this->get_meta_key( 'product_sku' ) ); ?>"
+				value="<?php echo esc_attr( (string) $pdc_connector_sku ); ?>">
+				<option disabled selected value><?php esc_html_e( 'Choose a product', 'pdc-connector' ); ?></option>
+				<?php foreach ( $pdc_products as $pdc_connector ) { ?>
+					<option value="<?php echo esc_attr( $pdc_connector->sku ); ?>" <?php selected( $pdc_connector->sku, $pdc_connector_sku ); ?>><?php echo esc_attr( $pdc_connector->title ); ?></option>
+				<?php } ?>
+			</select>
 		</p>
 		<p class="form-field">
 			<label for="pdc-presets-label"><?php esc_html_e( 'Print.com Preset', 'pdc-connector' ); ?></label>
-			<span class="js-pdc-preset-search pdc-ac-preset-list"></span>
-			<input data-testid="pdc-preset-id" type="hidden" value="<?php echo esc_attr( (string) $pdc_connector_preset_id ); ?>" class="js-pdc-preset-id" name="<?php echo esc_attr( $this->get_meta_key( 'preset_id' ) ); ?>" />
-			<input data-testid="pdc-preset-title" type="hidden" value="<?php echo esc_attr( (string) $pdc_connector_preset_title ); ?>" class="js-pdc-preset-title" name="<?php echo esc_attr( $this->get_meta_key( 'preset_title' ) ); ?>" />
-			<span id="js-pdc-preset-search-spinner" class="spinner"></span>
+			<span class="pdc-ac-preset-list">
+				<select id="js-pdc-preset-list" class="pdc_preset_select" name="<?php echo esc_attr( $preset_input_name ); ?>" data-testid="pdc-preset-id" value="<?php echo esc_attr( (string) $pdc_connector_preset_id ); ?>">
+					<?php require plugin_dir_path( __FILE__ ) . '/' . PDC_CONNECTOR_NAME . '-admin-preset-select.php'; ?>
+				</select>
+			</span>
 		</p>
-
 		<?php
 		/**
 		 * Include the media upload input partial.

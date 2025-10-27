@@ -38,19 +38,16 @@ export async function configurePoster(page) {
   await page.goto('/wp-admin/post.php?post=16&action=edit');
   await page.getByRole('link', { name: 'Print.com' }).click();
 
-  // sku = poster
-  await page.locator('#pdc-products-label').fill('post');
-  await page.waitForResponse(/\/wp-admin\/admin-ajax.php/, {
-    timeout: 1000,
-  });
-  await page.getByRole('option', { name: 'Posters posters' }).click();
+  // select product
+  await page.getByTestId('pdc-product-sku').selectOption('posters');
 
-  // preset = A3 Posters
-  await page.locator('#pdc-presets-label').click();
-  await page.waitForResponse(/\/wp-admin\/admin-ajax.php/, {
+  // loading presets for selected product
+  await page.waitForResponse(/\/pdc\/v1\/products/, {
     timeout: 1000,
   });
-  await page.getByRole('option', { name: 'A3 Posters' }).click();
+
+  // select preset
+  await page.getByTestId('pdc-preset-id').selectOption('123poster');
 
   // pdf file = fixture
   await page.getByRole('link', { name: 'Choose file' }).click();

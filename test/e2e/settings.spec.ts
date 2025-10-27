@@ -4,6 +4,11 @@ test.describe('Settings Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/wp-admin/admin.php?page=pdc-connector');
   });
+  test.afterAll(async ({ browser }) => {
+    const afterAllPage = await browser.newPage();
+    await afterAllPage.goto('/wp-admin/admin.php?page=pdc-connector');
+    await afterAllPage.getByTestId('pdc-apikey').fill('test_key_12345');
+  });
 
   test.describe('general settings', () => {
     test('when settings page is loaded for the first time, environment is staging', async ({ page }) => {
@@ -158,7 +163,9 @@ test.describe('Settings Page', () => {
       await expect(page.getByTestId('pdc-apikey')).toHaveValue('combined_test_key');
       await expect(page.getByTestId('pdc-environment')).toHaveValue('stg');
       await expect(page.getByTestId('pdc-use_preset_copies')).toBeChecked();
-
+      
+      // reset key
+      await page.getByTestId('pdc-apikey').fill('test_key_12345');
     });
   });
 });

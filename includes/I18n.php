@@ -47,7 +47,7 @@ class I18n {
 	public function load_plugin_textdomain() {
 
 		load_plugin_textdomain(
-			'pdc-connector',
+			PDC_CONNECTOR_NAME,
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);

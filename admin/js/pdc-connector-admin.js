@@ -1,7 +1,7 @@
-const PLUGIN_NAME = pdcAdminApi.plugin_name;
-
 (function ($) {
   'use strict';
+
+  const PLUGIN_NAME = pdcAdminApi.plugin_name;
 
   async function checkCredentials() {
     $(`#js-${PLUGIN_NAME}-auth-success`).hide();
@@ -51,7 +51,7 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
     e.preventDefault();
     const orderItemId = e.target.getAttribute('data-order-item-id');
 
-    var frame = wp.media({
+    const frame = wp.media({
       title: 'Select or Upload a Custom File',
       button: {
         text: 'Use this file',
@@ -112,15 +112,20 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
     $('#js-pdc-request-response').text('');
     const orderItemId = e.target.getAttribute('data-order-item-id');
     try {
-      await wp.ajax
-        .post('pdc-place-order', {
-          order_item_id: orderItemId,
-        })
-        .promise();
+      const response = await fetch(`${pdcAdminApi.root}pdc/v1/orders/${encodeURIComponent(orderItemId)}/purchase`, {
+        method: 'POST',
+        headers: {
+          'X-WP-Nonce': pdcAdminApi.nonce,
+        },
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = payload?.message || payload?.data?.message || 'Failed to place order.';
+        throw new Error(message);
+      }
       await refreshOrderItem(orderItemId);
     } catch (err) {
-      const response = err?.responseJSON;
-      $('#js-pdc-request-response').text(response.data?.message);
+      $('#js-pdc-request-response').text(err.message || 'Failed to place order.');
     } finally {
       loading = false;
       $('#pdc-order').removeClass('button-disabled');
@@ -143,5 +148,81 @@ const PLUGIN_NAME = pdcAdminApi.plugin_name;
     $('#pdc-order').on('click', purchaseOrderItem);
     $(`#js-${PLUGIN_NAME}-verify_key`).click(checkCredentials);
     observeFormChanges(`#js-${PLUGIN_NAME}-general-form`);
+  });
+
+  // Upload file button click event for simple products
+  function openMediaDialogFromProduct(e) {
+    openMediaDialog(e, function (attachment) {
+      $(`#${e.target.dataset.pdcVariationFileField}`).val(attachment.url);
+      $('.woocommerce_variation').addClass('variation-needs-update');
+      $('button.cancel-variation-changes, button.save-variation-changes').prop('disabled', false);
+      $('#variable_product_options').trigger('woocommerce_variations_input_changed');
+    });
+  }
+  function openMediaDialogFromOrder(e) {
+    openMediaDialog(e, function (attachment) {
+      $('#_pdc_file_id').val(attachment.id);
+      $('#_pdc-file_url').val(attachment.url);
+    });
+  }
+
+  function openMediaDialog(e, onSelect) {
+    e.preventDefault();
+    const mediaUploadModal = wp.media({
+      title: 'Select or Upload a PDF',
+      button: {
+        text: 'Select File',
+      },
+      library: {
+        type: 'document',
+        post_mime_type: ['application/pdf'],
+      },
+      multiple: false,
+    });
+
+    mediaUploadModal.on('select', function () {
+      const attachment = mediaUploadModal.state().get('selection').first().toJSON();
+      onSelect(attachment);
+    });
+
+    mediaUploadModal.open();
+  }
+
+  // rehook dom elements when variations are loaded
+  $(document).on('woocommerce_variations_loaded', function onVariationsLoaded() {
+    loadPresetsForSKU();
+    $('.pdc-connector-js-upload-custom-file-btn').on('click', openMediaDialogFromProduct);
+  });
+
+  async function loadPresetsForSKU() {
+    const sku = $('#js-pdc-product-selector').val();
+    if (!sku) return;
+    try {
+      const response = await fetch(`${pdcAdminApi.root}pdc/v1/products/${encodeURIComponent(sku)}/presets`, {
+        method: 'GET',
+        headers: {
+          'X-WP-Nonce': pdcAdminApi.nonce,
+        },
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.message || 'Failed to load presets.');
+      }
+      const presetOptionsHTML = payload?.html || '';
+      document.getElementById('js-pdc-preset-list').innerHTML = presetOptionsHTML;
+
+      const variationPresetInputs = document.querySelectorAll('.pdc_variation_preset_select');
+      variationPresetInputs.forEach((selectInput) => {
+        selectInput.innerHTML = presetOptionsHTML;
+      });
+    } catch (err) {
+      console.error('Failed to load presets', err);
+    }
+  }
+
+  $(document).ready(function () {
+    $('#js-pdc-product-selector').on('change', loadPresetsForSKU);
+    $('#pdc-product-file-upload').on('click', openMediaDialogFromOrder);
+    $('.pdc-connector-js-upload-custom-file-btn').on('click', openMediaDialogFromProduct);
   });
 })(jQuery);

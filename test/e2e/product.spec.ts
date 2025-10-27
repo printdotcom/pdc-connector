@@ -6,7 +6,7 @@ test.describe('product', () => {
   test('can configure a preset for a poster', async ({ page }) => {
     await configurePoster(page);
     await page.getByRole('link', { name: 'Print.com' }).click();
-    await expect(page.locator('#pdc-presets-label')).toHaveValue('A3 Posters');
+    await expect(page.getByTestId('pdc-preset-id')).toHaveValue('123poster');
   });
 
   test('can configure a PDF for a product', async ({ page }) => {

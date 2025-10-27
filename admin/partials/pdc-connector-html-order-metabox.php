@@ -9,6 +9,10 @@
  * @since 1.0.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
 ?>
 <div class="wp-list-table pdc-table widefat fixed striped posts">
 	<div class="table-head">
