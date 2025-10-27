@@ -4,16 +4,15 @@ package.json
 package-lock.json
 debug.log
 
-# PHP/composer dev
-composer.lock
-# Exclude all of vendor except the autoloader pieces needed at runtime
-vendor/*
-!vendor/
-!vendor/autoload.php
+# composer
+# Due to a bug in gitignore-checker we have to exclude
+# devdependencies manually.
 !vendor/composer/
 !vendor/composer/**
-phpcs.xml.dist
-.phpcs-cache
+vendor/dealerdirect
+vendor/squizlabs
+vendor/phpcsstandards
+vendor/wp-coding-standards
 
 # tests & reports
 test
@@ -22,6 +21,8 @@ phpunit.xml
 phpcs.xml
 playwright-report
 test-results
+phpcs.xml.dist
+.phpcs-cache
 
 # config & scripts
 bin
@@ -35,3 +36,4 @@ bin
 
 # editor/os
 .vscode
+.DS_Store

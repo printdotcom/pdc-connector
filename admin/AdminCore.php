@@ -191,27 +191,27 @@ class AdminCore {
 	 * @return void
 	 */
 	public function save_product_data_fields( $post_id ) {
-		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['woocommerce_meta_nonce'] ), 'woocommerce_save_data' ) ) {
+		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( wp_unslash( sanitize_key( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) {
 			return;
 		}
 
 		$key_product_sku = $this->get_meta_key( 'product_sku' );
 		if ( isset( $_POST[ $key_product_sku ] ) ) {
-			$raw_value = wp_unslash( sanitize_key( $_POST[ $key_product_sku ] ) );
+			$raw_value = sanitize_key( wp_unslash( $_POST[ $key_product_sku ] ) );
 			$sanitized = is_array( $raw_value ) ? array_map( 'sanitize_text_field', $raw_value ) : sanitize_text_field( $raw_value );
 			update_post_meta( $post_id, $key_product_sku, $sanitized );
 		}
 
 		$key_preset_id = $this->get_meta_key( 'preset_id' );
 		if ( isset( $_POST[ $key_preset_id ] ) ) {
-			$raw_value = wp_unslash( sanitize_key( $_POST[ $key_preset_id ] ) );
+			$raw_value = sanitize_key( wp_unslash( $_POST[ $key_preset_id ] ) );
 			$sanitized = is_array( $raw_value ) ? array_map( 'sanitize_text_field', $raw_value ) : sanitize_text_field( $raw_value );
 			update_post_meta( $post_id, $key_preset_id, $sanitized );
 		}
 
 		$key_pdf_url = $this->get_meta_key( 'pdf_url' );
 		if ( isset( $_POST[ $key_pdf_url ] ) ) {
-			$raw_value = wp_unslash( sanitize_url( $_POST[ $key_pdf_url ] ) );
+			$raw_value = sanitize_url( wp_unslash( $_POST[ $key_pdf_url ] ) );
 			$sanitized = is_array( $raw_value ) ? array_map( 'sanitize_url', $raw_value ) : sanitize_text_field( $raw_value );
 			update_post_meta( $post_id, $key_pdf_url, $sanitized );
 		}

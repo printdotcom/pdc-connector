@@ -235,11 +235,20 @@ class APIClient {
 			$result = json_decode( $response );
 		}
 
+		$result = array_values(
+			array_filter(
+				$result,
+				fn( $item ) => ! empty( $item->sku ) && ! empty( $item->titlePlural ) // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			)
+		);
+
+		usort(
+			$result,
+			fn( $a, $b ) => strcasecmp( $a->titlePlural ?? '', $b->titlePlural ?? '' ) // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		);
+
 		$products = array_map(
-			function ( $result_item ) {
-				// Accessing external API property using camelCase as provided by API.
-				return new Product( $result_item->sku, $result_item->titlePlural ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			},
+			fn( $item ) => new Product( $item->sku, $item->titlePlural ), // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$result
 		);
 
@@ -348,7 +357,7 @@ class APIClient {
 			),
 		);
 
-		$order_body = apply_filters( PDC_CONNECTOR_NAME, $order_request );
+		$order_body = apply_filters( PDC_CONNECTOR_NAME . '_before_purchase_order', $order_request );
 		$result     = $this->perform_authenticated_request(
 			'POST',
 			'/orders',

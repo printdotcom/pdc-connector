@@ -82,13 +82,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 								<?php
 								if ( empty( $pdc_connector_pdf_url ) ) {
 									?>
-								<a href="#" id="pdc-file-upload" data-order-item-id="<?php echo esc_attr( $pdc_connector_order_item_id ); ?>" class="button button-secondary"><?php esc_html_e( 'Upload PDF', 'pdc-connector' ); ?></a><?php } ?>
+								<button type="button" id="pdc-file-upload" data-order-item-id="<?php echo esc_attr( $pdc_connector_order_item_id ); ?>" class="button button-secondary"><?php esc_html_e( 'Upload PDF', 'pdc-connector' ); ?></button><?php } ?>
 								<?php
 								if ( $pdc_connector_pdf_url ) {
 									?>
-								<a href="#" id="pdc-file-upload" data-order-item-id="<?php echo esc_attr( $pdc_connector_order_item_id ); ?>" class="button button-secondary"><?php esc_html_e( 'Replace PDF', 'pdc-connector' ); ?></a><?php } ?>
+								<button type="button" id="pdc-file-upload" data-order-item-id="<?php echo esc_attr( $pdc_connector_order_item_id ); ?>" class="button button-secondary"><?php esc_html_e( 'Replace PDF', 'pdc-connector' ); ?></button><?php } ?>
 								<?php if ( $pdc_connector_has_preset ) { ?>
-									<a id="pdc-order" data-testid="pdc-purchase-orderitem" data-order-item-id="<?php echo esc_attr( $pdc_connector_order_item_id ); ?>" href="#" class="button button-primary"><?php esc_html_e( 'Purchase', 'pdc-connector' ); ?></a>
+									<button type="button" id="pdc-order" data-testid="pdc-purchase-orderitem" data-order-item-id="<?php echo esc_attr( $pdc_connector_order_item_id ); ?>" class="button button-primary"><?php esc_html_e( 'Purchase', 'pdc-connector' ); ?></button>
 								<?php } ?>
 								<span class="spinner" id="js-pdc-action-spinner"></span>
 								<div class="notice-warning"><span id="js-pdc-request-response"></span></div>
