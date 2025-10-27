@@ -191,9 +191,30 @@ class AdminCore {
 	 * @return void
 	 */
 	public function save_product_data_fields( $post_id ) {
-		$this->save_text_field( $post_id, $this->get_meta_key( 'product_sku' ) );
-		$this->save_text_field( $post_id, $this->get_meta_key( 'preset_id' ) );
-		$this->save_text_field( $post_id, $this->get_meta_key( 'pdf_url' ) );
+		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['woocommerce_meta_nonce'] ), 'woocommerce_save_data' ) ) {
+			return;
+		}
+
+		$key_product_sku = $this->get_meta_key( 'product_sku' );
+		if ( isset( $_POST[ $key_product_sku ] ) ) {
+			$raw_value = wp_unslash( sanitize_key( $_POST[ $key_product_sku ] ) );
+			$sanitized = is_array( $raw_value ) ? array_map( 'sanitize_text_field', $raw_value ) : sanitize_text_field( $raw_value );
+			update_post_meta( $post_id, $key_product_sku, $sanitized );
+		}
+
+		$key_preset_id = $this->get_meta_key( 'preset_id' );
+		if ( isset( $_POST[ $key_preset_id ] ) ) {
+			$raw_value = wp_unslash( sanitize_key( $_POST[ $key_preset_id ] ) );
+			$sanitized = is_array( $raw_value ) ? array_map( 'sanitize_text_field', $raw_value ) : sanitize_text_field( $raw_value );
+			update_post_meta( $post_id, $key_preset_id, $sanitized );
+		}
+
+		$key_pdf_url = $this->get_meta_key( 'pdf_url' );
+		if ( isset( $_POST[ $key_pdf_url ] ) ) {
+			$raw_value = wp_unslash( sanitize_url( $_POST[ $key_pdf_url ] ) );
+			$sanitized = is_array( $raw_value ) ? array_map( 'sanitize_url', $raw_value ) : sanitize_text_field( $raw_value );
+			update_post_meta( $post_id, $key_pdf_url, $sanitized );
+		}
 	}
 
 	/**
@@ -246,24 +267,6 @@ class AdminCore {
 			'normal',
 			'core'
 		);
-	}
-
-	/**
-	 * Saves a POST text field to post meta when present.
-	 *
-	 * @since 1.0.0
-	 * @param int    $post_id   Post ID.
-	 * @param string $fieldname Meta key to save from POST.
-	 * @return void
-	 */
-	private function save_text_field( $post_id, $fieldname ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in save_product_data_fields().
-		if ( isset( $_POST[ $fieldname ] ) ) :
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in save_product_data_fields().
-			$raw_value = wp_unslash( sanitize_key( $_POST[ $fieldname ] ) );
-			$sanitized = is_array( $raw_value ) ? array_map( 'sanitize_text_field', $raw_value ) : sanitize_text_field( $raw_value );
-			update_post_meta( $post_id, $fieldname, $sanitized );
-		endif;
 	}
 
 	/**
@@ -385,11 +388,15 @@ class AdminCore {
 	 * @return void
 	 */
 	public function on_order_save( int $order_item_id ) {
+		// Check the nonce.
+		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['woocommerce_meta_nonce'] ), 'woocommerce_save_data' ) ) {
+			return;
+		}
+
 		$meta_pdf_url = $this->get_meta_key( 'pdf_url' );
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by WooCommerce before woocommerce_process_shop_order_meta.
 		if ( isset( $_POST[ $meta_pdf_url ] ) ) {
 			// URLs should be sanitized with esc_url_raw; always unslash first.
-			$raw_pdf = sanitize_url( wp_unslash( $_POST[ $meta_pdf_url ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$raw_pdf = sanitize_url( wp_unslash( $_POST[ $meta_pdf_url ] ) );
 			$val_pdf = is_array( $raw_pdf ) ? array_map( 'esc_url_raw', $raw_pdf ) : esc_url_raw( $raw_pdf );
 			update_post_meta( $order_item_id, $meta_pdf_url, $val_pdf );
 		}

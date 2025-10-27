@@ -26,9 +26,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <div id="pdc_product_data_tab" class="panel woocommerce_options_panel">
 	<?php wp_nonce_field( 'pdc_connector_save_product', 'pdc_connector_nonce' ); ?>
-	<div class="options_group pdc_product_options" id="js-pdc-simple-options">
+	<div class="options_group pdc_product_options">
 		<p class="form-field">
-			<label for="pdc-products-label"><?php esc_html_e( 'Print.com SKU', 'pdc-connector' ); ?></label>
+			<label for="js-pdc-product-selector"><?php esc_html_e( 'Print.com SKU', 'pdc-connector' ); ?></label>
 			<select
 				id="js-pdc-product-selector"
 				data-testid="pdc-product-sku"
@@ -44,7 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<label for="pdc-presets-label"><?php esc_html_e( 'Print.com Preset', 'pdc-connector' ); ?></label>
 			<span class="pdc-ac-preset-list">
 				<select id="js-pdc-preset-list" class="pdc_preset_select" name="<?php echo esc_attr( $preset_input_name ); ?>" data-testid="pdc-preset-id" value="<?php echo esc_attr( (string) $pdc_connector_preset_id ); ?>">
-					<?php require plugin_dir_path( __FILE__ ) . '/' . $this->plugin_name . '-admin-preset-select.php'; ?>
+					<?php require plugin_dir_path( __FILE__ ) . '/' . PDC_CONNECTOR_NAME . '-admin-preset-select.php'; ?>
 				</select>
 			</span>
 		</p>
