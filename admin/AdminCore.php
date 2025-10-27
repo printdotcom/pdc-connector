@@ -211,7 +211,7 @@ class AdminCore {
 
 		$key_pdf_url = $this->get_meta_key( 'pdf_url' );
 		if ( isset( $_POST[ $key_pdf_url ] ) ) {
-			$raw_value =  sanitize_url( wp_unslash( $_POST[ $key_pdf_url ] ) );
+			$raw_value = sanitize_url( wp_unslash( $_POST[ $key_pdf_url ] ) );
 			$sanitized = is_array( $raw_value ) ? array_map( 'sanitize_url', $raw_value ) : sanitize_text_field( $raw_value );
 			update_post_meta( $post_id, $key_pdf_url, $sanitized );
 		}
