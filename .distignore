@@ -8,7 +8,9 @@ debug.log
 composer.lock
 # Exclude all of vendor except the autoloader pieces needed at runtime
 vendor/*
+!vendor/
 !vendor/autoload.php
+!vendor/composer/
 !vendor/composer/**
 phpcs.xml.dist
 .phpcs-cache
