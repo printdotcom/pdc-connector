@@ -88,7 +88,6 @@ class AdminCore {
 				'root'        => esc_url_raw( rest_url() ),
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
 				'plugin_name' => PDC_CONNECTOR_NAME,
-				'ajax_url'    => admin_url( 'admin-ajax.php' ),
 				'pdc_url'     => $this->pdc_client->get_api_base_url(),
 			)
 		);
