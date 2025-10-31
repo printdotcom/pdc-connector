@@ -357,7 +357,7 @@ class APIClient {
 			),
 		);
 
-		$order_body = apply_filters( PDC_CONNECTOR_NAME . '_before_purchase_order_item', $order_item_id, $order_request );
+		$order_body = apply_filters( PDC_CONNECTOR_NAME . '_before_purchase_order_item', $order_request, $order_item_id );
 		$result     = $this->perform_authenticated_request(
 			'POST',
 			'/orders',
