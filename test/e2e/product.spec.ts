@@ -45,19 +45,27 @@ test.describe('product', () => {
 
     // save
     await page.getByRole('button', { name: 'Update' }).click();
-    
+
     // go to variations tab and wait for panel to appear
     await page.locator('a[href="#variable_product_options"]').click();
-    await page.locator('#variable_product_options').waitFor({ state: 'visible' });
 
-    await expect(page.getByRole('heading', { name: /A2/i })).toBeVisible();
+    await page.waitForResponse(/\/pdc\/v1\/products\/posters\/presets/, {
+      timeout: 1000,
+    });
 
     // open A2
-    await page.getByRole('heading', { name: /A2/i }).click();
-    await page.getByTestId('variation_preset_1').waitFor({ state: 'visible' });
+    const tableRow = page
+      .locator('.woocommerce_variation.wc-metabox')
+      .filter({ has: page.locator('a.remove_variation[rel="17"]') })
+      .first();
+
+    await tableRow.locator('a.edit_variation.edit').click();
+    const panel = tableRow.locator('.woocommerce_variable_attributes.wc-metabox-content').first();
+
+    await expect(panel.getByTestId('variation_preset_17')).toBeVisible();
 
     // select preset
-    await page.getByTestId('variation_preset_1').selectOption('posters_a2');
+    await page.getByTestId('variation_preset_17').selectOption('posters_a2');
 
     // save variation
     await page.getByRole('button', { name: 'Save changes' }).click();

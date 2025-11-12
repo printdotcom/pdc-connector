@@ -19,6 +19,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @global array           variation_data
  * @global int             $index
  * @global WP_Post $post   Global post object.
+ * 
+ * @var $pdc_connector_variation_id int
+ * @var $pdc_connector_index int
+ * @var $pdc_connector_meta_key_preset_id string
  */
 $pdc_connector_preset_input_name = $pdc_connector_meta_key_preset_id . '[' . $pdc_connector_index . ']';
 
@@ -35,7 +39,7 @@ wp_nonce_field(
 				<label><?php esc_html_e( 'Print.com Preset', 'pdc-connector' ); ?></label>
 				<span class="woocommerce-help-tip" tabindex="0" aria-label="<?php echo esc_attr__( 'Select a preset for this variant. When no preset is selected, it will use the default preset of this product.', 'pdc-connector' ); ?>"></span>
 				<span class="pdc-ac-preset-list">
-					<select data-testid="<?php echo esc_attr( 'variation_preset_' . $pdc_connector_index ); ?>" class="pdc_variation_preset_select" name="<?php echo esc_attr( $pdc_connector_preset_input_name ); ?>" value="<?php echo esc_attr( $pdc_connector_preset_id ); ?>">
+					<select data-testid="<?php echo esc_attr( 'variation_preset_' . $pdc_connector_variation_id ); ?>" class="pdc_variation_preset_select" name="<?php echo esc_attr( $pdc_connector_preset_input_name ); ?>" value="<?php echo esc_attr( $pdc_connector_preset_id ); ?>">
 						<?php include plugin_dir_path( __FILE__ ) . '/' . PDC_CONNECTOR_NAME . '-admin-preset-select.php'; ?>
 					</select>
 				</span>
