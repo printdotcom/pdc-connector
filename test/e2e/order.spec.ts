@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { configurePoster, orderPoster, setSettings } from './utils';
+import { configureSimpleProduct, orderProduct, setSettings } from './utils';
 
 test.describe('Order', () => {
   test('will purchase the preset copies amount when use_preset_copies is true', async ({ page }) => {
@@ -9,9 +9,9 @@ test.describe('Order', () => {
       usePresetCopies: true,
     });
 
-    await configurePoster(page);
+    await configureSimpleProduct(page, '14');
 
-    await orderPoster(page);
+    await orderProduct(page, 'custom-flyers');
 
     await page.goto('/wp-admin/edit.php?post_type=shop_order');
 
@@ -22,8 +22,8 @@ test.describe('Order', () => {
     // purchase it
     await page.getByTestId('pdc-purchase-orderitem').click();
 
-    // We have configured a preset with 300 copies (see preset.123poster.json), so should be 300 copies.
-    await expect(page.getByTestId('pdc-ordered-copies')).toHaveText('Copies 300');
+    // We have configured a preset with 300 copies (see preset.flyers_a5.json), so should be 500 copies.
+    await expect(page.getByTestId('pdc-ordered-copies')).toHaveText('Copies 500');
   });
 
   test('will purchase the ordered quantity when use_preset_copies is false', async ({ page }) => {
@@ -33,9 +33,9 @@ test.describe('Order', () => {
       usePresetCopies: false,
     });
 
-    await configurePoster(page);
+    await configureSimpleProduct(page, '14');
 
-    await orderPoster(page);
+    await orderProduct(page, 'custom-flyers');
 
     await page.goto('/wp-admin/edit.php?post_type=shop_order');
 
