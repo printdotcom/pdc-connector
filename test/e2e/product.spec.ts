@@ -62,16 +62,13 @@ test.describe('product', () => {
     await page.getByTestId('pdc-product-sku').selectOption('posters');
 
     // save
-    await page.getByRole('button', { name: 'Update' }).click();
-
-    const apiCallPromise = page.waitForResponse('**/pdc/v1/products/posters/presets', {
-      timeout: 2000,
-    });
+    await Promise.all([
+      page.waitForResponse(r => r.ok() && r.url().includes('rest_route=/pdc/v1/products/posters/presets')),
+      page.getByRole('button', { name: 'Update' }).click(),
+    ]);
 
     // go to variations tab and wait for panel to appear
     await page.locator('a[href="#variable_product_options"]').click();
-
-    await apiCallPromise;
 
     // open A2
     const tableRow = page
