@@ -618,6 +618,7 @@ class AdminCore {
 		}
 
 		$pdc_connector_presets_for_sku = $response;
+		$pdc_connector_preset_id       = '';
 		ob_start();
 		include plugin_dir_path( __FILE__ ) . 'partials/' . PDC_CONNECTOR_NAME . '-admin-preset-select.php';
 		$preset_select_html = ob_get_contents();
@@ -746,7 +747,9 @@ class AdminCore {
 	 * @return void
 	 */
 	public function save_variation_data_fields( $variation_id, $i ) {
-		if ( isset( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['woocommerce_meta_nonce'] ), 'woocommerce_save_data' ) ) {
+
+		$nonce = isset( $_POST[PDC_CONNECTOR_NAME . '_variations_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST[PDC_CONNECTOR_NAME . '_variations_nonce'] ) ) : '';
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, PDC_CONNECTOR_NAME . '_save_variations' ) ) {
 			return;
 		}
 
