@@ -64,12 +64,14 @@ test.describe('product', () => {
     // save
     await page.getByRole('button', { name: 'Update' }).click();
 
+    const apiCallPromise = page.waitForResponse('**/pdc/v1/products/posters/presets', {
+      timeout: 2000,
+    });
+
     // go to variations tab and wait for panel to appear
     await page.locator('a[href="#variable_product_options"]').click();
 
-    await page.waitForResponse(/\/pdc\/v1\/products\/posters\/presets/, {
-      timeout: 1000,
-    });
+    await apiCallPromise;
 
     // open A2
     const tableRow = page
