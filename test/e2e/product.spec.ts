@@ -1,15 +1,27 @@
 import path from 'path';
 import { test, expect } from '@playwright/test';
-import { configureSimpleProduct } from './utils';
+import { configureSimpleProduct, setSettings } from './utils';
 
 test.describe('product', () => {
   test('can configure a preset for a simple product', async ({ page }) => {
+    await setSettings(page, {
+      apikey: 'test_key_12345',
+      env: 'stg',
+      usePresetCopies: false,
+    });
+
     await configureSimpleProduct(page, '14');
     await page.getByRole('link', { name: 'Print.com' }).click();
     await expect(page.getByTestId('pdc-preset-id')).toHaveValue('flyers_a5');
   });
 
   test('can configure a PDF for a product', async ({ page }) => {
+    await setSettings(page, {
+      apikey: 'test_key_12345',
+      env: 'stg',
+      usePresetCopies: false,
+    });
+
     await page.goto('/wp-admin/post.php?post=14&action=edit');
     await page.getByRole('link', { name: 'Print.com' }).click();
 
@@ -35,6 +47,12 @@ test.describe('product', () => {
   });
 
   test('can configure a preset and file for a variable product', async ({ page }) => {
+    await setSettings(page, {
+      apikey: 'test_key_12345',
+      env: 'stg',
+      usePresetCopies: false,
+    });
+
     await page.goto('/wp-admin/post.php?post=15&action=edit');
 
     // go to pdc tab
