@@ -21,6 +21,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @global WP_Post $post   Global post object.
  */
 $pdc_connector_preset_input_name = $pdc_connector_meta_key_preset_id . '[' . $pdc_connector_index . ']';
+
+wp_nonce_field(
+	PDC_CONNECTOR_NAME . '_save_variations',
+	PDC_CONNECTOR_NAME . '_variations_nonce'
+);	
 ?>
 <?php if ( ! empty( $pdc_connector_sku ) ) { ?>
 	<div class="form-row">
