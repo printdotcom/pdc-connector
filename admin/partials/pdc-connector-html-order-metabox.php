@@ -27,7 +27,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php
 		$pdc_connector_meta_key_pdf_url      = $this->get_meta_key( 'pdf_url' );
 		$pdc_connector_meta_key_preset_id    = $this->get_meta_key( 'preset_id' );
-		$pdc_connector_meta_key_preset_title = $this->get_meta_key( 'preset_title' );
 
 		foreach ( $order->get_items() as $pdc_connector_order_item_product ) {
 			$pdc_connector_order_item_id          = $pdc_connector_order_item_product->get_id();
@@ -39,10 +38,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 			$pdc_connector_pdf_url                = wc_get_order_item_meta( $pdc_connector_order_item_id, $this->get_meta_key( 'pdf_url' ), true );
 			$pdc_connector_order_item_status      = wc_get_order_item_meta( $pdc_connector_order_item_id, $this->get_meta_key( 'order_item_status' ), true );
 			$pdc_connector_tnt_url                = wc_get_order_item_meta( $pdc_connector_order_item_id, $this->get_meta_key( 'order_item_tnt_url' ), true );
+			$pdc_connector_preset_id              = wc_get_order_item_meta( $pdc_connector_order_item_id, $this->get_meta_key( 'preset_id' ), true );
 
-			$pdc_connector_product     = wc_get_product( $pdc_connector_order_item_product->get_product_id() );
-			$pdc_connector_preset_id   = $pdc_connector_product->get_meta( $pdc_connector_meta_key_preset_id );
-			$pdc_connector_preset_name = $pdc_connector_product->get_meta( $pdc_connector_meta_key_preset_title );
 
 			$pdc_connector_has_file   = $pdc_connector_pdf_url ? true : false;
 			$pdc_connector_has_preset = $pdc_connector_preset_id ? true : false;
