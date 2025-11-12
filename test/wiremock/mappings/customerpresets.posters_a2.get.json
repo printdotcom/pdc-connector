@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "GET",
-    "urlPath": "/customerpresets/123poster",
+    "urlPath": "/customerpresets/posters_a2",
     "headers": {
       "authorization": {
         "equalTo": "PrintApiKey test_key_12345"
@@ -14,6 +14,6 @@
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*"
     },
-    "bodyFileName": "preset.123poster.json"
+    "bodyFileName": "preset.posters_a2.json"
   }
 }

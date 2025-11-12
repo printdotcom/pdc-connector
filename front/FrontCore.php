@@ -154,11 +154,11 @@ class FrontCore {
 				if ( ! empty( $variation_preset_id ) ) {
 					$pdc_preset_id = $variation_preset_id;
 				}
+			}
 
-				if ( empty( $pdc_preset_id ) ) {
-					// Variation did not have a preset ID, so get it from the product.
-					$pdc_preset_id = get_post_meta( $product_id, Core::get_meta_key( 'preset_id' ), true );
-				}
+			// Variation did not have a preset ID, so get it from the product.
+			if ( empty( $pdc_preset_id ) ) {
+				$pdc_preset_id = get_post_meta( $product_id, Core::get_meta_key( 'preset_id' ), true );
 			}
 		}
 

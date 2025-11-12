@@ -1,0 +1,9 @@
+{
+  "id": "flyers_a5",
+  "sku": "flyers",
+  "configuration": {
+    "size": "a5",
+    "copies": 500,
+    "variants": []
+  }
+}

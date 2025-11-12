@@ -213,7 +213,19 @@
 
       const variationPresetInputs = document.querySelectorAll('.pdc_variation_preset_select');
       variationPresetInputs.forEach((selectInput) => {
-        selectInput.innerHTML = presetOptionsHTML;
+        if (!selectInput.value) {
+          selectInput.innerHTML = presetOptionsHTML;
+          return;
+        }
+
+        const options = $.parseHTML(presetOptionsHTML);
+        const optionsWithSelected = options.map((o) => {
+          if (o.value === selectInput.value) {
+            o.setAttribute('selected', true);
+          }
+          return o;
+        });
+        $(selectInput).html(optionsWithSelected);
       });
     } catch (err) {
       console.error('Failed to load presets', err);

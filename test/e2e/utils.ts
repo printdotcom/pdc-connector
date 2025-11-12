@@ -1,7 +1,7 @@
 import path from 'path';
 
-export async function orderPoster(page) {
-  await page.goto('/?product=custom-poster-a3');
+export async function orderProduct(page, productSlug: string) {
+  await page.goto(`/?product=${productSlug}`);
   await page.getByRole('button', { name: 'Add to cart', exact: true }).click();
   await page.getByRole('link', { name: 'View cart' }).click();
   await page.getByRole('link', { name: 'Proceed to checkout' }).click();
@@ -34,12 +34,12 @@ export async function setSettings(page, settings: Settings) {
   await page.getByRole('button', { name: 'Save Settings' }).click();
 }
 
-export async function configurePoster(page) {
-  await page.goto('/wp-admin/post.php?post=16&action=edit');
+export async function configureSimpleProduct(page, productID: string) {
+  await page.goto(`/wp-admin/post.php?post=${productID}&action=edit`);
   await page.getByRole('link', { name: 'Print.com' }).click();
 
   // select product
-  await page.getByTestId('pdc-product-sku').selectOption('posters');
+  await page.getByTestId('pdc-product-sku').selectOption('flyers');
 
   // loading presets for selected product
   await page.waitForResponse(/\/pdc\/v1\/products/, {
@@ -47,7 +47,7 @@ export async function configurePoster(page) {
   });
 
   // select preset
-  await page.getByTestId('pdc-preset-id').selectOption('123poster');
+  await page.getByTestId('pdc-preset-id').selectOption('flyers_a5');
 
   // pdf file = fixture
   await page.getByRole('link', { name: 'Choose file' }).click();

@@ -1,11 +1,25 @@
 {
   "items": [
     {
+      "sku": "flyers",
+      "title": {
+        "en": "A5 Flyers"
+      },
+      "id": "flyers_a5"
+    },
+    {
+      "sku": "posters",
+      "title": {
+        "en": "A2 Posters"
+      },
+      "id": "posters_a2"
+    },
+    {
       "sku": "posters",
       "title": {
         "en": "A3 Posters"
       },
-      "id": "123poster"
+      "id": "posters_a3"
     }
   ]
 }

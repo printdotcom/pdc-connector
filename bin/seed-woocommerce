@@ -104,6 +104,15 @@ EOF
 # Activating Plugins
 execute_wp_cli plugin activate woocommerce pdc-connector
 
+# Clean up existing content
+echo "🧹 Cleaning up existing content..."
+execute_sql "
+DELETE FROM wp_posts WHERE post_type IN ('product', 'product_variation', 'page', 'post');
+DELETE FROM wp_postmeta WHERE post_id NOT IN (SELECT ID FROM wp_posts);
+DELETE FROM wp_term_relationships WHERE object_id NOT IN (SELECT ID FROM wp_posts);
+DELETE t, tt FROM wp_terms t JOIN wp_term_taxonomy tt ON t.term_id = tt.term_id WHERE tt.taxonomy IN ('product_cat', 'product_tag', 'pa_size');
+"
+
 # Configure WooCommerce settings via SQL
 echo "⚙️ Configuring WooCommerce..."
 execute_sql "
@@ -253,12 +262,77 @@ execute_wp_cli wc payment_gateway update cod --enabled=true --user=1 --settings=
 execute_wp_cli option update woocommerce_default_gateway cod
 
 # Create sample products
-echo "🎨 Creating sample products..."
-create_product_sql "PDC-TSHIRT-001" "Custom T-Shirt - Basic" "29.99" "High-quality custom printed t-shirt. Perfect for personal use or promotional purposes. Available in multiple sizes and colors." "t-shirts"
-create_product_sql "PDC-TSHIRT-002" "Custom T-Shirt - Premium" "39.99" "Premium quality custom printed t-shirt with enhanced fabric and printing. Ideal for professional events and gifts." "t-shirts"
-create_product_sql "PDC-POSTER-001" "Custom Poster - A3" "19.99" "High-resolution custom printed poster in A3 size. Perfect for home decoration, office display, or promotional materials." "posters"
-create_product_sql "PDC-POSTER-002" "Custom Poster - A2" "34.99" "Large format custom printed poster in A2 size. Premium paper quality with vibrant colors for professional displays." "posters"
-create_product_sql "PDC-MUG-001" "Custom Mug - Ceramic" "14.99" "Personalized ceramic mug with your custom design. Dishwasher and microwave safe. Perfect for gifts or promotional items." "print-products"
+echo "🎨 Creating simple product..."
+create_product_sql "PDC-FLYERS-001" "Custom Flyers" "14.99" "Personalized flyers with your custom design." "print-products"
+
+echo "🛍️ Creating variable product: Custom Poster"
+
+# Create Size attribute
+execute_wp_cli wc product_attribute create --name="Size" --slug="size" --type="select" --user=1 --porcelain 2>/dev/null || echo "Attribute exists"
+
+# Create attribute terms
+execute_wp_cli term create pa_size "A2" --slug=a2
+execute_wp_cli term create pa_size "A3" --slug=a3
+
+# Get poster category ID
+POSTER_CAT_ID=$(execute_wp_cli term list product_cat --slug=posters --field=term_id --format=ids)
+
+# Create variable product with WP-CLI
+PRODUCT_ID=$(execute_wp_cli post create --post_type=product --post_title="Custom Poster" --post_content="High-resolution custom printed poster. Available in A2 and A3 sizes." --post_status=publish --porcelain)
+
+# Set product metadata and attributes using SQL
+execute_sql "
+SET @product_id = $PRODUCT_ID;
+SET @poster_cat_id = $POSTER_CAT_ID;
+
+-- Set product meta
+INSERT INTO wp_postmeta (post_id, meta_key, meta_value) VALUES
+(@product_id, '_sku', 'PDC-POSTER'),
+(@product_id, '_stock_status', 'instock'),
+(@product_id, '_manage_stock', 'no'),
+(@product_id, '_product_attributes', 'a:1:{s:7:\"pa_size\";a:6:{s:4:\"name\";s:7:\"pa_size\";s:5:\"value\";s:0:\"\";s:8:\"position\";i:0;s:10:\"is_visible\";i:1;s:12:\"is_variation\";i:1;s:11:\"is_taxonomy\";i:1;}}');
+
+-- Link to variable product type and category
+INSERT INTO wp_term_relationships (object_id, term_taxonomy_id) 
+SELECT @product_id, term_taxonomy_id FROM wp_term_taxonomy WHERE taxonomy='product_type' AND term_id=(SELECT term_id FROM wp_terms WHERE slug='variable');
+
+INSERT INTO wp_term_relationships (object_id, term_taxonomy_id)
+SELECT @product_id, term_taxonomy_id FROM wp_term_taxonomy WHERE taxonomy='product_cat' AND term_id=@poster_cat_id;
+
+-- Link product to attribute terms
+INSERT INTO wp_term_relationships (object_id, term_taxonomy_id)
+SELECT @product_id, term_taxonomy_id FROM wp_term_taxonomy WHERE taxonomy='pa_size';
+
+-- Create A3 variation
+INSERT INTO wp_posts (post_author, post_date, post_date_gmt, post_title, post_status, post_name, post_type, post_parent)
+VALUES (1, NOW(), UTC_TIMESTAMP(), 'Custom Poster - A3', 'publish', CONCAT('product-', @product_id, '-a3'), 'product_variation', @product_id);
+SET @var_a3 = LAST_INSERT_ID();
+
+-- Create A2 variation  
+INSERT INTO wp_posts (post_author, post_date, post_date_gmt, post_title, post_status, post_name, post_type, post_parent)
+VALUES (1, NOW(), UTC_TIMESTAMP(), 'Custom Poster - A2', 'publish', CONCAT('product-', @product_id, '-a2'), 'product_variation', @product_id);
+SET @var_a2 = LAST_INSERT_ID();
+
+-- Set variation metadata
+INSERT INTO wp_postmeta (post_id, meta_key, meta_value) VALUES
+(@var_a3, '_sku', 'PDC-POSTER-A3'),
+(@var_a3, '_price', '19.99'),
+(@var_a3, '_regular_price', '19.99'),
+(@var_a3, '_stock_status', 'instock'),
+(@var_a3, '_manage_stock', 'no'),
+(@var_a3, 'attribute_pa_size', 'a3'),
+(@var_a2, '_sku', 'PDC-POSTER-A2'),
+(@var_a2, '_price', '34.99'),
+(@var_a2, '_regular_price', '34.99'),
+(@var_a2, '_stock_status', 'instock'),
+(@var_a2, '_manage_stock', 'no'),
+(@var_a2, 'attribute_pa_size', 'a2'),
+(@product_id, '_price', '19.99'),
+(@product_id, '_min_variation_price', '19.99'),
+(@product_id, '_max_variation_price', '34.99'),
+(@product_id, '_min_variation_regular_price', '19.99'),
+(@product_id, '_max_variation_regular_price', '34.99');
+"
 
 # Update WooCommerce version and setup completion
 echo "🔄 Finalizing WooCommerce setup..."
