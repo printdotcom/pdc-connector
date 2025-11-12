@@ -61,14 +61,13 @@ test.describe('product', () => {
     // select product
     await page.getByTestId('pdc-product-sku').selectOption('posters');
 
-    // save
-    await page.getByRole('button', { name: 'Update' }).click();
-    
-    // open variations and wait for presets to appear
+    // save and wait for presets to appear
     await Promise.all([
-      page.waitForResponse(r => r.ok() && r.url().includes('rest_route=/pdc/v1/products/posters/presets')),
-      page.locator('a[href="#variable_product_options"]').click(),
-    ]);
+      page.getByRole('button', { name: 'Update' }).click(),
+      page.waitForResponse((r) => r.ok() && r.url().includes('rest_route=/pdc/v1/products/posters/presets'))]);
+
+    // open variations and
+    await page.locator('a[href="#variable_product_options"]').click();
 
     // open A2
     const tableRow = page
