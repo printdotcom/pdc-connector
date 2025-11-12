@@ -51,7 +51,7 @@ mkdir -p "$WP_CLI_PACKAGES_DIR" "$WP_CLI_CACHE_DIR" "$COMPOSER_HOME/cache/vcs"
 chown -R www-data:www-data "$WP_CLI_PACKAGES_DIR" "$WP_CLI_CACHE_DIR" "$COMPOSER_HOME"
 
 # 2) now run the install wp dist-archive cmd
-su -s /bin/sh www-data <<WW
+su -s /bin/sh www-data <<'WW'
 set -eu
 git config --global url.https://github.com/.insteadOf git@github.com:
 
@@ -61,8 +61,15 @@ export COMPOSER_HOME="$COMPOSER_HOME"
 
 wp package install wp-cli/dist-archive-command:v3.0.1
 
-# 3) finally create the archive
-wp dist-archive "/var/www/html/wp-content/plugins/pdc-connector" "/var/www/html/wp-content/plugins/pdc-connector" --format=zip
+# 3) create a temp copy to force filesystem state (avoid git archive)
+TMP_DIR=$(mktemp -d)
+cp -r /var/www/html/wp-content/plugins/pdc-connector "$TMP_DIR/pdc-connector"
+rm -rf "$TMP_DIR/pdc-connector/.git" "$TMP_DIR/pdc-connector/.github"
+
+# 4) create the archive from temp copy, output to plugin dir
+wp dist-archive "$TMP_DIR/pdc-connector" "/var/www/html/wp-content/plugins/pdc-connector" --format=zip
+
+rm -rf "$TMP_DIR"
 SH
 
 echo "✓ Archive created in your plugin directory (host-mapped)."
