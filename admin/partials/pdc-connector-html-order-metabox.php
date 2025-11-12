@@ -40,6 +40,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 			$pdc_connector_tnt_url                = wc_get_order_item_meta( $pdc_connector_order_item_id, $this->get_meta_key( 'order_item_tnt_url' ), true );
 			$pdc_connector_preset_id              = wc_get_order_item_meta( $pdc_connector_order_item_id, $this->get_meta_key( 'preset_id' ), true );
 
+			if ( empty( $pdc_connector_preset_id ) ) {
+				$variation_id = $pdc_connector_order_item_product->get_variation_id();
+				if ( $variation_id ) {
+					$pdc_connector_preset_id = get_post_meta( $variation_id, $pdc_connector_meta_key_preset_id, true );
+				}
+
+				if ( empty( $pdc_connector_preset_id ) ) {
+					$product_id = $pdc_connector_order_item_product->get_product_id();
+					if ( $product_id ) {
+						$pdc_connector_preset_id = get_post_meta( $product_id, $pdc_connector_meta_key_preset_id, true );
+					}
+				}
+			}
 
 			$pdc_connector_has_file   = $pdc_connector_pdf_url ? true : false;
 			$pdc_connector_has_preset = $pdc_connector_preset_id ? true : false;
