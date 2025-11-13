@@ -748,7 +748,7 @@ class AdminCore {
 	 */
 	public function save_variation_data_fields( $variation_id, $i ) {
 
-		$nonce = isset( $_POST[PDC_CONNECTOR_NAME . '_variations_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST[PDC_CONNECTOR_NAME . '_variations_nonce'] ) ) : '';
+		$nonce = isset( $_POST[ PDC_CONNECTOR_NAME . '_variations_nonce' ] ) ? sanitize_text_field( wp_unslash( $_POST[ PDC_CONNECTOR_NAME . '_variations_nonce' ] ) ) : '';
 		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, PDC_CONNECTOR_NAME . '_save_variations' ) ) {
 			return;
 		}

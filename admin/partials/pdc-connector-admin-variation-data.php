@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @global array           variation_data
  * @global int             $index
  * @global WP_Post $post   Global post object.
- * 
+ *
  * @var $pdc_connector_variation_id int
  * @var $pdc_connector_index int
  * @var $pdc_connector_meta_key_preset_id string
@@ -30,7 +30,7 @@ $pdc_connector_preset_input_name = $pdc_connector_meta_key_preset_id . '[' . $pd
 wp_nonce_field(
 	PDC_CONNECTOR_NAME . '_save_variations',
 	PDC_CONNECTOR_NAME . '_variations_nonce'
-);	
+);
 ?>
 <?php if ( ! empty( $pdc_connector_sku ) ) { ?>
 	<div class="form-row">
