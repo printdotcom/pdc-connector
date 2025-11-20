@@ -135,10 +135,7 @@ class FrontCore {
 		if ( empty( $pdc_pdf_url ) ) {
 			// There is no preconfigured PDF on the cart item.
 			if ( $variation_id ) {
-				$variation_pdf_url = get_post_meta( $variation_id, Core::get_meta_key( 'pdf_url' ), true );
-				if ( ! empty( $variation_pdf_url ) ) {
-					$pdc_pdf_url = $variation_pdf_url;
-				}
+				$pdc_pdf_url = get_post_meta( $variation_id, Core::get_meta_key( 'pdf_url' ), true );
 			}
 
 			// If the variation did not set the PDF URL, get it from the product.
@@ -150,25 +147,23 @@ class FrontCore {
 		if ( empty( $pdc_preset_id ) ) {
 			// There is no preconfigured preset on the cart item.
 			if ( $variation_id ) {
-				$variation_preset_id = get_post_meta( $variation_id, Core::get_meta_key( 'preset_id' ), true );
-				if ( ! empty( $variation_preset_id ) ) {
-					$pdc_preset_id = $variation_preset_id;
-				}
+				$pdc_preset_id = get_post_meta( $variation_id, Core::get_meta_key( 'preset_id' ), true );
 			}
 
-			// Variation did not have a preset ID, so get it from the product.
+			// Variation did not set the preset ID, so get it from the product.
 			if ( empty( $pdc_preset_id ) ) {
 				$pdc_preset_id = get_post_meta( $product_id, Core::get_meta_key( 'preset_id' ), true );
 			}
 		}
 
-		// Check if we have PitchPrint data in the cart item.
-		$cart_item       = WC()->cart->get_cart_item( $cart_item_key );
-		$pitchprint_data = isset( $cart_item['_pda_w2p_set_option'] ) ? $cart_item['_pda_w2p_set_option'] : '';
+		// Look for the hidden input key often used by PitchPrint
+		$pitchprint_data = isset( $values['_pda_w2p_set_option'] ) ? $values['_pda_w2p_set_option'] : '';
 		if ( ! empty( $pitchprint_data ) ) {
 			$decoded_data = json_decode( urldecode( $pitchprint_data ) );
-			if ( $decoded_data && isset( $decoded_data->projectId ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-				$pdc_pdf_url = 'https://pdf.print.app/' . $decoded_data->projectId; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			
+			if ( json_last_error() === JSON_ERROR_NONE && isset( $decoded_data->projectId ) ) { 
+				// Valid PitchPrint project found; Override the PDF URL
+				$pdc_pdf_url = 'https://pdf.print.app/' . $decoded_data->projectId; 
 			}
 		}
 
