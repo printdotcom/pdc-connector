@@ -51,7 +51,7 @@ class FrontCore {
 	 * @return void
 	 */
 	public function add_cart_item_data_nonce() {
-		wp_nonce_field( 'pdc_addtocart', 'pdc-nonce' );
+		wp_nonce_field( 'pdc_addtocart', 'pdc-nonce', true, false );
 	}
 
 
@@ -156,14 +156,13 @@ class FrontCore {
 			}
 		}
 
-		// Look for the hidden input key often used by PitchPrint
 		$pitchprint_data = isset( $values['_pda_w2p_set_option'] ) ? $values['_pda_w2p_set_option'] : '';
 		if ( ! empty( $pitchprint_data ) ) {
 			$decoded_data = json_decode( urldecode( $pitchprint_data ) );
-			
-			if ( json_last_error() === JSON_ERROR_NONE && isset( $decoded_data->projectId ) ) { 
-				// Valid PitchPrint project found; Override the PDF URL
-				$pdc_pdf_url = 'https://pdf.print.app/' . $decoded_data->projectId; 
+
+			if ( json_last_error() === JSON_ERROR_NONE && isset( $decoded_data->projectId ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				// Valid PitchPrint project found; override pdf url.
+				$pdc_pdf_url = 'https://pdf.print.app/' . $decoded_data->projectId; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			}
 		}
 
