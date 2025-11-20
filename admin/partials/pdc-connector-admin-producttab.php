@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<p class="form-field">
 			<label for="pdc-presets-label"><?php esc_html_e( 'Print.com Preset', 'pdc-connector' ); ?></label>
 			<span class="pdc-ac-preset-list">
-				<select id="js-pdc-preset-list" class="pdc_preset_select" name="<?php echo esc_attr( $preset_input_name ); ?>" data-testid="pdc-preset-id" value="<?php echo esc_attr( (string) $pdc_connector_preset_id ); ?>">
+				<select id="js-pdc-preset-list" class="pdc_preset_select" name="<?php echo esc_attr( $preset_input_name ); ?>" data-testid="pdc-preset-id"  data-current-value="<?php echo esc_attr( $pdc_connector_preset_id ); ?>" value="<?php echo esc_attr( (string) $pdc_connector_preset_id ); ?>">
 					<?php require plugin_dir_path( __FILE__ ) . '/' . PDC_CONNECTOR_NAME . '-admin-preset-select.php'; ?>
 				</select>
 			</span>

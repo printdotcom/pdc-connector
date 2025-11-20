@@ -209,27 +209,23 @@
         throw new Error(payload?.message || 'Failed to load presets.');
       }
       const presetOptionsHTML = payload?.html || '';
-      document.getElementById('js-pdc-preset-list').innerHTML = presetOptionsHTML;
 
+      // set options for main product
+      const presetSelectInput = document.getElementById('js-pdc-preset-list');
+      setSelectedValue(presetSelectInput, presetOptionsHTML);
+
+      // set options for each variation
       const variationPresetInputs = document.querySelectorAll('.pdc_variation_preset_select');
-      variationPresetInputs.forEach((selectInput) => {
-        if (!selectInput.value) {
-          selectInput.innerHTML = presetOptionsHTML;
-          return;
-        }
-
-        const options = $.parseHTML(presetOptionsHTML);
-        const optionsWithSelected = options.map((o) => {
-          if (o.value === selectInput.value) {
-            o.setAttribute('selected', true);
-          }
-          return o;
-        });
-        $(selectInput).html(optionsWithSelected);
-      });
+      variationPresetInputs.forEach((selectInput) => setSelectedValue(selectInput, presetOptionsHTML));
     } catch (err) {
       console.error('Failed to load presets', err);
     }
+  }
+
+  function setSelectedValue(selectInput, presetOptions) {
+    const targetValue = selectInput.getAttribute('data-current-value') || selectInput.value;
+    selectInput.innerHTML = presetOptions;
+    selectInput.value = targetValue.trim();
   }
 
   $(document).ready(function () {
