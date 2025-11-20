@@ -28,8 +28,8 @@ $pdc_connector_preset_input_name = $pdc_connector_meta_key_preset_id . '[' . $pd
 
 
 wp_nonce_field(
-	PDC_CONNECTOR_NAME . '_save_variations',
-	PDC_CONNECTOR_NAME . '_variations_nonce'
+	PDC_CONNECTOR_NAME . '_save_variations' . $pdc_connector_index,
+	PDC_CONNECTOR_NAME . '_variations_nonce' . $pdc_connector_index
 );
 ?>
 <?php if ( ! empty( $pdc_connector_sku ) ) { ?>
