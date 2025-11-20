@@ -765,14 +765,11 @@ class AdminCore {
 			if ( isset( $_POST[ $meta_key ] ) && isset( $_POST[ $meta_key ][ $i ] ) ) {
 
 				// We capture the raw data to check its type.
-				$raw_data = wp_unslash( $_POST[ $meta_key ][ $i ] );
-
-				// Check type, then sanitize.
-				if ( is_array( $raw_data ) ) {
-					$val = array_map( 'sanitize_text_field', $raw_data );
-				} else {
-					$val = sanitize_text_field( $raw_data );
-				}
+				if ( is_array( $_POST[ $meta_key ][ $i ] ) ) {
+                    $val = array_map( 'sanitize_text_field', wp_unslash( $_POST[ $meta_key ][ $i ] ) );
+                } else {
+                    $val = sanitize_text_field( wp_unslash( $_POST[ $meta_key ][ $i ] ) );
+                }
 
 				update_post_meta( $variation_id, $meta_key, $val );
 			}

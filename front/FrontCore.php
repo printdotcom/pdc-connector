@@ -51,7 +51,7 @@ class FrontCore {
 	 * @return void
 	 */
 	public function add_cart_item_data_nonce() {
-		wp_nonce_field( 'pdc_addtocart', 'pdc-nonce', true, false );
+		wp_nonce_field( 'pdc_addtocart', 'pdc-nonce' );
 	}
 
 
