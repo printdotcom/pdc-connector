@@ -42,6 +42,11 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
 /**
  * Current plugin version.
  *
