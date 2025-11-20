@@ -283,12 +283,12 @@ class APIClient {
 		$order_id         = wc_get_order_id_by_order_item_id( $order_item_id );
 		$order            = wc_get_order( $order_id );
 		$shipping_address = $order->get_address( 'shipping' );
+
 		if ( empty( $shipping_address ) ) {
 			return new \WP_Error( 400, 'No shipping address found', array( 'order' => $order ) );
 		}
 
-		$product       = wc_get_product( $order_item->get_product_id() );
-		$pdc_preset_id = $product->get_meta( Core::get_meta_key( 'preset_id' ) );
+		$pdc_preset_id = wc_get_order_item_meta( $order_item_id, Core::get_meta_key( 'preset_id' ), true );
 		$pdc_pdf_url   = wc_get_order_item_meta( $order_item_id, Core::get_meta_key( 'pdf_url' ), true );
 
 		$result = $this->perform_authenticated_request( 'GET', '/customerpresets/' . rawurlencode( $pdc_preset_id ), null );

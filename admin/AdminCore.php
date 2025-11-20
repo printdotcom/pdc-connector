@@ -748,23 +748,31 @@ class AdminCore {
 	 */
 	public function save_variation_data_fields( $variation_id, $i ) {
 
-		$nonce = isset( $_POST[ PDC_CONNECTOR_NAME . '_variations_nonce' ] ) ? sanitize_text_field( wp_unslash( $_POST[ PDC_CONNECTOR_NAME . '_variations_nonce' ] ) ) : '';
-		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, PDC_CONNECTOR_NAME . '_save_variations' ) ) {
+		$nonce = isset( $_POST[ PDC_CONNECTOR_NAME . '_variations_nonce' . $i ] )
+			? sanitize_text_field( wp_unslash( $_POST[ PDC_CONNECTOR_NAME . '_variations_nonce' . $i ] ) )
+			: '';
+
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, PDC_CONNECTOR_NAME . '_save_variations' . $i ) ) {
 			return;
 		}
 
-		$fieldname_pdf_url = $this->get_meta_key( 'pdf_url' );
-		if ( isset( $_POST[ $fieldname_pdf_url ] ) && isset( $_POST[ $fieldname_pdf_url ][ $i ] ) ) {
-			$raw_val = sanitize_text_field( wp_unslash( $_POST[ $fieldname_pdf_url ][ $i ] ) );
-			$val     = is_array( $raw_val ) ? array_map( 'sanitize_text_field', $raw_val ) : $raw_val;
-			update_post_meta( $variation_id, $fieldname_pdf_url, $val );
-		}
+		$fields = array(
+			'pdf_url'   => $this->get_meta_key( 'pdf_url' ),
+			'preset_id' => $this->get_meta_key( 'preset_id' ),
+		);
 
-		$fieldname_preset_id = $this->get_meta_key( 'preset_id' );
-		if ( isset( $_POST[ $fieldname_preset_id ] ) && isset( $_POST[ $fieldname_preset_id ][ $i ] ) ) {
-			$raw_val = sanitize_text_field( wp_unslash( $_POST[ $fieldname_preset_id ][ $i ] ) );
-			$val     = is_array( $raw_val ) ? array_map( 'sanitize_text_field', $raw_val ) : $raw_val;
-			update_post_meta( $variation_id, $fieldname_preset_id, $val );
+		foreach ( $fields as $meta_key ) {
+			if ( isset( $_POST[ $meta_key ] ) && isset( $_POST[ $meta_key ][ $i ] ) ) {
+
+				// We capture the raw data to check its type.
+				if ( is_array( $_POST[ $meta_key ][ $i ] ) ) {
+					$val = array_map( 'sanitize_text_field', wp_unslash( $_POST[ $meta_key ][ $i ] ) );
+				} else {
+					$val = sanitize_text_field( wp_unslash( $_POST[ $meta_key ][ $i ] ) );
+				}
+
+				update_post_meta( $variation_id, $meta_key, $val );
+			}
 		}
 	}
 }
