@@ -191,7 +191,7 @@
   // rehook dom elements when variations are loaded
   $(document).on('woocommerce_variations_loaded', function onVariationsLoaded() {
     loadPresetsForSKU();
-    $('.pdc-connector-js-upload-custom-file-btn').on('click', openMediaDialogFromProduct);
+    $('.pdc-pod-js-upload-custom-file-btn').on('click', openMediaDialogFromProduct);
   });
 
   async function loadPresetsForSKU() {
@@ -231,6 +231,6 @@
   $(document).ready(function () {
     $('#js-pdc-product-selector').on('change', loadPresetsForSKU);
     $('#pdc-product-file-upload').on('click', openMediaDialogFromOrder);
-    $('.pdc-connector-js-upload-custom-file-btn').on('click', openMediaDialogFromProduct);
+    $('.pdc-pod-js-upload-custom-file-btn').on('click', openMediaDialogFromProduct);
   });
 })(jQuery);

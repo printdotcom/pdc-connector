@@ -2,11 +2,11 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Settings Page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/wp-admin/admin.php?page=pdc-connector');
+    await page.goto('/wp-admin/admin.php?page=pdc-pod');
   });
   test.afterAll(async ({ browser }) => {
     const afterAllPage = await browser.newPage();
-    await afterAllPage.goto('/wp-admin/admin.php?page=pdc-connector');
+    await afterAllPage.goto('/wp-admin/admin.php?page=pdc-pod');
     await afterAllPage.getByTestId('pdc-apikey').fill('test_key_12345');
   });
 
@@ -136,7 +136,7 @@ test.describe('Settings Page', () => {
       await page.getByRole('button', { name: 'Save Settings' }).click();
 
       // Navigate away and back
-      await page.goto('/wp-admin/admin.php?page=pdc-connector');
+      await page.goto('/wp-admin/admin.php?page=pdc-pod');
 
       // Verify checkbox is still checked
       await expect(page.getByTestId('pdc-use_preset_copies')).toBeChecked();

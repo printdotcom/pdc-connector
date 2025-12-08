@@ -21,7 +21,7 @@ interface Settings {
   usePresetCopies: boolean;
 }
 export async function setSettings(page, settings: Settings) {
-  await page.goto('/wp-admin/admin.php?page=pdc-connector');
+  await page.goto('/wp-admin/admin.php?page=pdc-pod');
   await page.getByTestId('pdc-apikey').fill(settings.apikey);
   await page.getByTestId('pdc-environment').selectOption('stg');
 

@@ -4,14 +4,14 @@
  *
  * Provides a client for communicating with the Print.com API from the admin area.
  *
- * @package Pdc_Connector
- * @subpackage Pdc_Connector/admin/PrintDotCom
+ * @package Pdc_Pod
+ * @subpackage Pdc_Pod/admin/PrintDotCom
  * @since 1.0.0
  */
 
-namespace PdcConnector\Admin\PrintDotCom;
+namespace PdcPod\Admin\PrintDotCom;
 
-use PdcConnector\Includes\Core;
+use PdcPod\Includes\Core;
 
 /**
  * Client to connect to the Print.com API
@@ -19,8 +19,8 @@ use PdcConnector\Includes\Core;
  * @link       https://print.com
  * @since      1.0.0
  *
- * @package    Pdc_Connector
- * @subpackage Pdc_Connector/admin
+ * @package    Pdc_Pod
+ * @subpackage Pdc_Pod/admin
  */
 class APIClient {
 
@@ -47,7 +47,7 @@ class APIClient {
 	 */
 	public function __construct() {
 
-		$env = get_option( PDC_CONNECTOR_NAME . '-env' );
+		$env = get_option( PDC_POD_NAME . '-env' );
 
 		// Allow environment variable override for testing.
 		if ( getenv( 'PDC_API_BASE_URL' ) ) {
@@ -60,7 +60,7 @@ class APIClient {
 		if ( getenv( 'PDC_API_KEY' ) ) {
 			$this->pdc_api_key = getenv( 'PDC_API_KEY' );
 		} else {
-			$api_key           = get_option( PDC_CONNECTOR_NAME . '-api_key' );
+			$api_key           = get_option( PDC_POD_NAME . '-api_key' );
 			$this->pdc_api_key = $api_key;
 		}
 	}
@@ -220,7 +220,7 @@ class APIClient {
 	 */
 	public function search_products() {
 		$result = null;
-		$cached = get_transient( PDC_CONNECTOR_NAME . '-products' );
+		$cached = get_transient( PDC_POD_NAME . '-products' );
 		if ( $cached ) {
 			$result = json_decode( $cached );
 		} else {
@@ -231,7 +231,7 @@ class APIClient {
 			if ( empty( $response ) ) {
 				return new \WP_Error( 'no result', 'No products found' );
 			}
-			set_transient( PDC_CONNECTOR_NAME . '-products', $response, 60 * 60 * 24 ); // 1 day
+			set_transient( PDC_POD_NAME . '-products', $response, 60 * 60 * 24 ); // 1 day
 			$result = json_decode( $response );
 		}
 
@@ -357,7 +357,7 @@ class APIClient {
 			),
 		);
 
-		$order_body = apply_filters( PDC_CONNECTOR_NAME . '_before_purchase_order_item', $order_request, $order_item_id );
+		$order_body = apply_filters( PDC_POD_NAME . '_before_purchase_order_item', $order_request, $order_item_id );
 		$result     = $this->perform_authenticated_request(
 			'POST',
 			'/orders',

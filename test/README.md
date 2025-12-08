@@ -2,7 +2,7 @@
 
 ## API Client Configuration
 
-The PDC Connector APIClient supports environment variable overrides for testing purposes. This allows you to test against mock APIs or different environments without modifying production code.
+The PDC Pod APIClient supports environment variable overrides for testing purposes. This allows you to test against mock APIs or different environments without modifying production code.
 
 ### Environment Variables
 

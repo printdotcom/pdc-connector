@@ -32,7 +32,7 @@ services:
       PDC_API_BASE_URL: http://pdc-mock-api:8080
     volumes:
       - wordpress_data:/var/www/html
-      - ../:/var/www/html/wp-content/plugins/pdc-connector
+      - ../:/var/www/html/wp-content/plugins/pdc-pod
     ports:
       - '${WORDPRESS_PORT:-8000}:80'
     extra_hosts: ['host.docker.internal:host-gateway']
@@ -52,7 +52,7 @@ services:
       COMPOSER_HOME: /var/www/html/.composer
     volumes:
       - wordpress_data:/var/www/html
-      - ../:/var/www/html/wp-content/plugins/pdc-connector
+      - ../:/var/www/html/wp-content/plugins/pdc-pod
     working_dir: /var/www/html
     networks:
       - pdc
