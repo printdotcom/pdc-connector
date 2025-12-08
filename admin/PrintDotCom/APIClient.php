@@ -24,13 +24,14 @@ use PdcPod\Includes\Core;
  */
 class APIClient {
 
+
 	/**
 	 * Base URL of the Print.com API.
 	 *
 	 * @since 1.0.0
 	 * @var string
 	 */
-	private $pdc_api_base_url;
+	private $pdc_pod_api_base_url;
 
 	/**
 	 * API key for the Print.com API.
@@ -38,7 +39,7 @@ class APIClient {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	private $pdc_api_key;
+	private $pdc_pod_api_key;
 
 	/**
 	 * Initializes the API client.
@@ -50,18 +51,18 @@ class APIClient {
 		$env = get_option( PDC_POD_NAME . '-env' );
 
 		// Allow environment variable override for testing.
-		if ( getenv( 'PDC_API_BASE_URL' ) ) {
-			$this->pdc_api_base_url = getenv( 'PDC_API_BASE_URL' );
+		if ( getenv( 'PDC_POD_API_BASE_URL' ) ) {
+			$this->pdc_pod_api_base_url = getenv( 'PDC_POD_API_BASE_URL' );
 		} else {
-			$this->pdc_api_base_url = ( 'prod' === $env ) ? 'https://api.print.com' : 'https://api.stg.print.com';
+			$this->pdc_pod_api_base_url = ( 'prod' === $env ) ? 'https://api.print.com' : 'https://api.stg.print.com';
 		}
 
 		// Allow environment variable override for testing.
-		if ( getenv( 'PDC_API_KEY' ) ) {
-			$this->pdc_api_key = getenv( 'PDC_API_KEY' );
+		if ( getenv( 'PDC_POD_API_KEY' ) ) {
+			$this->pdc_pod_api_key = getenv( 'PDC_POD_API_KEY' );
 		} else {
-			$api_key           = get_option( PDC_POD_NAME . '-api_key' );
-			$this->pdc_api_key = $api_key;
+			$api_key               = get_option( PDC_POD_NAME . '-api_key' );
+			$this->pdc_pod_api_key = $api_key;
 		}
 	}
 
@@ -72,7 +73,7 @@ class APIClient {
 	 * @return string API base URL.
 	 */
 	public function get_api_base_url() {
-		return $this->pdc_api_base_url;
+		return $this->pdc_pod_api_base_url;
 	}
 
 	/**
@@ -82,7 +83,7 @@ class APIClient {
 	 * @return string API key.
 	 */
 	private function get_token() {
-		return $this->pdc_api_key;
+		return $this->pdc_pod_api_key;
 	}
 
 	/**
@@ -98,7 +99,7 @@ class APIClient {
 	 * @return string|WP_Error The unparsed response from the API.
 	 */
 	private function perform_authenticated_request( $method, $path, $data = null, $headers = array() ) {
-		$url   = $this->pdc_api_base_url . $path;
+		$url   = $this->pdc_pod_api_base_url . $path;
 		$token = $this->get_token();
 		return $this->perform_http_request( $method, $url, $data, $token, $headers );
 	}
@@ -145,7 +146,7 @@ class APIClient {
 			// Merge string header formats like 'key: value' or associative arrays.
 			foreach ( $headers as $h ) {
 				if ( is_string( $h ) && false !== strpos( $h, ':' ) ) {
-					list( $k, $v ) = array_map( 'trim', explode( ':', $h, 2 ) );
+					list($k, $v) = array_map( 'trim', explode( ':', $h, 2 ) );
 					if ( $k ) {
 						$args['headers'][ $k ] = $v;
 					}
@@ -210,6 +211,21 @@ class APIClient {
 		return array_values( $filtered_by_sku );
 	}
 
+	/**
+	 * Does a products request to the Print.com
+	 * to verify if the environemnt and API key is working.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return bool returns true when authenticated
+	 */
+	public function is_authenticated() {
+		$result = $this->perform_authenticated_request( 'GET', '/products' );
+		if ( is_wp_error( $result ) ) {
+			return false;
+		}
+		return true;
+	}
 
 	/**
 	 * Searches products from the Print.com API.
@@ -299,7 +315,7 @@ class APIClient {
 					'Preset does not exist.',
 					array(
 						'preset_id'   => $pdc_preset_id,
-						'environment' => $this->pdc_api_base_url,
+						'environment' => $this->pdc_pod_api_base_url,
 					)
 				);
 			}
@@ -311,7 +327,7 @@ class APIClient {
 				'Preset does not exist.',
 				array(
 					'preset_id'   => $pdc_preset_id,
-					'environment' => $this->pdc_api_base_url,
+					'environment' => $this->pdc_pod_api_base_url,
 				)
 			);
 		}

@@ -27,7 +27,7 @@ $pdc_pod_use_preset_copies = isset( $pdc_pod_product_config['use_preset_copies']
 			<th scope="row"><label for="pdc_use_preset_copies"><?php esc_html_e( 'Presets', 'pdc-pod' ); ?></label></th>
 			<td>
 				<label for="pdc_use_preset_copies">
-					<input type="checkbox" id="pdc_use_preset_copies" data-testid="pdc-use_preset_copies" name="<?php echo esc_attr( PDC_POD_NAME ); ?>-product[use_preset_copies]" value="1" <?php checked( $pdc_pod_use_preset_copies, true ); ?> />
+					<input type="checkbox" id="pdc_use_preset_copies" data-testid="pdc-pod-use_preset_copies" name="<?php echo esc_attr( PDC_POD_NAME ); ?>-product[use_preset_copies]" value="1" <?php checked( $pdc_pod_use_preset_copies, true ); ?> />
 					<?php esc_html_e( 'Use preset copies', 'pdc-pod' ); ?>
 				</label>
 				<p class="description"><?php esc_html_e( 'When enabled, the number of copies from the preset will be used instead of allowing customers to choose their own quantity.', 'pdc-pod' ); ?></p>

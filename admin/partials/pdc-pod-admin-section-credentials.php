@@ -20,7 +20,7 @@ $pdc_pod_app_url = ( 'prod' === $pdc_pod_env ) ? 'app.print.com' : 'app.stg.prin
 
 <p>
 	<?php esc_html_e( 'You can create an API key in your Print.com account settings. Visit', 'pdc-pod' ); ?>
-	<a data-testid="pdc-environment-link" target="_blank" href="<?php echo esc_url( 'https://' . $pdc_pod_app_url . '/account' ); ?>">
+	<a data-testid="pdc-pod-environment-link" target="_blank" href="<?php echo esc_url( 'https://' . $pdc_pod_app_url . '/account' ); ?>">
 		<?php echo esc_html( $pdc_pod_app_url . '/account' ); ?>
 	</a>,
 	<?php esc_html_e( 'create an API key and paste it in the input field below.', 'pdc-pod' ); ?>
@@ -36,19 +36,19 @@ $pdc_pod_app_url = ( 'prod' === $pdc_pod_env ) ? 'app.print.com' : 'app.stg.prin
 <table class="form-table">
 	<tbody>
 		<tr>
-			<th scope="row"><label for="pdc_api_key"><?php esc_html_e( 'API Key', 'pdc-pod' ); ?></label></th>
+			<th scope="row"><label for="pdc_pod_api_key"><?php esc_html_e( 'API Key', 'pdc-pod' ); ?></label></th>
 			<td>
-				<input id="pdc_api_key" data-testid="pdc-apikey" name="<?php echo esc_attr( PDC_POD_NAME ); ?>-api_key" type="text" value="<?php echo esc_attr( $pdc_pod_api_key ); ?>" class="regular-text" />
+				<input id="pdc_pod_api_key" data-testid="pdc-pod-apikey" name="<?php echo esc_attr( PDC_POD_NAME ); ?>-api_key" type="text" value="<?php echo esc_attr( $pdc_pod_api_key ); ?>" class="regular-text" />
 				<span id="js-<?php echo esc_attr( PDC_POD_NAME ); ?>-verify_loader" class="spinner"></span>
-				<button data-testid="pdc-verify-key" type="button" id="js-<?php echo esc_attr( PDC_POD_NAME ); ?>-verify_key" class="button button-secondary">
+				<button data-testid="pdc-pod-verify-key" type="button" id="js-<?php echo esc_attr( PDC_POD_NAME ); ?>-verify_key" class="button button-secondary">
 					<span><?php esc_html_e( 'Verify', 'pdc-pod' ); ?></span>
 				</button>
 			</td>
 		</tr>
 		<tr>
-			<th scope="row"><label for="pdc_env"><?php esc_html_e( 'Environment', 'pdc-pod' ); ?></label></th>
+			<th scope="row"><label for="pdc_pod_env"><?php esc_html_e( 'Environment', 'pdc-pod' ); ?></label></th>
 			<td>
-				<select data-testid="pdc-environment" name="<?php echo esc_attr( PDC_POD_NAME ); ?>-env" id="pdc_env">
+				<select data-testid="pdc-pod-environment" name="<?php echo esc_attr( PDC_POD_NAME ); ?>-env" id="pdc_pod_env">
 					<option value="stg" <?php selected( $pdc_pod_env, 'stg' ); ?>><?php esc_html_e( 'Test', 'pdc-pod' ); ?></option>
 					<option value="prod" <?php selected( $pdc_pod_env, 'prod' ); ?>><?php esc_html_e( 'Live', 'pdc-pod' ); ?></option>
 				</select>

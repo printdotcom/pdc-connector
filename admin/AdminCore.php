@@ -83,7 +83,7 @@ class AdminCore {
 		wp_enqueue_script( PDC_POD_NAME . '-admin', plugin_dir_url( __FILE__ ) . 'js/pdc-pod-admin.js', array( 'jquery' ), PDC_POD_VERSION, false );
 		wp_localize_script(
 			PDC_POD_NAME . '-admin',
-			'pdcAdminApi',
+			'PDC_POD_ADMIN',
 			array(
 				'root'        => esc_url_raw( rest_url() ),
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
@@ -281,7 +281,7 @@ class AdminCore {
 		$pdc_pod_sku_title    = get_post_meta( $post->ID, $this->get_meta_key( 'product_title' ), true );
 		$pdc_pod_preset_id    = get_post_meta( $post->ID, $this->get_meta_key( 'preset_id' ), true );
 		$pdc_pod_preset_title = get_post_meta( $post->ID, $this->get_meta_key( 'preset_title' ), true );
-		$preset_input_name          = $this->get_meta_key( 'preset_id' );
+		$preset_input_name    = $this->get_meta_key( 'preset_id' );
 
 		$pdc_pod_presets_for_sku = array();
 		if ( ! empty( $pdc_pod_sku ) ) {
@@ -422,6 +422,17 @@ class AdminCore {
 		);
 		register_rest_route(
 			'pdc/v1',
+			'/verify',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'pdc_pod_verify_key' ),
+				'permission_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+		register_rest_route(
+			'pdc/v1',
 			'/orders/(?P<id>\d+)/attach-pdf',
 			array(
 				'methods'             => 'POST',
@@ -451,6 +462,26 @@ class AdminCore {
 				'permission_callback' => '__return_true',
 			)
 		);
+	}
+
+	/**
+	 * Handles verification
+	 * Hooked to endoint /verify
+	 *
+	 * @since 1.0.0
+	 * @return bool|WP_Error
+	 */
+	public function pdc_pod_verify_key() {
+		$is_authenticated = $this->pdc_client->is_authenticated();
+		if ( ! $is_authenticated ) {
+			return new \WP_Error(
+				'pdc_pod_not_authenticated',
+				__( 'Invalid credentials.', 'pdc-pod' ),
+				array( 'status' => 401 )
+			);
+		}
+
+		return true;
 	}
 
 	/**
