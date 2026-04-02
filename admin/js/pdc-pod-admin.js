@@ -68,7 +68,7 @@
         await $.ajax(
           {
             method: 'POST',
-            url: `${PDC_POD_ADMIN.root}pdc/v1/orders/${orderItemId}/attach-pdf`,
+            url: `${PDC_POD_ADMIN.root}pdc/v1/order-items/${orderItemId}/attach-pdf`,
             beforeSend(xhr) {
               xhr.setRequestHeader('X-WP-Nonce', PDC_POD_ADMIN.nonce);
             },
@@ -101,17 +101,14 @@
 
   // On order item detail page, will purchase
   // the order item with Print.com
-  let loading = false;
   async function purchaseOrderItem(e) {
     e.preventDefault();
-    if (loading) return;
-    loading = true;
-    $(e.currentTarget).addClass('button-disabled');
-    $('#js-pdc-action-spinner').addClass('is-active');
-    $('#js-pdc-request-response').text('');
-    const orderItemId = e.target.getAttribute('data-order-item-id');
+
     try {
-      const response = await fetch(`${PDC_POD_ADMIN.root}pdc/v1/orders/${encodeURIComponent(orderItemId)}/purchase`, {
+      $(e.currentTarget).prop('disabled', true);
+      $('#js-pdc-request-response').text('');
+      const orderItemId = e.target.getAttribute('data-order-item-id');
+      const response = await fetch(`${PDC_POD_ADMIN.root}pdc/v1/order-items/${encodeURIComponent(orderItemId)}/purchase`, {
         method: 'POST',
         headers: {
           'X-WP-Nonce': PDC_POD_ADMIN.nonce,
@@ -126,9 +123,7 @@
     } catch (err) {
       $('#js-pdc-request-response').text(err.message || 'Failed to place order.');
     } finally {
-      loading = false;
-      $(e.currentTarget).removeClass('button-disabled');
-      $('#js-pdc-action-spinner').removeClass('is-active');
+      $(e.currentTarget).prop('disabled', false);
     }
   }
 

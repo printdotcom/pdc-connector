@@ -532,7 +532,7 @@ class AdminCore {
 		);
 		register_rest_route(
 			'pdc/v1',
-			'/orders/(?P<id>\d+)/attach-pdf',
+			'/order-items/(?P<id>\d+)/attach-pdf',
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'pdc_attach_pdf' ),
@@ -543,7 +543,7 @@ class AdminCore {
 		);
 		register_rest_route(
 			'pdc/v1',
-			'/orders/(?P<id>\d+)/purchase',
+			'/order-items/(?P<id>\d+)/purchase',
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'pdc_place_order' ),
@@ -554,7 +554,7 @@ class AdminCore {
 		);
 		register_rest_route(
 			'pdc/v1',
-			'/orders/webhook',
+			'/order-items/webhook',
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'pdc_order_webhook' ),

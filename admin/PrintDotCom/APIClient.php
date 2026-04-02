@@ -370,7 +370,7 @@ class APIClient {
 				'order_item_id' => $order_item_id,
 				'order_id'      => $order_id,
 			),
-			rest_url( 'pdc/v1/orders/webhook' )
+			rest_url( 'pdc/v1/order-items/webhook' )
 		);
 
 		$order_request = array(
