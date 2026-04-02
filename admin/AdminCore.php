@@ -546,7 +546,7 @@ class AdminCore {
 			'/order-items/(?P<id>\d+)/purchase',
 			array(
 				'methods'             => 'POST',
-				'callback'            => array( $this, 'pdc_place_order' ),
+				'callback'            => array( $this, 'pdc_place_order_item' ),
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
 				},
@@ -767,7 +767,7 @@ class AdminCore {
 	 * @param \WP_REST_Request $request REST request instance.
 	 * @return \WP_REST_Response|\WP_Error REST response or error.
 	 */
-	public function pdc_place_order( \WP_REST_Request $request ) {
+	public function pdc_place_order_item( \WP_REST_Request $request ) {
 		$order_item_id = absint( $request->get_param( 'id' ) );
 		if ( empty( $order_item_id ) ) {
 			return new \WP_Error(
