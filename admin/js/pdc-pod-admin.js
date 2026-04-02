@@ -79,8 +79,7 @@
           },
           {}
         );
-        await refreshOrderItem(orderItemId);
-        $('#js-pdc-order-pdf').val(attachment.url);
+        refreshOrder();
       } catch (err) {
         $('#js-pdc-request-response').text(err.responseJSON.message);
       }
@@ -89,14 +88,8 @@
     frame.open();
   }
 
-  function refreshOrderItem(orderItemId) {
-    const orderItemRow = $(`#pdc_order_item_${orderItemId}`);
-    if (!orderItemRow.length) return;
-    return new Promise((resolve) => {
-      orderItemRow.load(`${document.URL} #pdc_order_item_${orderItemId}_inner`, function () {
-        resolve();
-      });
-    });
+  function refreshOrder() {
+    $("#js-pdc-order-metabox").load(`${document.URL} #js-pdc-order-fieldset`);
   }
 
   // On order item detail page, will purchase
@@ -106,7 +99,7 @@
 
     try {
       $(e.currentTarget).prop('disabled', true);
-      $('#js-pdc-request-response').text('');
+      $('#js-pdc-purchase-error').prop('hidden', true);
       const orderItemId = e.target.getAttribute('data-order-item-id');
       const response = await fetch(`${PDC_POD_ADMIN.root}pdc/v1/order-items/${encodeURIComponent(orderItemId)}/purchase`, {
         method: 'POST',
@@ -119,12 +112,18 @@
         const message = payload?.message || payload?.data?.message || 'Failed to place order.';
         throw new Error(message);
       }
-      await refreshOrderItem(orderItemId);
+      refreshOrder();
     } catch (err) {
-      $('#js-pdc-request-response').text(err.message || 'Failed to place order.');
+      showError('Failed to place order', err.message);
     } finally {
       $(e.currentTarget).prop('disabled', false);
     }
+  }
+
+  function showError(title, descr) {
+    $('#js-pdc-purchase-error').css('visibility', 'visible');
+    $('#js-pdc-purchase-error-title').text(title);
+    $('#js-pdc-purchase-error-descr').text(descr);
   }
 
   async function downloadLogs(e) {
@@ -255,9 +254,11 @@
       });
       if (!response.ok) {
         const responseText = await response.text();
-        throw new Error(`failed purchase all order items: ${responseText}`);
+        throw new Error(responseText);
       }
-    } catch {
+      await refreshOrder();
+    } catch ( err )  {
+      showError('Failed to purchase all order items', err.message);
     } finally {
       $('#js-pdc-order-fieldset').prop('disabled', false);
     }

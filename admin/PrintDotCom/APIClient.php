@@ -286,37 +286,16 @@ class APIClient {
 	}
 
 	/**
-	 * Purchases an order item through the Print.com API.
+	 * Retrieves a specific preset by its ID from the Print.com API.
 	 *
-	 * This function creates a print order by retrieving preset configuration,
-	 * combining it with WooCommerce order data, and submitting it to Print.com.
-	 * It handles preset retrieval, file URLs, shipping addresses, and quantity
-	 * management based on the provided arguments.
+	 * This method fetches the preset details and cleans up the configuration object
+	 * by removing unnecessary API-specific fields like accessories and delivery promises.
 	 *
 	 * @since 1.0.0
-	 *
-	 * @param \WC_Order              $order              The WooCommerce order.
-	 * @param \WC_Order_Item_Product $order_item         The WooCommerce order item.
-	 * @param string                 $pdc_pod_preset_url The PDF URL for the print item.
-	 * @param string                 $pdc_pod_preset_id  The Print.com preset ID.
-	 * @param array                  $args {
-	 *     Optional. Arguments for customizing the purchase behavior.
-	 *
-	 *     @type bool $use_preset_copies Whether to use preset-defined copy count.
-	 *                                   If false, uses order item quantity. Default true.
-	 * }
-	 *
-	 * @return object|\WP_Error Returns the Print.com order response object on success,
-	 *                         or \WP_Error on failure with error details.
-	 *
-	 * @phpcsSuppress WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+	 * @param string $pdc_pod_preset_id The unique identifier for the Print.com preset.
+	 * @return array|\WP_Error Array containing 'sku' and 'options' on success, WP_Error on failure.
 	 */
-	public function purchase_order_item( $order, $order_item, $pdc_pod_preset_url, $pdc_pod_preset_id, $args = array() ) {
-		$shipping_address = $order->get_address( 'shipping' );
-
-		if ( empty( $shipping_address ) ) {
-			return new \WP_Error( 400, 'No shipping address found', array( 'order' => $order ) );
-		}
+	private function get_preset_by_id( $pdc_pod_preset_id ) {
 		$result = $this->perform_authenticated_request( 'GET', '/customerpresets/' . rawurlencode( $pdc_pod_preset_id ), null );
 		if ( is_wp_error( $result ) ) {
 			Logger::log(
@@ -349,59 +328,136 @@ class APIClient {
 				)
 			);
 		}
+		$preset        = json_decode( $result );
+		$preset_config = $preset->configuration;
+		unset( $preset_config->_accessories );
+		unset( $preset_config->variants );
+		unset( $preset_config->deliveryPromise ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 
-		$preset = json_decode( $result );
+		return array(
+			'sku'     => $preset->sku,
+			'options' => $preset_config,
+		);
+	}
 
-		$item_options = $preset->configuration;
-		if ( empty( $args['use_preset_copies'] ) ) {
-			$item_options->copies = $order_item->get_quantity();
+	/**
+	 * Prepares a single order item for the Print.com API request.
+	 *
+	 * Fetches the preset configuration, merges it with the order item data,
+	 * and formats the shipping address to match the Print.com API structure.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param \WC_Order_Item_Product $order_item       The WooCommerce order item.
+	 * @param string                 $pdc_pod_preset_id  The Print.com preset ID.
+	 * @param string                 $pdc_pod_pdf_url    The PDF URL for the print item.
+	 * @param array                  $shipping_address   The WooCommerce shipping address array.
+	 * @param array                  $purchase_args      Configuration arguments (e.g., use_preset_copies).
+	 * @return array|\WP_Error Prepared item array or WP_Error on failure.
+	 */
+	private function prepare_order_item( $order_item, $pdc_pod_preset_id, $pdc_pod_pdf_url, $shipping_address, $purchase_args ) {
+		$preset = $this->get_preset_by_id( $pdc_pod_preset_id );
+		if ( is_wp_error( $preset ) ) {
+			return $preset;
 		}
 
-		// Remove unwanted options.
-		unset( $item_options->_accessories );
-		unset( $item_options->variants );
-		unset( $item_options->deliveryPromise ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		if ( empty( $purchase_args['use_preset_copies'] ) ) {
+			$preset['options']->copies = $order_item->get_quantity();
+		}
 
-		$order_item_id = $order_item->get_id();
-		$order_id      = $order->get_id();
-
-		$webhook_url = add_query_arg(
-			array(
-				'order_item_id' => $order_item_id,
-				'order_id'      => $order_id,
-			),
-			rest_url( 'pdc/v1/order-items/webhook' )
-		);
-
-		$order_request = array(
-			'customerReference' => $order->get_order_number() . '-' . $order_item_id,
-			'webhookUrl'        => esc_url_raw( $webhook_url ),
-			'items'             => array(
+		return array(
+			'sku'               => $preset['sku'],
+			'fileUrl'           => $pdc_pod_pdf_url,
+			'options'           => $preset['options'],
+			'approveDesign'     => true,
+			'customerReference' => $order_item->get_id(),
+			'shipments'         => array(
 				array(
-					'sku'           => $preset->sku,
-					'fileUrl'       => $pdc_pod_preset_url,
-					'options'       => $item_options,
-					'approveDesign' => true,
-					'shipments'     => array(
-						array(
-							'address' => array(
-								'city'        => $shipping_address['city'],
-								'country'     => $shipping_address['country'],
-								'firstName'   => $shipping_address['first_name'],
-								'lastName'    => $shipping_address['last_name'],
-								'companyName' => $shipping_address['company'],
-								'postcode'    => $shipping_address['postcode'],
-								'fullstreet'  => $shipping_address['address_1'],
-								'telephone'   => $shipping_address['phone'],
-							),
-							'copies'  => $item_options->copies,
-						),
+					'address' => array(
+						'city'        => $shipping_address['city'],
+						'country'     => $shipping_address['country'],
+						'firstName'   => $shipping_address['first_name'],
+						'lastName'    => $shipping_address['last_name'],
+						'companyName' => $shipping_address['company'],
+						'postcode'    => $shipping_address['postcode'],
+						'fullstreet'  => $shipping_address['address_1'],
+						'telephone'   => $shipping_address['phone'],
 					),
+					'copies'  => $preset['options']->copies,
 				),
 			),
 		);
+	}
 
-		$order_body = apply_filters( PDC_POD_NAME . '_before_purchase_order_item', $order_request, $order_item_id );
+	/**
+	 * Purchases an order item through the Print.com API.
+	 *
+	 * This function creates a print order by retrieving preset configuration,
+	 * combining it with WooCommerce order data, and submitting it to Print.com.
+	 * It handles preset retrieval, file URLs, shipping addresses, and quantity
+	 * management based on the provided arguments.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param \WC_Order $order            The WooCommerce order.
+	 * @param array     $items            The items to purchase
+	 *      \WC_Order_Item_Product $order_item         The WooCommerce order item.
+	 *      string                 $pdc_pod_pdf_url The PDF URL for the print item.
+	 *      string                 $pdc_pod_preset_id  The Print.com preset ID.
+	 * @param array     $purchase_args {
+	 *     Optional. Arguments for customizing the purchase behavior.
+	 *
+	 *     @type bool $use_preset_copies Whether to use preset-defined copy count.
+	 *                                   If false, uses order item quantity. Default true.
+	 * }
+	 *
+	 * @return object|\WP_Error Returns the Print.com order response object on success,
+	 *                         or \WP_Error on failure with error details.
+	 *
+	 * @phpcsSuppress WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+	 */
+	public function purchase_order_items( $order, $items, $purchase_args = array() ) {
+		$shipping_address = $order->get_address( 'shipping' );
+
+		if ( empty( $shipping_address ) ) {
+			return new \WP_Error( 400, 'No shipping address found', array( 'order' => $order ) );
+		}
+
+		$order_id = $order->get_id();
+
+		// $webhook_url = add_query_arg(
+		// array(
+		// 'order_id'      => $order_id,
+		// ),
+		// rest_url( 'pdc/v1/order-items/webhook' )
+		// );
+		$webhook_url = 'https://webhook.site/b8ca812b-5914-4b78-bce2-87e5c3004af3';
+
+		$order_request_items = array();
+
+		foreach ( $items as $item ) {
+			$prepare_result = $this->prepare_order_item(
+				$item['order_item'],
+				$item['pdc_pod_preset_id'],
+				$item['pdc_pod_pdf_url'],
+				$shipping_address,
+				$purchase_args
+			);
+
+			if ( is_wp_error( $prepare_result ) ) {
+				return new \WP_Error( 500, 'unable to create order item', array( 'item' => $item ) );
+			}
+
+			$order_request_items[] = $prepare_result;
+		}
+
+		$order_request = array(
+			'customerReference' => (string) $order_id,
+			'webhookUrl'        => esc_url_raw( $webhook_url ),
+			'items'             => $order_request_items,
+		);
+
+		$order_body = apply_filters( PDC_POD_NAME . '_before_purchase_order_item', $order_request );
 		$result     = $this->perform_authenticated_request(
 			'POST',
 			'/orders',

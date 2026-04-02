@@ -7,6 +7,7 @@
 .pdc-table .table-foot {
 	display: flex;
 	justify-content: space-between;
+	align-items: center;
 	background: #f8f8f8;
 }
 
@@ -53,4 +54,28 @@
 
 .woocommerce_variation a.button-select-pdf-file {
 	padding: 4px 10px 5px 10px;
+}
+
+.pdc-errormark {
+	background: none;
+	display: flex;
+	align-items: center;
+	visibility: hidden;
+    justify-self: flex-end;
+}
+
+.pdc-errormark .dashicons {
+	color: red;
+	margin-right: 5px;
+}
+.pdc-errormark strong {
+	display: block;
+	color: #3c434a;
+}
+.pdc-errormark span {
+	color: #999;    
+	max-height: 2.2rem;
+    display: block;
+    max-width: 400px;
+    overflow: hidden;
 }
