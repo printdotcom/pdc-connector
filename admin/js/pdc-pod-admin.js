@@ -242,12 +242,34 @@
     selectInput.value = targetValue.trim();
   }
 
+  async function purchaseAll(e) {
+    e.preventDefault();
+    try {
+      $('#js-pdc-order-fieldset').prop('disabled', true);
+      const orderID = e.target.getAttribute('data-order-id');
+      const response = await fetch(`${PDC_POD_ADMIN.root}pdc/v1/orders/${encodeURIComponent(orderID)}/purchase`, {
+        method: 'POST',
+        headers: {
+          'X-WP-Nonce': PDC_POD_ADMIN.nonce,
+        },
+      });
+      if (!response.ok) {
+        const responseText = await response.text();
+        throw new Error(`failed purchase all order items: ${responseText}`);
+      }
+    } catch {
+    } finally {
+      $('#js-pdc-order-fieldset').prop('disabled', false);
+    }
+  }
+
   $(document).ready(function () {
     $('#js-pdc-product-selector').on('change', (e) => loadPresetsForSKU(e.target));
     $('#pdc-product-file-upload').on('click', openMediaDialogFromOrder);
     $('.pdc-pod-js-upload-custom-file-btn').on('click', openMediaDialogFromProduct);
     $(document).on('click', '.js-pdc-file-upload', orderItemAttachPdf);
     $(document).on('click', '.js-pdc-purchase-orderitem', purchaseOrderItem);
+    $(document).on('click', '#js-pdc-purchase-all', purchaseAll);
     $(`#js-${PLUGIN_NAME}-verify_key`).click(checkCredentials);
     $(`#js-${PLUGIN_NAME}-download-logs`).on('click', downloadLogs);
     observeFormChanges(`#js-${PLUGIN_NAME}-general-form`);
