@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { configureSimpleProduct, orderProduct, setSettings } from './utils';
+import { configureSimpleProduct, addToCart, placeOrder, setSettings, configureVariableProduct } from './utils';
 
 test.describe('Order', () => {
   test.afterEach(async ({ page }) => {
@@ -21,7 +21,11 @@ test.describe('Order', () => {
 
     await configureSimpleProduct(page, '14');
 
-    await orderProduct(page, 'custom-flyers');
+    await addToCart(page, {
+      slug: 'custom-flyers',
+    });
+
+    await placeOrder(page);
 
     await page.goto('/wp-admin/edit.php?post_type=shop_order');
 
@@ -44,7 +48,59 @@ test.describe('Order', () => {
 
     await configureSimpleProduct(page, '14');
 
-    await orderProduct(page, 'custom-flyers');
+    await addToCart(page, {
+      slug: 'custom-flyers',
+    });
+
+    await placeOrder(page);
+
+    await page.goto('/wp-admin/edit.php?post_type=shop_order');
+
+    await page.locator('table.wp-list-table tbody tr:first-child a.order-view').click();
+
+    await expect(page.getByTestId('pdc-purchase-orderitem-1')).toBeEnabled();
+    const responsePromise = page.waitForResponse('**/purchase');
+    await page.getByTestId('pdc-purchase-orderitem-1').click();
+    await responsePromise;
+
+    await expect(page.getByTestId('pdc-ordered-copies')).toHaveText('Copies 1');
+  });
+
+  test('will purchase multiple order items at once', async ({ page }) => {
+    await setSettings(page, {
+      apikey: 'test_key_12345',
+      env: 'stg',
+      usePresetCopies: false,
+    });
+
+    await configureSimpleProduct(page, '14');
+    await configureVariableProduct(page, {
+      productID: '15',
+      variations: [
+        {
+          variationID: '17',
+          sku: 'posters',
+          preset: 'posters_a2',
+        },
+        {
+          variationID: '16',
+          sku: 'posters',
+          preset: 'posters_a3',
+        },
+      ],
+    });
+
+    await addToCart(page, {
+      slug: 'custom-flyers',
+    });
+    await addToCart(page, {
+      slug: 'custom-poster',
+      options: {
+        pa_size: 'a2',
+      },
+    });
+
+    await placeOrder(page);
 
     await page.goto('/wp-admin/edit.php?post_type=shop_order');
 
