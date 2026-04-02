@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 ?>
 <div class="wp-list-table pdc-table widefat fixed striped posts">
+	<fieldset id="js-pdc-order-fieldset"> 
 	<div class="table-head">
 		<div class="table-head-col">
 			<strong><?php esc_html_e( 'Information', 'pdc-pod' ); ?></strong>
@@ -114,4 +115,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 			
 		} ?>
 	</div>
+	<div class="table-foot">
+		<div class="table-cell table-cell-auto">
+		</div>
+		<div class="table-cell">
+			<button type="submit" class="button button-primary" id="js-pdc-purchase-all">
+				<?php esc_html_e('Purchase all', 'pdc-pod'); ?>
+			</button>
+		</div>
+	</div>
+	</fieldset>
 </div>
