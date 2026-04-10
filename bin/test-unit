@@ -1,2 +1,2 @@
 #!/bin/bash
-vendor/bin/phpunit $@
+XDEBUG_MODE=coverage vendor/bin/phpunit $@
