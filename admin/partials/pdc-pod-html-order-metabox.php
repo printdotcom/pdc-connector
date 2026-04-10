@@ -58,7 +58,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<div class="table-cell">
 							<?php if ( $pdc_pod_order_item_number ) { ?>
 								<span><strong><?php esc_html_e( 'Order item number', 'pdc-pod' ); ?></strong> #<?php echo esc_html( $pdc_pod_order_item_number ); ?></span><br>
-								<span data-testid="pdc-ordered-copies-<?php echo esc_attr($items_count); ?>"><strong><?php esc_html_e( 'Copies', 'pdc-pod' ); ?></strong> <?php echo esc_html( $pdc_pod_order_item->options->copies ); ?></span><br>
+								<span data-testid="pdc-ordered-copies-<?php echo esc_attr( $items_count ); ?>"><strong><?php esc_html_e( 'Copies', 'pdc-pod' ); ?></strong> <?php echo esc_html( $pdc_pod_order_item->options->copies ); ?></span><br>
 								<span><strong><?php esc_html_e( 'Purchase Date', 'pdc-pod' ); ?></strong> <?php echo esc_html( $pdc_pod_purchase_date ); ?></span><br>
 								<span><strong><?php esc_html_e( 'Item Status', 'pdc-pod' ); ?></strong> <?php echo esc_html( $pdc_pod_order_item_status ); ?></span><br>
 								<span><strong><?php esc_html_e( 'Price', 'pdc-pod' ); ?></strong> <?php echo wp_kses_post( wc_price( $pdc_pod_order_item_grand_total ) ); ?></span><br>
