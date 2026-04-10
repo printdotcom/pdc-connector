@@ -36,7 +36,7 @@ test.describe('Order', () => {
     await page.getByTestId('pdc-purchase-orderitem-1').click();
     await presetResponsePromise;
 
-    await expect(page.getByTestId('pdc-ordered-copies')).toHaveText('Copies 500');
+    await expect(page.getByTestId('pdc-ordered-copies-1')).toHaveText('Copies 500');
   });
 
   test('will purchase the ordered quantity when use_preset_copies is false', async ({ page }) => {
@@ -63,7 +63,7 @@ test.describe('Order', () => {
     await page.getByTestId('pdc-purchase-orderitem-1').click();
     await responsePromise;
 
-    await expect(page.getByTestId('pdc-ordered-copies')).toHaveText('Copies 1');
+    await expect(page.getByTestId('pdc-ordered-copies-1')).toHaveText('Copies 1');
   });
 
   test('will purchase multiple order items at once', async ({ page }) => {
@@ -106,11 +106,13 @@ test.describe('Order', () => {
 
     await page.locator('table.wp-list-table tbody tr:first-child a.order-view').click();
 
-    await expect(page.getByTestId('pdc-purchase-orderitem-1')).toBeEnabled();
+    await expect(page.getByTestId('pdc-pod-purchase-all')).toBeEnabled();
+
     const responsePromise = page.waitForResponse('**/purchase');
-    await page.getByTestId('pdc-purchase-orderitem-1').click();
+    await page.getByTestId('pdc-pod-purchase-all').click();
     await responsePromise;
 
-    await expect(page.getByTestId('pdc-ordered-copies')).toHaveText('Copies 1');
+    await expect(page.getByTestId('pdc-ordered-copies-1')).toHaveText('Copies 1');
+    await expect(page.getByTestId('pdc-ordered-copies-2')).toHaveText('Copies 1');
   });
 });

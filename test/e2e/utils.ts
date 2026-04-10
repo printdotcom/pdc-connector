@@ -1,8 +1,9 @@
+import { expect } from '@playwright/test';
 import path from 'path';
 
 interface AddToCartParam {
   slug: string;
-  options?: {[ key: string ]: string }
+  options?: { [key: string]: string };
 }
 export async function addToCart(page, params: AddToCartParam) {
   await page.goto(`/?product=${params.slug}`);
@@ -11,7 +12,9 @@ export async function addToCart(page, params: AddToCartParam) {
       await page.locator(`#${key}`).selectOption(value);
     }
   }
-  await page.getByRole('button', { name: 'Add to cart', exact: true }).click();
+  const addToCartButton = page.getByRole('button', { name: 'Add to cart', exact: true });
+  await expect(addToCartButton).not.toHaveClass(/disabled/);
+  await addToCartButton.click();
 }
 
 export async function placeOrder(page) {
@@ -79,18 +82,18 @@ interface ConfigureVariableProductParams {
     variationID: string;
     sku: string;
     preset: string;
-  }[]
+  }[];
 }
 export async function configureVariableProduct(page, params: ConfigureVariableProductParams) {
   await page.goto(`/wp-admin/post.php?post=${params.productID}&action=edit`);
   await page.getByRole('link', { name: 'Variations' }).click();
   await page.waitForResponse('**/admin-ajax.php');
-  
+
   for (let i = 0; i < params.variations.length; i++) {
     const variation = params.variations[i];
     await page.locator(`.woocommerce_variation:has-text('#${variation.variationID}')`).click();
     await page.getByTestId(`variation_sku_${variation.variationID}`).selectOption(params.variations[i].sku);
-    
+
     await page.waitForResponse(/\/pdc\/v1\/products/, {
       timeout: 1000,
     });
