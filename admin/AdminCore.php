@@ -690,10 +690,8 @@ class AdminCore {
 		$payload    = $body->payload;
 
 		if ( 'ORDER_STATUS_CHANGED' === $event_type ) {
-			$order_id = $request->get_param( 'order_id' );
-
-			if ( 'ACCEPTEDBYSUPPLIER' === $payload->status ) {
-				$this->on_webhook_in_production( $order_id );
+			if ( isset( $payload->status ) && 'ACCEPTEDBYSUPPLIER' === $payload->status ) {
+				$this->on_webhook_in_production( $payload );
 			}
 		}
 
@@ -706,18 +704,24 @@ class AdminCore {
 	 * Sets an order item to 'production' when the webhook event is received.
 	 *
 	 * @since 1.0.0
-	 * @param string $order_id      The WooCommerce order ID.
-	 * @param string $order_item_id The WooCommerce order item ID.
+	 * @param object $payload	The body of the webhook
 	 * @return void
 	 */
-	private function on_webhook_in_production( $order_id ) {
-		// $order_item = new \WC_Order_Item_Product( $order_item_id );
-		// $order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), 'production' );
-		// $order_item->save();
+	private function on_webhook_in_production( $payload ) {
+		if (! isset( $payload->order_item_number ) ) {
+			Logger::log('expected order item number in webhook payload', 'error', array( 'payload' => $payload ));
+			return;
+		}
 
-		// haal order op en update iedere item
+		$pdc_order_item_number = $payload->order_item_number;
 
-		$order = wc_get_order( $order_id );
+		$order_item_id = $this->get_order_item_id_by_order_item_number( $pdc_order_item_number );
+
+		$order_item = new \WC_Order_Item_Product( $order_item_id );
+		$order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), 'production' );
+		$order_item->save();
+
+		$order = $order_item->get_order();
 		$note  = __( 'Item is being produced at Print.com.', 'pdc-pod' );
 		$order->add_order_note( $note );
 		$order->save();
