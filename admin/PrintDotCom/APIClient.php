@@ -54,6 +54,7 @@ class APIClient {
 			$env                        = get_option( PDC_POD_NAME . '-env' );
 			$this->pdc_pod_api_base_url = ( 'prod' === $env ) ? 'https://api.print.com' : 'https://api.stg.print.com';
 		}
+		
 		if ( getenv( 'PDC_POD_API_KEY' ) ) {
 			$this->pdc_pod_api_key = getenv( 'PDC_POD_API_KEY' );
 		} else {
@@ -149,6 +150,12 @@ class APIClient {
 			$args['headers']['Content-Type'] = 'application/json';
 			$args['body']                    = function_exists( 'wp_json_encode' ) ? wp_json_encode( $data ) : json_encode( $data ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
 		}
+
+		Logger::log('Print.com API request', 'debug', array(
+			'method' => $method,
+			'url'    => $url,
+			'body'   => isset( $args['body'] ) ? $args['body'] : null,
+		));
 
 		$response = wp_remote_request( $url, array_merge( $args, array( 'method' => $method ) ) );
 		if ( is_wp_error( $response ) ) {
@@ -425,13 +432,12 @@ class APIClient {
 
 		$order_id = $order->get_id();
 
-		// $webhook_url = add_query_arg(
-		// array(
-		// 'order_id'      => $order_id,
-		// ),
-		// rest_url( 'pdc/v1/order-items/webhook' )
-		// );
-		$webhook_url = 'https://webhook.site/b8ca812b-5914-4b78-bce2-87e5c3004af3';
+		$webhook_url = add_query_arg(
+			array(
+				'order_id'      => $order_id,
+			),
+			rest_url( 'pdc/v1/orders/webhook' )
+		);
 
 		$order_request_items = array();
 

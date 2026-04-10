@@ -351,7 +351,12 @@ class AdminCore {
 			$pdc_pod_presets_for_sku = $this->pdc_client->get_presets( $pdc_pod_sku );
 		}
 
-		$pdc_products = $this->pdc_client->search_products();
+		$pdc_products = array();
+		$search_response = $this->pdc_client->search_products();
+		if ( ! is_wp_error($search_response)) {
+			$pdc_products = $search_response;
+		}
+
 		include plugin_dir_path( __FILE__ ) . 'partials/' . PDC_POD_NAME . '-admin-producttab.php';
 	}
 
@@ -499,7 +504,7 @@ class AdminCore {
 	public function register_pdc_endpoints() {
 		register_rest_route(
 			'pdc/v1',
-			'/products/(?P<sku>[^/]+)/presets',
+			'/products/(?P<sku> ^/]+)/presets',
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'pdc_render_preset_select' ),
@@ -770,7 +775,7 @@ class AdminCore {
 	 * @param string $tracking_url      Tracking URL provided by Print.com.
 	 * @return void
 	 */
-	private function on_webhook_shipped( string $order_item_number, string $tracking_url ) {
+	private function on_webhook_shipped( $order_item_number, $tracking_url ) {
 		$order_item_id = $this->get_order_item_id_by_order_item_number( $order_item_number );
 		$order_item    = new \WC_Order_Item_Product( $order_item_id );
 		$order_item->update_meta_data( $this->get_meta_key( 'order_item_tnt_url' ), $tracking_url );
