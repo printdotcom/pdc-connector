@@ -61,21 +61,23 @@
 	display: flex;
 	align-items: center;
 	visibility: hidden;
-    justify-self: flex-end;
+	justify-self: flex-end;
 }
 
 .pdc-errormark .dashicons {
 	color: red;
 	margin-right: 5px;
 }
+
 .pdc-errormark strong {
 	display: block;
 	color: #3c434a;
 }
+
 .pdc-errormark span {
-	color: #999;    
+	color: #999;
 	max-height: 2.2rem;
-    display: block;
-    max-width: 400px;
-    overflow: hidden;
+	display: block;
+	max-width: 400px;
+	overflow: hidden;
 }

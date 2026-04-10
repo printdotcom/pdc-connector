@@ -256,7 +256,7 @@
         const responseText = await response.text();
         throw new Error(responseText);
       }
-      await refreshOrder();
+      refreshOrder();
     } catch ( err )  {
       showError('Failed to purchase all order items', err.message);
     } finally {

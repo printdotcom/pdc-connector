@@ -936,8 +936,8 @@ class AdminCore {
 		$order_item_id  = (string) $order_item->get_id();
 		$pdc_order_item = null;
 		foreach ( $pdc_order->items as $item ) {
-			$itemReference = isset( $item->customerReference ) ? $item->customerReference : '';
-			if ( $itemReference === $order_item_id ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			$item_reference = isset( $item->customerReference ) ? $item->customerReference : '';
+			if ( $item_reference === $order_item_id ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$pdc_order_item = $item;
 				break;
 			}

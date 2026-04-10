@@ -451,7 +451,7 @@ class APIClient {
 			);
 
 			if ( is_wp_error( $prepare_result ) ) {
-				return new \WP_Error( 500, 'unable to create order item', array( 'item' => $item ) );
+				return $prepare_result;
 			}
 
 			$order_request_items[] = $prepare_result;

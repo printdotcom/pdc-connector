@@ -137,7 +137,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<div class="table-cell">
 				<span class="spinner"></span>
 				<button
-					type="submit"
+					type="button"
 					class="button button-primary"
 					data-order-id="<?php echo esc_attr( $order->get_id() ); ?>"
 					data-testid="pdc-pod-purchase-all"
