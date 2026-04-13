@@ -504,7 +504,7 @@ class AdminCore {
 	public function register_pdc_endpoints() {
 		register_rest_route(
 			'pdc/v1',
-			'/products/(?P<sku> ^/]+)/presets',
+			'/products/(?P<sku>[^/]+)/presets',
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'pdc_render_preset_select' ),
