@@ -1,0 +1,39 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/orders",
+    "headers": {
+      "authorization": {
+        "equalTo": "PrintApiKey test_key_12345"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.items[1]"
+      }
+    ]
+  },
+  "response": {
+    "transformers": ["response-template"],
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    },
+    "bodyFileName": "order.60001235.json"
+  },
+  "serveEventListeners": [
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "POST",
+        "url": "{{jsonPath originalRequest.body '$.webhookUrl'}}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"result\": \"SUCCESS\" }"
+      }
+    }
+  ]
+}

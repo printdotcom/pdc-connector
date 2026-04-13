@@ -1,13 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { setSettings } from './utils';
 
 test.describe('Settings Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/wp-admin/admin.php?page=pdc-pod');
-  });
-  test.afterAll(async ({ browser }) => {
-    const afterAllPage = await browser.newPage();
-    await afterAllPage.goto('/wp-admin/admin.php?page=pdc-pod');
-    await afterAllPage.getByTestId('pdc-pod-apikey').fill('test_key_12345');
   });
 
   test.describe('general settings', () => {
@@ -45,7 +41,6 @@ test.describe('Settings Page', () => {
     });
 
     test('show error when api key is invalid', async ({ page }) => {
-
       // set incorrect key
       await page.getByTestId('pdc-pod-apikey').fill('invalid_key');
 
@@ -60,7 +55,6 @@ test.describe('Settings Page', () => {
     });
 
     test('when environment is set to live, show link to production environment', async ({ page }) => {
-
       // select prod
       await page.getByTestId('pdc-pod-environment').selectOption('prod');
       await page.getByTestId('pdc-pod-apikey').fill('test_key_12345');
@@ -84,35 +78,35 @@ test.describe('Settings Page', () => {
   });
 
   test.describe('product settings', () => {
+    test.afterEach(async ({ page }) => {
+      await setSettings(page, {
+        apikey: 'test_key_12345',
+        env: 'stg',
+        usePresetCopies: true,
+      });
+    });
+
     test('user can check the preset copies checkbox and save it', async ({ page }) => {
-      // Check the checkbox
       await page.getByTestId('pdc-pod-use_preset_copies').check();
 
-      // Verify it's checked
       await expect(page.getByTestId('pdc-pod-use_preset_copies')).toBeChecked();
 
-      // Save settings
       await page.getByRole('button', { name: 'Save Settings' }).click();
 
-      // Reload page to verify persistence
       await page.reload();
       await expect(page.getByTestId('pdc-pod-use_preset_copies')).toBeChecked();
     });
 
     test('user can uncheck the preset copies checkbox and save it', async ({ page }) => {
-      // First, ensure the checkbox is checked
       await page.getByTestId('pdc-pod-use_preset_copies').check();
       await page.getByRole('button', { name: 'Save Settings' }).click();
       await expect(page.getByTestId('pdc-pod-use_preset_copies')).toBeChecked();
 
-      // Now uncheck it
       await page.getByTestId('pdc-pod-use_preset_copies').uncheck();
       await expect(page.getByTestId('pdc-pod-use_preset_copies')).not.toBeChecked();
 
-      // Save settings
       await page.getByRole('button', { name: 'Save Settings' }).click();
 
-      // Reload page to verify persistence
       await page.reload();
       await expect(page.getByTestId('pdc-pod-use_preset_copies')).not.toBeChecked();
     });
@@ -125,34 +119,28 @@ test.describe('Settings Page', () => {
       // Navigate away and back
       await page.goto('/wp-admin/admin.php?page=pdc-pod');
 
-      // Verify checkbox is still checked
       await expect(page.getByTestId('pdc-pod-use_preset_copies')).toBeChecked();
     });
 
     test('both general and product settings can be saved together', async ({ page }) => {
-      // Set general settings
-      await page.getByTestId('pdc-pod-apikey').fill('combined_test_key');
-      await page.getByTestId('pdc-pod-environment').selectOption('stg');
+      await setSettings(page, {
+        apikey: 'combined_test_key',
+        env: 'stg',
+        usePresetCopies: true,
+      });
 
-      // Set product settings
       await page.getByTestId('pdc-pod-use_preset_copies').check();
 
-      // Save all settings
       await page.getByRole('button', { name: 'Save Settings' }).click();
 
-      // Verify both sections are saved correctly
       await expect(page.getByTestId('pdc-pod-apikey')).toHaveValue('combined_test_key');
       await expect(page.getByTestId('pdc-pod-environment')).toHaveValue('stg');
       await expect(page.getByTestId('pdc-pod-use_preset_copies')).toBeChecked();
 
-      // Reload to confirm persistence
       await page.reload();
       await expect(page.getByTestId('pdc-pod-apikey')).toHaveValue('combined_test_key');
       await expect(page.getByTestId('pdc-pod-environment')).toHaveValue('stg');
       await expect(page.getByTestId('pdc-pod-use_preset_copies')).toBeChecked();
-
-      // reset key
-      await page.getByTestId('pdc-pod-apikey').fill('test_key_12345');
     });
   });
 });

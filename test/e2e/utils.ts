@@ -1,10 +1,25 @@
+import { expect } from '@playwright/test';
 import path from 'path';
 
-export async function orderProduct(page, productSlug: string) {
-  await page.goto(`/?product=${productSlug}`);
-  await page.getByRole('button', { name: 'Add to cart', exact: true }).click();
-  await page.getByRole('link', { name: 'View cart' }).click();
-  await page.getByRole('link', { name: 'Proceed to checkout' }).click();
+interface AddToCartParam {
+  slug: string;
+  options?: { [key: string]: string };
+}
+export async function addToCart(page, params: AddToCartParam) {
+  await page.goto(`/?product=${params.slug}`);
+  if (params.options) {
+    for (const [key, value] of Object.entries(params.options)) {
+      await page.locator(`#${key}`).selectOption(value);
+    }
+  }
+  const addToCartButton = page.getByRole('button', { name: 'Add to cart', exact: true });
+  await expect(addToCartButton).not.toHaveClass(/disabled/);
+  await addToCartButton.click();
+}
+
+export async function placeOrder(page) {
+  // 12 = checkout in seeder
+  await page.goto(`/?page_id=12`);
   await page.locator('#billing_first_name').fill('Test');
   await page.locator('#billing_last_name').fill('User');
   await page.getByRole('textbox', { name: 'Street address' }).fill('Teugseweg 18a');
@@ -57,6 +72,41 @@ export async function configureSimpleProduct(page, productID: string) {
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles(path.join(__dirname, `/fixtures/pdc_flyera5.pdf`));
   await page.getByRole('button', { name: 'Select File', exact: true }).click();
+
+  await page.getByRole('button', { name: 'Update' }).click();
+}
+
+interface ConfigureVariableProductParams {
+  productID: string;
+  variations: {
+    variationID: string;
+    sku: string;
+    preset: string;
+  }[];
+}
+export async function configureVariableProduct(page, params: ConfigureVariableProductParams) {
+  await page.goto(`/wp-admin/post.php?post=${params.productID}&action=edit`);
+  await page.getByRole('link', { name: 'Variations' }).click();
+  await page.waitForResponse('**/admin-ajax.php');
+
+  for (let i = 0; i < params.variations.length; i++) {
+    const variation = params.variations[i];
+    await page.locator(`.woocommerce_variation:has-text('#${variation.variationID}')`).click();
+    await page.getByTestId(`variation_sku_${variation.variationID}`).selectOption(params.variations[i].sku);
+
+    await page.waitForResponse(/\/pdc\/v1\/products/, {
+      timeout: 1000,
+    });
+
+    await page.getByTestId(`variation_preset_${variation.variationID}`).selectOption(params.variations[i].preset);
+    await page.getByTestId(`variation_file_${variation.variationID}`).click();
+    await page.getByRole('tab', { name: 'Upload files' }).click();
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: 'Select Files' }).click();
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles(path.join(__dirname, `/fixtures/pdc_flyera5.pdf`));
+    await page.getByRole('button', { name: 'Select File', exact: true }).click();
+  }
 
   await page.getByRole('button', { name: 'Update' }).click();
 }

@@ -285,18 +285,18 @@ class AdminCore {
 	}
 
 	public function get_preset_id_by_order_item_id( $pdc_pod_order_item_id ) {
-		$pdc_pod_preset_id              = wc_get_order_item_meta( $pdc_pod_order_item_id, Core::get_meta_key('preset_id' ), true );
+		$pdc_pod_preset_id = wc_get_order_item_meta( $pdc_pod_order_item_id, Core::get_meta_key( 'preset_id' ), true );
 		if ( empty( $pdc_pod_preset_id ) ) {
 			$pdc_pod_order_item_product = new \WC_Order_Item_Product( $pdc_pod_order_item_id );
-			$pdc_pod_variation_id = $pdc_pod_order_item_product->get_variation_id();
+			$pdc_pod_variation_id       = $pdc_pod_order_item_product->get_variation_id();
 			if ( $pdc_pod_variation_id ) {
-				$pdc_pod_preset_id = get_post_meta( $pdc_pod_variation_id, Core::get_meta_key('preset_id' ), true );
+				$pdc_pod_preset_id = get_post_meta( $pdc_pod_variation_id, Core::get_meta_key( 'preset_id' ), true );
 			}
 
 			if ( empty( $pdc_pod_preset_id ) ) {
 				$pdc_pod_product_id = $pdc_pod_order_item_product->get_product_id();
 				if ( $pdc_pod_product_id ) {
-					$pdc_pod_preset_id = get_post_meta( $pdc_pod_product_id, Core::get_meta_key('preset_id' ), true );
+					$pdc_pod_preset_id = get_post_meta( $pdc_pod_product_id, Core::get_meta_key( 'preset_id' ), true );
 				}
 			}
 		}
@@ -351,7 +351,12 @@ class AdminCore {
 			$pdc_pod_presets_for_sku = $this->pdc_client->get_presets( $pdc_pod_sku );
 		}
 
-		$pdc_products = $this->pdc_client->search_products();
+		$pdc_products = array();
+		$search_response = $this->pdc_client->search_products();
+		if ( ! is_wp_error($search_response)) {
+			$pdc_products = $search_response;
+		}
+
 		include plugin_dir_path( __FILE__ ) . 'partials/' . PDC_POD_NAME . '-admin-producttab.php';
 	}
 
@@ -532,7 +537,7 @@ class AdminCore {
 		);
 		register_rest_route(
 			'pdc/v1',
-			'/orders/(?P<id>\d+)/attach-pdf',
+			'/order-items/(?P<id>\d+)/attach-pdf',
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'pdc_attach_pdf' ),
@@ -543,10 +548,10 @@ class AdminCore {
 		);
 		register_rest_route(
 			'pdc/v1',
-			'/orders/(?P<id>\d+)/purchase',
+			'/order-items/(?P<id>\d+)/purchase',
 			array(
 				'methods'             => 'POST',
-				'callback'            => array( $this, 'pdc_place_order' ),
+				'callback'            => array( $this, 'pdc_place_order_item' ),
 				'permission_callback' => function () {
 					return current_user_can( 'edit_posts' );
 				},
@@ -559,6 +564,86 @@ class AdminCore {
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'pdc_order_webhook' ),
 				'permission_callback' => '__return_true',
+			)
+		);
+		register_rest_route(
+			'pdc/v1',
+			'/orders/(?P<id>\d+)/purchase',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'pdc_purchase_order' ),
+				'permission_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+	}
+
+	public function pdc_purchase_order( \WP_REST_Request $request ) {
+		$order_id = $request->get_param( 'id' );
+
+		Logger::log(
+			'purchasing order',
+			'debug',
+			array(
+				'order_id' => $order_id,
+			)
+		);
+
+		$order       = wc_get_order( $order_id );
+		$order_items = $order->get_items();
+
+		$purchase_items = array();
+		foreach ( $order_items as $order_item ) {
+			$pdc_pod_preset_id = $this->get_preset_id_by_order_item_id( $order_item->get_ID() );
+			$pdc_pod_pdf_url   = $this->get_pdf_url_by_order_item_id( $order_item->get_ID() );
+			$purchase_date     = wc_get_order_item_meta( $order_item->get_ID(), $this->get_meta_key( 'purchase_date' ), true );
+			if ( ! empty( $pdc_pod_preset_id ) && ! empty( $pdc_pod_pdf_url ) && empty( $purchase_date ) ) {
+				$purchase_items[] = array(
+					'order_item'        => $order_item,
+					'pdc_pod_preset_id' => $pdc_pod_preset_id,
+					'pdc_pod_pdf_url'   => $pdc_pod_pdf_url,
+				);
+			}
+		}
+
+		if ( empty( $purchase_items ) ) {
+			return new \WP_Error(
+				'pdc_no_items_to_purchase',
+				__( 'No valid items found to purchase. Ensure items have both a PDF and a preset assigned.', 'pdc-pod' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$pdc_product_config = get_option( PDC_POD_NAME . '-product' );
+		$result             = $this->pdc_client->purchase_order_items( $order, $purchase_items, $pdc_product_config );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		$pdc_order = $result->order;
+		foreach ( $pdc_order->items as $pdc_order_item ) {
+			$order_item_id = (int) $pdc_order_item->customerReference;
+			$order_item    = $order->get_item( $order_item_id );
+
+			if ( $order_item ) {
+				$this->update_order_item( $order_item, $pdc_order );
+			} else {
+				Logger::log( 'unable to update order item after purchase', 'error', array( 'order_item_id' => $order_item_id ) );
+			}
+		}
+
+		$note = sprintf(
+			/* translators: %s: Print.com order number */
+			__( 'Order purchased at Print.com with order number: %s.', 'pdc-pod' ),
+			$pdc_order->orderNumber
+		);
+		$order->add_order_note( $note );
+
+		return rest_ensure_response(
+			array(
+				'order' => $pdc_order,
 			)
 		);
 	}
@@ -591,16 +676,22 @@ class AdminCore {
 	 * @return void
 	 */
 	public function pdc_order_webhook( \WP_REST_Request $request ) {
-		$body       = json_decode( $request->get_body() );
+		$body = json_decode( $request->get_body() );
+
+		Logger::log(
+			'webhook received',
+			'debug',
+			array(
+				'body' => $body,
+			)
+		);
+
 		$event_type = $body->event_type;
 		$payload    = $body->payload;
 
 		if ( 'ORDER_STATUS_CHANGED' === $event_type ) {
-			$order_id      = $request->get_param( 'order_id' );
-			$order_item_id = $request->get_param( 'order_item_id' );
-
-			if ( 'ACCEPTEDBYSUPPLIER' === $payload->status ) {
-				$this->on_webhook_in_production( $order_id, $order_item_id );
+			if ( isset( $payload->status ) && 'ACCEPTEDBYSUPPLIER' === $payload->status ) {
+				$this->on_webhook_in_production( $payload );
 			}
 		}
 
@@ -613,16 +704,24 @@ class AdminCore {
 	 * Sets an order item to 'production' when the webhook event is received.
 	 *
 	 * @since 1.0.0
-	 * @param string $order_id      The WooCommerce order ID.
-	 * @param string $order_item_id The WooCommerce order item ID.
+	 * @param object $payload	The body of the webhook
 	 * @return void
 	 */
-	private function on_webhook_in_production( string $order_id, string $order_item_id ) {
+	private function on_webhook_in_production( $payload ) {
+		if (! isset( $payload->order_item_number ) ) {
+			Logger::log('expected order item number in webhook payload', 'error', array( 'payload' => $payload ));
+			return;
+		}
+
+		$pdc_order_item_number = $payload->order_item_number;
+
+		$order_item_id = $this->get_order_item_id_by_order_item_number( $pdc_order_item_number );
+
 		$order_item = new \WC_Order_Item_Product( $order_item_id );
 		$order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), 'production' );
 		$order_item->save();
 
-		$order = wc_get_order( $order_id );
+		$order = $order_item->get_order();
 		$note  = __( 'Item is being produced at Print.com.', 'pdc-pod' );
 		$order->add_order_note( $note );
 		$order->save();
@@ -680,7 +779,7 @@ class AdminCore {
 	 * @param string $tracking_url      Tracking URL provided by Print.com.
 	 * @return void
 	 */
-	private function on_webhook_shipped( string $order_item_number, string $tracking_url ) {
+	private function on_webhook_shipped( $order_item_number, $tracking_url ) {
 		$order_item_id = $this->get_order_item_id_by_order_item_number( $order_item_number );
 		$order_item    = new \WC_Order_Item_Product( $order_item_id );
 		$order_item->update_meta_data( $this->get_meta_key( 'order_item_tnt_url' ), $tracking_url );
@@ -767,7 +866,7 @@ class AdminCore {
 	 * @param \WP_REST_Request $request REST request instance.
 	 * @return \WP_REST_Response|\WP_Error REST response or error.
 	 */
-	public function pdc_place_order( \WP_REST_Request $request ) {
+	public function pdc_place_order_item( \WP_REST_Request $request ) {
 		$order_item_id = absint( $request->get_param( 'id' ) );
 		if ( empty( $order_item_id ) ) {
 			return new \WP_Error(
@@ -781,12 +880,17 @@ class AdminCore {
 		$order_id   = wc_get_order_id_by_order_item_id( $order_item_id );
 		$order      = wc_get_order( $order_id );
 
-		$pdc_pod_preset_id  = $this->get_preset_id_by_order_item_id( $order_item_id );
-		$pdc_pod_preset_url = $this->get_pdf_url_by_order_item_id( $order_item_id );
+		$pdc_pod_preset_id = $this->get_preset_id_by_order_item_id( $order_item_id );
+		$pdc_pod_pdf_url   = $this->get_pdf_url_by_order_item_id( $order_item_id );
 
 		$pdc_product_config = get_option( PDC_POD_NAME . '-product' );
+		$item               = array(
+			'order_item'        => $order_item,
+			'pdc_pod_preset_id' => $pdc_pod_preset_id,
+			'pdc_pod_pdf_url'   => $pdc_pod_pdf_url,
+		);
 
-		$result = $this->pdc_client->purchase_order_item( $order, $order_item, $pdc_pod_preset_url, $pdc_pod_preset_id, $pdc_product_config );
+		$result = $this->pdc_client->purchase_order_items( $order, array( $item ), $pdc_product_config );
 		if ( is_wp_error( $result ) ) {
 			$status = absint( $result->get_error_code() );
 			if ( 0 === $status ) {
@@ -803,32 +907,13 @@ class AdminCore {
 				)
 			);
 		}
-		$pdc_order               = $result->order;
-		$pdc_order_item          = $pdc_order->items[0];
-		$pdc_order_item_shipment = $pdc_order_item->shipments[0];
-
-		$order_item->update_meta_data( $this->get_meta_key( 'order' ), $pdc_order );
-		$order_item->update_meta_data( $this->get_meta_key( 'purchase_date' ), gmdate( 'c' ) );
-		// Map external API fields to local snake_case variables for linting compliance.
-		$order_number = $pdc_order->orderNumber; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$grand_total  = $pdc_order->grandTotal; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$order_item->update_meta_data( $this->get_meta_key( 'order_number' ), $order_number );
-		$order_item->update_meta_data( $this->get_meta_key( 'grand_total' ), $grand_total );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_status' ), $pdc_order->status );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item' ), $pdc_order_item );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_shipment' ), $pdc_order_item_shipment );
-		$order_item_number = $pdc_order_item->orderItemNumber; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$order_item_status = $pdc_order_item->status; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$order_item_total  = $pdc_order_item->grandTotal; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_number' ), $order_item_number );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), $order_item_status );
-		$order_item->update_meta_data( $this->get_meta_key( 'order_item_grand_total' ), $order_item_total );
-		$order_item->save();
+		$pdc_order = $result->order;
+		$this->update_order_item( $order_item, $pdc_order );
 
 		$note = sprintf(
 			// translators: placeholder is the order number.
 			__( 'Item purchased at Print.com with order number: %s.', 'pdc-pod' ),
-			$order_number
+			$pdc_order->orderNumber
 		);
 		$order->add_order_note( $note );
 
@@ -837,6 +922,49 @@ class AdminCore {
 				'order' => $pdc_order,
 			)
 		);
+	}
+
+	private function update_order_item( $order_item, $pdc_order ) {
+		$order_item->update_meta_data( $this->get_meta_key( 'order' ), $pdc_order );
+		$order_item->update_meta_data( $this->get_meta_key( 'purchase_date' ), gmdate( 'c' ) );
+		$order_number = $pdc_order->orderNumber; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$grand_total  = $pdc_order->grandTotal; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$order_item->update_meta_data( $this->get_meta_key( 'order_number' ), $order_number );
+		$order_item->update_meta_data( $this->get_meta_key( 'grand_total' ), $grand_total );
+		$order_item->update_meta_data( $this->get_meta_key( 'order_status' ), $pdc_order->status );
+
+		$order_item_id  = (string) $order_item->get_id();
+		$pdc_order_item = null;
+		foreach ( $pdc_order->items as $item ) {
+			$item_reference = isset( $item->customerReference ) ? $item->customerReference : '';
+			if ( $item_reference === $order_item_id ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				$pdc_order_item = $item;
+				break;
+			}
+		}
+
+		if ( null === $pdc_order_item ) {
+			Logger::log(
+				'unable to update order item',
+				'error',
+				array(
+					'order_item_id' => $order_item_id,
+				)
+			);
+			return;
+		}
+
+		$pdc_order_item_shipment = $pdc_order_item->shipments[0];
+
+		$order_item_number = $pdc_order_item->orderItemNumber; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$order_item_status = $pdc_order_item->status; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$order_item_total  = $pdc_order_item->grandTotal; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$order_item->update_meta_data( $this->get_meta_key( 'order_item_number' ), $order_item_number );
+		$order_item->update_meta_data( $this->get_meta_key( 'order_item_status' ), $order_item_status );
+		$order_item->update_meta_data( $this->get_meta_key( 'order_item_grand_total' ), $order_item_total );
+		$order_item->update_meta_data( $this->get_meta_key( 'order_item' ), $pdc_order_item );
+		$order_item->update_meta_data( $this->get_meta_key( 'order_item_shipment' ), $pdc_order_item_shipment );
+		$order_item->save();
 	}
 
 	/**

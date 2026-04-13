@@ -6,3 +6,4 @@ test/e2e/.auth/user.json
 /vendor
 .phpcs-cache
 .phpunit.result.cache
+coverage/

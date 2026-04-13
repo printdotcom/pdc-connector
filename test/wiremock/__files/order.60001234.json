@@ -8,6 +8,7 @@
         "orderItemNumber": "60001234-1",
         "status": "ORDERRECEIVED",
         "grandTotal": 150,
+        "customerReference": "{{jsonPath request.body '$.items[0].customerReference'}}",
         "options": {
           "size": "a3",
           "copies": "{{jsonPath request.body '$.items[0].options.copies'}}"

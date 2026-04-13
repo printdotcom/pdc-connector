@@ -68,7 +68,7 @@
         await $.ajax(
           {
             method: 'POST',
-            url: `${PDC_POD_ADMIN.root}pdc/v1/orders/${orderItemId}/attach-pdf`,
+            url: `${PDC_POD_ADMIN.root}pdc/v1/order-items/${orderItemId}/attach-pdf`,
             beforeSend(xhr) {
               xhr.setRequestHeader('X-WP-Nonce', PDC_POD_ADMIN.nonce);
             },
@@ -79,8 +79,7 @@
           },
           {}
         );
-        await refreshOrderItem(orderItemId);
-        $('#js-pdc-order-pdf').val(attachment.url);
+        refreshOrder();
       } catch (err) {
         $('#js-pdc-request-response').text(err.responseJSON.message);
       }
@@ -89,29 +88,20 @@
     frame.open();
   }
 
-  function refreshOrderItem(orderItemId) {
-    const orderItemRow = $(`#pdc_order_item_${orderItemId}`);
-    if (!orderItemRow.length) return;
-    return new Promise((resolve) => {
-      orderItemRow.load(`${document.URL} #pdc_order_item_${orderItemId}_inner`, function () {
-        resolve();
-      });
-    });
+  function refreshOrder() {
+    $("#js-pdc-order-metabox").load(`${document.URL} #js-pdc-order-fieldset`);
   }
 
   // On order item detail page, will purchase
   // the order item with Print.com
-  let loading = false;
   async function purchaseOrderItem(e) {
     e.preventDefault();
-    if (loading) return;
-    loading = true;
-    $(e.currentTarget).addClass('button-disabled');
-    $('#js-pdc-action-spinner').addClass('is-active');
-    $('#js-pdc-request-response').text('');
-    const orderItemId = e.target.getAttribute('data-order-item-id');
+
     try {
-      const response = await fetch(`${PDC_POD_ADMIN.root}pdc/v1/orders/${encodeURIComponent(orderItemId)}/purchase`, {
+      $(e.currentTarget).prop('disabled', true);
+      $('#js-pdc-purchase-error').prop('hidden', true);
+      const orderItemId = e.target.getAttribute('data-order-item-id');
+      const response = await fetch(`${PDC_POD_ADMIN.root}pdc/v1/order-items/${encodeURIComponent(orderItemId)}/purchase`, {
         method: 'POST',
         headers: {
           'X-WP-Nonce': PDC_POD_ADMIN.nonce,
@@ -122,14 +112,18 @@
         const message = payload?.message || payload?.data?.message || 'Failed to place order.';
         throw new Error(message);
       }
-      await refreshOrderItem(orderItemId);
+      refreshOrder();
     } catch (err) {
-      $('#js-pdc-request-response').text(err.message || 'Failed to place order.');
+      showError('Failed to place order', err.message);
     } finally {
-      loading = false;
-      $(e.currentTarget).removeClass('button-disabled');
-      $('#js-pdc-action-spinner').removeClass('is-active');
+      $(e.currentTarget).prop('disabled', false);
     }
+  }
+
+  function showError(title, descr) {
+    $('#js-pdc-purchase-error').css('visibility', 'visible');
+    $('#js-pdc-purchase-error-title').text(title);
+    $('#js-pdc-purchase-error-descr').text(descr);
   }
 
   async function downloadLogs(e) {
@@ -247,12 +241,36 @@
     selectInput.value = targetValue.trim();
   }
 
+  async function purchaseAll(e) {
+    e.preventDefault();
+    try {
+      $('#js-pdc-order-fieldset').prop('disabled', true);
+      const orderID = e.currentTarget.getAttribute('data-order-id');
+      const response = await fetch(`${PDC_POD_ADMIN.root}pdc/v1/orders/${encodeURIComponent(orderID)}/purchase`, {
+        method: 'POST',
+        headers: {
+          'X-WP-Nonce': PDC_POD_ADMIN.nonce,
+        },
+      });
+      if (!response.ok) {
+        const responseText = await response.text();
+        throw new Error(responseText);
+      }
+      refreshOrder();
+    } catch ( err )  {
+      showError('Failed to purchase all order items', err.message);
+    } finally {
+      $('#js-pdc-order-fieldset').prop('disabled', false);
+    }
+  }
+
   $(document).ready(function () {
     $('#js-pdc-product-selector').on('change', (e) => loadPresetsForSKU(e.target));
     $('#pdc-product-file-upload').on('click', openMediaDialogFromOrder);
     $('.pdc-pod-js-upload-custom-file-btn').on('click', openMediaDialogFromProduct);
     $(document).on('click', '.js-pdc-file-upload', orderItemAttachPdf);
     $(document).on('click', '.js-pdc-purchase-orderitem', purchaseOrderItem);
+    $(document).on('click', '#js-pdc-purchase-all', purchaseAll);
     $(`#js-${PLUGIN_NAME}-verify_key`).click(checkCredentials);
     $(`#js-${PLUGIN_NAME}-download-logs`).on('click', downloadLogs);
     observeFormChanges(`#js-${PLUGIN_NAME}-general-form`);

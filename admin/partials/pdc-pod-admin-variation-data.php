@@ -81,6 +81,7 @@ wp_nonce_field(
 				<input type="text" class="input_text" id="<?php echo esc_attr( $pdc_pod_file_field_id ); ?>" placeholder="<?php esc_attr_e( 'http://', 'pdc-pod' ); ?>" name="<?php echo esc_attr( $pdc_pod_meta_key_pdf_url ); ?>[<?php echo esc_attr( $pdc_pod_index ); ?>]" value="<?php echo esc_attr( $pdc_pod_pdf_url ); ?>" />
 				<a
 					href="#"
+					data-testid="<?php echo esc_attr( 'variation_file_' . $pdc_pod_variation_id ); ?>"
 					data-pdc-variation-file-field="<?php echo esc_attr( $pdc_pod_file_field_id ); ?>"
 					data-choose="<?php esc_attr_e( 'Choose file', 'pdc-pod' ); ?>"
 					data-update="<?php esc_attr_e( 'Insert file URL', 'pdc-pod' ); ?>"
