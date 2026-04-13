@@ -245,7 +245,7 @@
     e.preventDefault();
     try {
       $('#js-pdc-order-fieldset').prop('disabled', true);
-      const orderID = e.target.getAttribute('data-order-id');
+      const orderID = e.currentTarget.getAttribute('data-order-id');
       const response = await fetch(`${PDC_POD_ADMIN.root}pdc/v1/orders/${encodeURIComponent(orderID)}/purchase`, {
         method: 'POST',
         headers: {
