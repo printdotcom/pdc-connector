@@ -4,10 +4,11 @@ import { configureSimpleProduct, addToCart, placeOrder, setSettings, configureVa
 test.describe('Order', () => {
   test.afterEach(async ({ page }) => {
     await page.goto('/wp-admin/edit.php?post_type=shop_order');
+    const actions = page.locator('#bulk-action-selector-top');
     const selectAll = await page.locator('#cb-select-all-1');
-    if (await selectAll.isVisible()) {
+    if (await actions.isVisible() && await selectAll.isVisible()) {
       await selectAll.check();
-      await page.locator('#bulk-action-selector-top').selectOption('trash');
+      await actions.selectOption('trash');
       await page.locator('#doaction').click();
     }
   });
