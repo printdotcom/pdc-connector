@@ -89,16 +89,14 @@
   }
 
   function refreshOrder() {
-    $("#js-pdc-order-metabox").load(`${document.URL} #js-pdc-order-fieldset`);
+    $('#js-pdc-order-metabox').load(`${document.URL} #js-pdc-order-fieldset`);
   }
 
-  // On order item detail page, will purchase
-  // the order item with Print.com
   async function purchaseOrderItem(e) {
     e.preventDefault();
 
     try {
-      $(e.currentTarget).prop('disabled', true);
+      $('#js-pdc-order-fieldset').prop('disabled', true);
       $('#js-pdc-purchase-error').prop('hidden', true);
       const orderItemId = e.target.getAttribute('data-order-item-id');
       const response = await fetch(`${PDC_POD_ADMIN.root}pdc/v1/order-items/${encodeURIComponent(orderItemId)}/purchase`, {
@@ -117,6 +115,31 @@
       showError('Failed to place order', err.message);
     } finally {
       $(e.currentTarget).prop('disabled', false);
+    }
+  }
+
+  async function purchaseAll(e) {
+    e.preventDefault();
+
+    try {
+      $('#js-pdc-order-fieldset').prop('disabled', true);
+      $('#js-pdc-purchase-error').prop('hidden', true);
+      const orderID = e.currentTarget.getAttribute('data-order-id');
+      const response = await fetch(`${PDC_POD_ADMIN.root}pdc/v1/orders/${encodeURIComponent(orderID)}/purchase`, {
+        method: 'POST',
+        headers: {
+          'X-WP-Nonce': PDC_POD_ADMIN.nonce,
+        },
+      });
+      if (!response.ok) {
+        const responseText = await response.text();
+        throw new Error(responseText);
+      }
+      refreshOrder();
+    } catch (err) {
+      showError('Failed to purchase all order items', err.message);
+    } finally {
+      $('#js-pdc-order-fieldset').prop('disabled', false);
     }
   }
 
@@ -239,29 +262,6 @@
     const targetValue = selectInput.getAttribute('data-current-value') || selectInput.value;
     selectInput.innerHTML = presetOptions;
     selectInput.value = targetValue.trim();
-  }
-
-  async function purchaseAll(e) {
-    e.preventDefault();
-    try {
-      $('#js-pdc-order-fieldset').prop('disabled', true);
-      const orderID = e.currentTarget.getAttribute('data-order-id');
-      const response = await fetch(`${PDC_POD_ADMIN.root}pdc/v1/orders/${encodeURIComponent(orderID)}/purchase`, {
-        method: 'POST',
-        headers: {
-          'X-WP-Nonce': PDC_POD_ADMIN.nonce,
-        },
-      });
-      if (!response.ok) {
-        const responseText = await response.text();
-        throw new Error(responseText);
-      }
-      refreshOrder();
-    } catch ( err )  {
-      showError('Failed to purchase all order items', err.message);
-    } finally {
-      $('#js-pdc-order-fieldset').prop('disabled', false);
-    }
   }
 
   $(document).ready(function () {

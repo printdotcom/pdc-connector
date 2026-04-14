@@ -109,9 +109,10 @@ test.describe('Order', () => {
 
     await expect(page.getByTestId('pdc-pod-purchase-all')).toBeEnabled();
 
-    const responsePromise = page.waitForResponse('**/purchase');
-    await page.getByTestId('pdc-pod-purchase-all').click();
-    await responsePromise;
+    await Promise.all([
+      page.waitForResponse('**/purchase'),
+      page.getByTestId('pdc-pod-purchase-all').click(),
+    ]);
 
     await expect(page.getByTestId('pdc-ordered-copies-1')).toHaveText('Copies 1');
     await expect(page.getByTestId('pdc-ordered-copies-2')).toHaveText('Copies 1');
