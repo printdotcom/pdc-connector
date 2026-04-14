@@ -351,9 +351,9 @@ class AdminCore {
 			$pdc_pod_presets_for_sku = $this->pdc_client->get_presets( $pdc_pod_sku );
 		}
 
-		$pdc_products = array();
+		$pdc_products    = array();
 		$search_response = $this->pdc_client->search_products();
-		if ( ! is_wp_error($search_response)) {
+		if ( ! is_wp_error( $search_response ) ) {
 			$pdc_products = $search_response;
 		}
 
@@ -704,12 +704,12 @@ class AdminCore {
 	 * Sets an order item to 'production' when the webhook event is received.
 	 *
 	 * @since 1.0.0
-	 * @param object $payload	The body of the webhook
+	 * @param object $payload   The body of the webhook
 	 * @return void
 	 */
 	private function on_webhook_in_production( $payload ) {
-		if (! isset( $payload->order_item_number ) ) {
-			Logger::log('expected order item number in webhook payload', 'error', array( 'payload' => $payload ));
+		if ( ! isset( $payload->order_item_number ) ) {
+			Logger::log( 'expected order item number in webhook payload', 'error', array( 'payload' => $payload ) );
 			return;
 		}
 

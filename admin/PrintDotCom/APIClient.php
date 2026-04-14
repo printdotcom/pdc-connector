@@ -54,7 +54,7 @@ class APIClient {
 			$env                        = get_option( PDC_POD_NAME . '-env' );
 			$this->pdc_pod_api_base_url = ( 'prod' === $env ) ? 'https://api.print.com' : 'https://api.stg.print.com';
 		}
-		
+
 		if ( getenv( 'PDC_POD_API_KEY' ) ) {
 			$this->pdc_pod_api_key = getenv( 'PDC_POD_API_KEY' );
 		} else {
@@ -151,11 +151,15 @@ class APIClient {
 			$args['body']                    = function_exists( 'wp_json_encode' ) ? wp_json_encode( $data ) : json_encode( $data ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
 		}
 
-		Logger::log('Print.com API request', 'debug', array(
-			'method' => $method,
-			'url'    => $url,
-			'body'   => isset( $args['body'] ) ? $args['body'] : null,
-		));
+		Logger::log(
+			'Print.com API request',
+			'debug',
+			array(
+				'method' => $method,
+				'url'    => $url,
+				'body'   => isset( $args['body'] ) ? $args['body'] : null,
+			)
+		);
 
 		$response = wp_remote_request( $url, array_merge( $args, array( 'method' => $method ) ) );
 		if ( is_wp_error( $response ) ) {
@@ -355,14 +359,15 @@ class APIClient {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param \WC_Order_Item_Product $order_item       The WooCommerce order item.
+	 * @param \WC_Order              $order              The WooCommerce order.
+	 * @param \WC_Order_Item_Product $order_item         The WooCommerce order item.
 	 * @param string                 $pdc_pod_preset_id  The Print.com preset ID.
 	 * @param string                 $pdc_pod_pdf_url    The PDF URL for the print item.
 	 * @param array                  $shipping_address   The WooCommerce shipping address array.
 	 * @param array                  $purchase_args      Configuration arguments (e.g., use_preset_copies).
 	 * @return array|\WP_Error Prepared item array or WP_Error on failure.
 	 */
-	private function prepare_order_item( $order_item, $pdc_pod_preset_id, $pdc_pod_pdf_url, $shipping_address, $purchase_args ) {
+	private function prepare_order_item( $order, $order_item, $pdc_pod_preset_id, $pdc_pod_pdf_url, $shipping_address, $purchase_args ) {
 		$preset = $this->get_preset_by_id( $pdc_pod_preset_id );
 		if ( is_wp_error( $preset ) ) {
 			return $preset;
@@ -381,6 +386,7 @@ class APIClient {
 			'shipments'         => array(
 				array(
 					'address' => array(
+						'email'       => $order->get_billing_email(),
 						'city'        => $shipping_address['city'],
 						'country'     => $shipping_address['country'],
 						'firstName'   => $shipping_address['first_name'],
@@ -434,7 +440,7 @@ class APIClient {
 
 		$webhook_url = add_query_arg(
 			array(
-				'order_id'      => $order_id,
+				'order_id' => $order_id,
 			),
 			rest_url( 'pdc/v1/orders/webhook' )
 		);
@@ -443,6 +449,7 @@ class APIClient {
 
 		foreach ( $items as $item ) {
 			$prepare_result = $this->prepare_order_item(
+				$order,
 				$item['order_item'],
 				$item['pdc_pod_preset_id'],
 				$item['pdc_pod_pdf_url'],
