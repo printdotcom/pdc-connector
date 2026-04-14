@@ -91,6 +91,8 @@ test.describe('Order', () => {
       ],
     });
 
+    await page.reload();
+
     await addToCart(page, {
       slug: 'custom-flyers',
     });
