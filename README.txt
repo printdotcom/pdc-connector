@@ -4,7 +4,7 @@ Donate link: https://print.com
 Tags: woocommerce
 Requires at least: 3.4
 Tested up to: 6.9
-Stable tag: 1.2.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,11 @@ Unfortunately we cannot store prices as they change every week. This might be a 
 We have a more information in our knowledge base at https://knowledge.print.com/nl/helpcenter/solutions#print-on-demand-plugin-woocommerce.
 
 == Changelog ==
+
+= 1.4.0 =
+
+* added ability to purchase all items in a single order
+* added the customers' email address to the shipping address
 
 = 1.3.0 =
 
