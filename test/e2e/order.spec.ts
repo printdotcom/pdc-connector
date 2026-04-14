@@ -90,7 +90,7 @@ test.describe('Order', () => {
         },
       ],
     });
-
+    page.waitForLoadState('networkidle');
     await addToCart(page, {
       slug: 'custom-flyers',
     });
@@ -109,10 +109,9 @@ test.describe('Order', () => {
 
     await expect(page.getByTestId('pdc-pod-purchase-all')).toBeEnabled();
 
-    await Promise.all([
-      page.waitForResponse('**/purchase'),
-      page.getByTestId('pdc-pod-purchase-all').click(),
-    ]);
+    const responsePromise = page.waitForResponse('**/purchase');
+    await page.getByTestId('pdc-pod-purchase-all').click();
+    await responsePromise;
 
     await expect(page.getByTestId('pdc-ordered-copies-1')).toHaveText('Copies 1');
     await expect(page.getByTestId('pdc-ordered-copies-2')).toHaveText('Copies 1');
