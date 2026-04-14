@@ -6,7 +6,7 @@ interface AddToCartParam {
   options?: { [key: string]: string };
 }
 export async function addToCart(page, params: AddToCartParam) {
-  await page.goto(`/?product=${params.slug}`);
+  await page.goto(`/?product=${encodeURIComponent(params.slug)}`);
   if (params.options) {
     for (const [key, value] of Object.entries(params.options)) {
       await page.locator(`#${key}`).selectOption(value);
@@ -50,7 +50,8 @@ export async function setSettings(page, settings: Settings) {
 }
 
 export async function configureSimpleProduct(page, productID: string) {
-  await page.goto(`/wp-admin/post.php?post=${productID}&action=edit`);
+  const productURL = `/wp-admin/post.php?post=${productID}&action=edit`;
+  await page.goto(productURL);
   await page.getByRole('link', { name: 'Print.com' }).click();
 
   // select product
@@ -74,6 +75,7 @@ export async function configureSimpleProduct(page, productID: string) {
   await page.getByRole('button', { name: 'Select File', exact: true }).click();
 
   await page.getByRole('button', { name: 'Update' }).click();
+  await page.waitForURL(productURL);
 }
 
 interface ConfigureVariableProductParams {
@@ -85,7 +87,8 @@ interface ConfigureVariableProductParams {
   }[];
 }
 export async function configureVariableProduct(page, params: ConfigureVariableProductParams) {
-  await page.goto(`/wp-admin/post.php?post=${params.productID}&action=edit`);
+  const productURL = `/wp-admin/post.php?post=${params.productID}&action=edit`;
+  await page.goto(productURL);
   await page.getByRole('link', { name: 'Variations' }).click();
   await page.waitForResponse('**/admin-ajax.php');
 
@@ -109,4 +112,5 @@ export async function configureVariableProduct(page, params: ConfigureVariablePr
   }
 
   await page.getByRole('button', { name: 'Update' }).click();
+  await page.waitForURL(productURL);
 }

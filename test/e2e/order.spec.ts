@@ -6,7 +6,7 @@ test.describe('Order', () => {
     await page.goto('/wp-admin/edit.php?post_type=shop_order');
     const actions = page.locator('#bulk-action-selector-top');
     const selectAll = await page.locator('#cb-select-all-1');
-    if (await actions.isVisible() && await selectAll.isVisible()) {
+    if ((await actions.isVisible()) && (await selectAll.isVisible())) {
       await selectAll.check();
       await actions.selectOption('trash');
       await page.locator('#doaction').click();
@@ -90,7 +90,7 @@ test.describe('Order', () => {
         },
       ],
     });
-    page.waitForLoadState('networkidle');
+
     await addToCart(page, {
       slug: 'custom-flyers',
     });
@@ -108,7 +108,6 @@ test.describe('Order', () => {
     await page.locator('table.wp-list-table tbody tr:first-child a.order-view').click();
 
     await expect(page.getByTestId('pdc-pod-purchase-all')).toBeEnabled();
-
     const responsePromise = page.waitForResponse('**/purchase');
     await page.getByTestId('pdc-pod-purchase-all').click();
     await responsePromise;
