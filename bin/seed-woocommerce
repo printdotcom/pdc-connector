@@ -129,7 +129,9 @@ INSERT INTO wp_options (option_name, option_value, autoload) VALUES
 ('woocommerce_enable_signup_and_login_from_checkout', 'yes', 'yes'),
 ('woocommerce_enable_myaccount_registration', 'yes', 'yes'),
 ('woocommerce_registration_generate_username', 'yes', 'yes'),
-('woocommerce_registration_generate_password', 'yes', 'yes')
+('woocommerce_registration_generate_password', 'yes', 'yes'),
+('woocommerce_feature_site_visibility_badge_enabled', 'no', 'on')
+('woocommerce_coming_soon', 'no', 'auto')
 ON DUPLICATE KEY UPDATE option_value = VALUES(option_value);"
 
 # Create WooCommerce pages
