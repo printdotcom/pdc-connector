@@ -120,7 +120,7 @@ class Logger {
 	 */
 	private function get_system_info() {
 		global $wp_version;
-		$theme = wp_get_theme();
+		$theme     = wp_get_theme();
 		$apiclient = new APIClient();
 
 		$info  = "=== System Information ===\n";

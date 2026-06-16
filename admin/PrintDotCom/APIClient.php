@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Print.com API client (admin)
  *
@@ -11,7 +12,6 @@
 
 namespace PdcPod\Admin\PrintDotCom;
 
-use PdcPod\Includes\Core;
 use PdcPod\Includes\Logger;
 
 /**
@@ -24,6 +24,7 @@ use PdcPod\Includes\Logger;
  * @subpackage Pdc_Pod/admin
  */
 class APIClient {
+
 
 
 	/**
@@ -303,6 +304,7 @@ class APIClient {
 	 * by removing unnecessary API-specific fields like accessories and delivery promises.
 	 *
 	 * @since 1.0.0
+	 *
 	 * @param string $pdc_pod_preset_id The unique identifier for the Print.com preset.
 	 * @return array|\WP_Error Array containing 'sku' and 'options' on success, WP_Error on failure.
 	 */
@@ -339,16 +341,78 @@ class APIClient {
 				)
 			);
 		}
-		$preset        = json_decode( $result );
-		$preset_config = $preset->configuration;
-		unset( $preset_config->_accessories );
+		$preset_decoded = json_decode( $result );
+		$preset_config  = $preset_decoded->configuration;
 		unset( $preset_config->variants );
 		unset( $preset_config->deliveryPromise ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 
-		return array(
-			'sku'     => $preset->sku,
+		$preset = array(
+			'sku'     => $preset_decoded->sku,
 			'options' => $preset_config,
 		);
+
+		$accessories = array();
+		if ( isset( $preset_config->_accessories ) && ! empty( $preset_config->_accessories ) ) {
+			// loop for accessories and fetch accessory for each key
+			foreach ( $preset_config->_accessories as $accessory_id => $quantity ) {
+				$retrieved_accessory = $this->get_accessory_by_id( $preset_decoded->sku, $accessory_id, $quantity );
+				if ( $retrieved_accessory ) {
+					$accessories[] = $retrieved_accessory;
+				}
+			}
+		}
+
+		if ( ! empty( $accessories ) ) {
+			$preset['accessories'] = $accessories;
+		}
+
+		return $preset;
+	}
+
+	/**
+	 * Retrieves an accessory by its ID for a specific product SKU.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param string $sku          The product SKU.
+	 * @param string $accessory_id The accessory ID to find.
+	 * @param int    $quantity     The quantity of the accessory.
+	 * @return object|null The accessory object, or null if not found.
+	 */
+	private function get_accessory_by_id( $sku, $accessory_id, $quantity ) {
+		$sku_accessories = $this->get_product_accessories( $sku );
+		if ( is_wp_error( $sku_accessories ) || ! is_array( $sku_accessories ) ) {
+			return null;
+		}
+
+		$accessory = null;
+		foreach ( $sku_accessories as $sku_accessory ) {
+			if ( $sku_accessory->id === $accessory_id ) {
+				$accessory         = $sku_accessory;
+				$accessory->copies = $quantity;
+				break;
+			}
+		}
+
+		return $accessory;
+	}
+
+	private function get_product_accessories( $sku ) {
+		$result = $this->perform_authenticated_request( 'GET', '/accessories/' . rawurlencode( $sku ), null );
+		if ( is_wp_error( $result ) ) {
+			Logger::log(
+				'failed to get accessories for product.',
+				'error',
+				array(
+					'sku'         => $sku,
+					'environment' => $this->pdc_pod_api_base_url,
+				)
+			);
+			return new \WP_Error( 500, $result->get_error_message() );
+		}
+
+		$product_accessories = json_decode( $result );
+		return $product_accessories;
 	}
 
 	/**
@@ -377,29 +441,50 @@ class APIClient {
 			$preset['options']->copies = $order_item->get_quantity();
 		}
 
-		return array(
+		$order_item_shipment = array(
+			array(
+				'address' => array(
+					'email'       => $order->get_billing_email(),
+					'city'        => $shipping_address['city'],
+					'country'     => $shipping_address['country'],
+					'firstName'   => $shipping_address['first_name'],
+					'lastName'    => $shipping_address['last_name'],
+					'companyName' => $shipping_address['company'],
+					'postcode'    => $shipping_address['postcode'],
+					'fullstreet'  => $shipping_address['address_1'],
+					'telephone'   => $shipping_address['phone'],
+				),
+				'copies'  => $preset['options']->copies,
+			),
+		);
+		$order_item          = array(
 			'sku'               => $preset['sku'],
 			'fileUrl'           => $pdc_pod_pdf_url,
 			'options'           => $preset['options'],
 			'approveDesign'     => true,
 			'customerReference' => $order_item->get_id(),
-			'shipments'         => array(
-				array(
-					'address' => array(
-						'email'       => $order->get_billing_email(),
-						'city'        => $shipping_address['city'],
-						'country'     => $shipping_address['country'],
-						'firstName'   => $shipping_address['first_name'],
-						'lastName'    => $shipping_address['last_name'],
-						'companyName' => $shipping_address['company'],
-						'postcode'    => $shipping_address['postcode'],
-						'fullstreet'  => $shipping_address['address_1'],
-						'telephone'   => $shipping_address['phone'],
-					),
-					'copies'  => $preset['options']->copies,
-				),
-			),
+			'shipments'         => $order_item_shipment,
 		);
+
+		if ( isset( $preset['accessories'] ) && is_array( $preset['accessories'] ) ) {
+			$order_item['accessories'] = array();
+			foreach ( $preset['accessories'] as $accessory ) {
+				$preset_accessory                    = array(
+					'sku'         => $accessory->sku,
+					'options'     => $accessory->configuration,
+					'accessoryId' => $accessory->id,
+					'shipments'   => array(),
+				);
+				$preset_accessory['shipments'][]     = array(
+					'address' => $order_item_shipment[0]['address'],
+					'copies'  => $accessory->copies,
+				);
+				$preset_accessory['options']->copies = $accessory->copies;
+				$order_item['accessories'][]         = $preset_accessory;
+			}
+		}
+
+		return $order_item;
 	}
 
 	/**
