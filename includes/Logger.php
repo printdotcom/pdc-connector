@@ -12,8 +12,6 @@
 
 namespace PdcPod\Includes;
 
-use PdcPod\Admin\PrintDotCom\APIClient;
-
 class Logger {
 
 
@@ -114,6 +112,22 @@ class Logger {
 	}
 
 	/**
+	 * Resolves the active Print.com API base URL from the environment or plugin settings.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @return string The API base URL.
+	 */
+	private static function get_environment() {
+		if ( getenv( 'PDC_POD_API_BASE_URL' ) ) {
+			return getenv( 'PDC_POD_API_BASE_URL' );
+		} else {
+			$env                        = get_option( PDC_POD_NAME . '-env' );
+			return ( 'prod' === $env ) ? 'https://api.print.com' : 'https://api.stg.print.com';
+		}
+	}
+
+	/**
 	 * Gathers system information for debugging
 	 *
 	 * @return string
@@ -121,13 +135,12 @@ class Logger {
 	private function get_system_info() {
 		global $wp_version;
 		$theme     = wp_get_theme();
-		$apiclient = new APIClient();
 
 		$info  = "=== System Information ===\n";
 		$info .= 'WordPress Version: ' . $wp_version . "\n";
 		$info .= 'PHP Version: ' . phpversion() . "\n";
 		$info .= 'Plugin Version: ' . PDC_POD_VERSION . "\n";
-		$info .= 'Print.com Environment: ' . $apiclient->get_api_base_url() . "\n";
+		$info .= 'Print.com Environment: ' . Logger::get_environment() . "\n";
 		$info .= 'Server Software: ' . $_SERVER['SERVER_SOFTWARE'] . "\n";
 		$info .= 'Active Theme: ' . $theme->get( 'Name' ) . ' (' . $theme->get( 'Version' ) . ")\n";
 		$info .= 'Multisite: ' . ( is_multisite() ? 'Yes' : 'No' ) . "\n";
