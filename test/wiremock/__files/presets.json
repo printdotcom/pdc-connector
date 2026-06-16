@@ -8,6 +8,13 @@
       "id": "flyers_a5"
     },
     {
+      "sku": "flyers",
+      "title": {
+        "en": "A5 Flyers with Envelopes"
+      },
+      "id": "flyers_a5_with_accessories"
+    },
+    {
       "sku": "posters",
       "title": {
         "en": "A2 Posters"
