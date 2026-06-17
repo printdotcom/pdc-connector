@@ -39,13 +39,14 @@ export async function setSettings(page, settings: Settings) {
   await page.goto('/wp-admin/admin.php?page=pdc-pod');
   await page.getByTestId('pdc-pod-apikey').fill(settings.apikey);
   await page.getByTestId('pdc-pod-environment').selectOption('stg');
+  await page.getByRole('button', { name: 'Save Settings' }).click();
 
+  await page.goto('/wp-admin/admin.php?page=pdc-pod&tab=product');
   if (settings.usePresetCopies) {
     await page.getByTestId('pdc-pod-use_preset_copies').check();
   } else {
     await page.getByTestId('pdc-pod-use_preset_copies').uncheck();
   }
-
   await page.getByRole('button', { name: 'Save Settings' }).click();
 }
 
