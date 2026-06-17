@@ -204,7 +204,7 @@ class Test_APIClient extends TestCase {
 		$this->assertEquals( 'envelope', $resolved->sku );
 		$this->assertEquals( 2, $resolved->copies );
 
-		$this->assertFalse( property_exists( $result->configuration, '_accessories' ) );
+		$this->assertArrayNotHasKey( '_accessories', $result->configuration );
 
 		putenv( 'PDC_POD_API_BASE_URL' );
 		putenv( 'PDC_POD_API_KEY' );
