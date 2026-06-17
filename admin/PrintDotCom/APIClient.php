@@ -397,12 +397,22 @@ class APIClient {
 	/**
 	 * Retrieves all available accessories for a product SKU.
 	 *
+	 * Results are cached as a transient for one hour to avoid redundant API
+	 * calls when multiple accessories on the same preset are resolved.
+	 *
 	 * @since 1.4.0
+	 * @since 1.4.1 Results are cached using a transient to prevent N+1 API calls.
 	 *
 	 * @param string $sku The product SKU.
 	 * @return array|\WP_Error List of accessory objects on success, WP_Error on failure.
 	 */
 	private function get_product_accessories( $sku ) {
+		$transient_key = PDC_POD_NAME . '-accessories-' . $sku;
+		$cached        = get_transient( $transient_key );
+		if ( $cached ) {
+			return json_decode( $cached );
+		}
+
 		$result = $this->perform_authenticated_request( 'GET', '/accessories/' . rawurlencode( $sku ) );
 		if ( is_wp_error( $result ) ) {
 			Logger::log(
@@ -416,6 +426,7 @@ class APIClient {
 			return new \WP_Error( 500, $result->get_error_message() );
 		}
 
+		set_transient( $transient_key, $result, 60 * 60 ); // 1 hour
 		$product_accessories = json_decode( $result );
 		return $product_accessories;
 	}

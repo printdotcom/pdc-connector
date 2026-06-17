@@ -188,6 +188,8 @@ class Test_APIClient extends TestCase {
 			'wp_remote_retrieve_body',
 			[ 'return_in_order' => [ $preset_body, $accessories_body ] ]
 		);
+		WP_Mock::userFunction( 'get_transient', [ 'return' => false ] );
+		WP_Mock::userFunction( 'set_transient', [ 'times' => 1 ] );
 
 		$client     = new APIClient();
 		$reflection = new \ReflectionMethod( APIClient::class, 'get_preset_by_id' );
@@ -237,6 +239,8 @@ class Test_APIClient extends TestCase {
 			'wp_remote_retrieve_body',
 			[ 'return_in_order' => [ $preset_body, $accessories_body ] ]
 		);
+		WP_Mock::userFunction( 'get_transient', [ 'return' => false ] );
+		WP_Mock::userFunction( 'set_transient', [ 'times' => 1 ] );
 
 		$client     = new APIClient();
 		$reflection = new \ReflectionMethod( APIClient::class, 'get_preset_by_id' );
@@ -269,6 +273,8 @@ class Test_APIClient extends TestCase {
 			'wp_remote_retrieve_body',
 			[ 'return_in_order' => [ $preset_body, $accessories_body ] ]
 		);
+		WP_Mock::userFunction( 'get_transient', [ 'return' => false ] );
+		WP_Mock::userFunction( 'set_transient', [ 'times' => 1 ] );
 
 		$order = \Mockery::mock( 'WC_Order' );
 		$order->shouldReceive( 'get_billing_email' )->andReturn( 'buyer@example.com' );
@@ -312,6 +318,47 @@ class Test_APIClient extends TestCase {
 		$this->assertEquals( 2, $accessory['shipments'][0]['copies'] );
 		$this->assertEquals( 'buyer@example.com', $accessory['shipments'][0]['address']['email'] );
 		$this->assertEquals( 'Amsterdam', $accessory['shipments'][0]['address']['city'] );
+
+		putenv( 'PDC_POD_API_BASE_URL' );
+		putenv( 'PDC_POD_API_KEY' );
+	}
+
+	/**
+	 * Tests that get_preset_by_id calls the accessories endpoint only once
+	 * even when the preset references multiple accessories (N+1 prevention).
+	 *
+	 * @since 1.4.1
+	 */
+	public function test_get_preset_by_id_calls_accessories_api_only_once_for_multiple_accessories() {
+		putenv( 'PDC_POD_API_BASE_URL=https://testapi.print.com' );
+		putenv( 'PDC_POD_API_KEY=fake-key' );
+
+		$preset_body      = '{"id":"preset-id-123","sku":"poster-a4","title":{"en":"A4 Poster"},"configuration":{"copies":1,"_accessories":{"acc-001":2,"acc-002":1}}}';
+		$accessories_body = '[{"id":"acc-001","sku":"envelope","configuration":{"size":"A4"}},{"id":"acc-002","sku":"tube","configuration":{"size":"A4"}}]';
+
+		// Exactly 2 HTTP calls expected: one for the preset, one for the accessories list.
+		WP_Mock::userFunction( 'wp_remote_request', [ 'times' => 2, 'return' => [] ] );
+		WP_Mock::userFunction( 'is_wp_error', [ 'return' => false ] );
+		WP_Mock::userFunction( 'wp_remote_retrieve_response_code', [ 'return' => 200 ] );
+		WP_Mock::userFunction(
+			'wp_remote_retrieve_body',
+			[ 'return_in_order' => [ $preset_body, $accessories_body ] ]
+		);
+		// First accessory lookup: cache miss; second: cache hit (no further HTTP call).
+		WP_Mock::userFunction(
+			'get_transient',
+			[ 'return_in_order' => [ false, $accessories_body ] ]
+		);
+		WP_Mock::userFunction( 'set_transient', [ 'times' => 1 ] );
+
+		$client     = new APIClient();
+		$reflection = new \ReflectionMethod( APIClient::class, 'get_preset_by_id' );
+		$result     = $reflection->invoke( $client, 'preset-id-123' );
+
+		$this->assertInstanceOf( Preset::class, $result );
+		$this->assertCount( 2, $result->accessories );
+		$this->assertEquals( 'acc-001', $result->accessories[0]->accessory_id );
+		$this->assertEquals( 'acc-002', $result->accessories[1]->accessory_id );
 
 		putenv( 'PDC_POD_API_BASE_URL' );
 		putenv( 'PDC_POD_API_KEY' );
