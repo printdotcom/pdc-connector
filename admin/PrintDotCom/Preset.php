@@ -78,23 +78,22 @@ class Preset {
 	 * @param object $raw_preset   The preset retrieved from the API
 	 */
 	public function __construct( $raw_preset ) {
-		$this->id = $raw_preset->id;
-		$this->sku = $raw_preset->sku;
+		$this->id    = $raw_preset->id;
+		$this->sku   = $raw_preset->sku;
 		$this->title = $raw_preset->title->en;
-		
+
 		$preset_configuration = $raw_preset->configuration;
 		unset( $preset_configuration->variants );
 		unset( $preset_configuration->deliveryPromise ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 
 		$this->accessory_ids = array();
-		$this->accessories = array();
+		$this->accessories   = array();
 		if ( isset( $preset_configuration->_accessories ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$this->accessory_ids = (array) $preset_configuration->_accessories; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			unset( $preset_configuration->_accessories ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		}
 
 		$this->configuration = $preset_configuration;
-
 	}
 
 	/**

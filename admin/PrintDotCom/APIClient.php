@@ -341,7 +341,7 @@ class APIClient {
 		}
 		$preset = json_decode( $result );
 
-		$pdc_preset = new Preset($preset);
+		$pdc_preset = new Preset( $preset );
 
 		$accessories = array();
 		foreach ( $pdc_preset->accessory_ids as $accessory_id => $quantity ) {
@@ -351,7 +351,7 @@ class APIClient {
 			}
 		}
 
-		$pdc_preset->set_accessories($accessories);
+		$pdc_preset->set_accessories( $accessories );
 
 		return $pdc_preset;
 	}
@@ -454,7 +454,7 @@ class APIClient {
 		}
 
 		if ( empty( $purchase_args['use_preset_copies'] ) ) {
-			$preset->set_copies($order_item->get_quantity());
+			$preset->set_copies( $order_item->get_quantity() );
 		}
 
 		$shipping_address_payload = array(
@@ -488,7 +488,7 @@ class APIClient {
 		if ( ! empty( $preset->accessories ) ) {
 			$prepared_item['accessories'] = array();
 			foreach ( $preset->accessories as $accessory ) {
-				$preset_accessory            = array(
+				$preset_accessory                    = array(
 					'sku'         => $accessory->sku,
 					'options'     => $accessory->configuration,
 					'accessoryId' => $accessory->accessory_id,

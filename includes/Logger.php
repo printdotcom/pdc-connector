@@ -122,7 +122,7 @@ class Logger {
 		if ( getenv( 'PDC_POD_API_BASE_URL' ) ) {
 			return getenv( 'PDC_POD_API_BASE_URL' );
 		} else {
-			$env                        = get_option( PDC_POD_NAME . '-env' );
+			$env = get_option( PDC_POD_NAME . '-env' );
 			return ( 'prod' === $env ) ? 'https://api.print.com' : 'https://api.stg.print.com';
 		}
 	}
@@ -134,7 +134,7 @@ class Logger {
 	 */
 	private function get_system_info() {
 		global $wp_version;
-		$theme     = wp_get_theme();
+		$theme = wp_get_theme();
 
 		$info  = "=== System Information ===\n";
 		$info .= 'WordPress Version: ' . $wp_version . "\n";
