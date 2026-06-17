@@ -80,13 +80,13 @@ class Preset {
 	public function __construct( $raw_preset ) {
 		$this->id            = $raw_preset->id;
 		$this->sku           = $raw_preset->sku;
-		$this->title	     = __( 'Untitled', 'pdc-pod' );
+		$this->title         = __( 'Untitled', 'pdc-pod' );
 		$this->configuration = array();
 		$this->accessory_ids = array();
 		$this->accessories   = array();
 
-		if (isset($raw_preset->title) && isset($raw_preset->title->en)) {
-			$this->title         = $raw_preset->title->en;
+		if ( isset( $raw_preset->title ) && isset( $raw_preset->title->en ) ) {
+			$this->title = $raw_preset->title->en;
 		}
 
 		if ( isset( $raw_preset->configuration ) ) {
