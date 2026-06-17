@@ -6,7 +6,7 @@
  *
  * @package Pdc_Pod
  * @subpackage Pdc_Pod/admin/PrintDotCom
- * @since 1.6.0
+ * @since 1.5.0
  */
 
 namespace PdcPod\Admin\PrintDotCom;
@@ -15,7 +15,7 @@ namespace PdcPod\Admin\PrintDotCom;
  * Class representing a Print.com Accessory.
  *
  * @link       https://print.com
- * @since      1.6.0
+ * @since      1.5.0
  *
  * @package    Pdc_Pod
  * @subpackage Pdc_Pod/admin
@@ -25,7 +25,7 @@ class Accessory {
 	/**
 	 * The accessory identifier.
 	 *
-	 * @since 1.6.0
+	 * @since 1.5.0
 	 * @var string
 	 */
 	public string $accessory_id;
@@ -33,7 +33,7 @@ class Accessory {
 	/**
 	 * The accessory SKU.
 	 *
-	 * @since 1.6.0
+	 * @since 1.5.0
 	 * @var string
 	 */
 	public string $sku;
@@ -41,7 +41,7 @@ class Accessory {
 	/**
 	 * The number of copies for this accessory.
 	 *
-	 * @since 1.6.0
+	 * @since 1.5.0
 	 * @var int
 	 */
 	public int $copies;
@@ -49,7 +49,7 @@ class Accessory {
 	/**
 	 * The accessory configuration.
 	 *
-	 * @since 1.6.0
+	 * @since 1.5.0
 	 * @var object
 	 */
 	public object $configuration;
@@ -57,7 +57,7 @@ class Accessory {
 	/**
 	 * Constructs a new Accessory instance.
 	 *
-	 * @since 1.6.0
+	 * @since 1.5.0
 	 *
 	 * @param string $accessory_id  The accessory identifier.
 	 * @param string $sku           The accessory SKU.

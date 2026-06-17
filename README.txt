@@ -40,6 +40,11 @@ We have a more information in our knowledge base at https://knowledge.print.com/
 
 == Changelog ==
 
+= 1.5.0 =
+
+* new settings UI
+* feat: preset accessories will purchased
+
 = 1.4.0 =
 
 * added ability to purchase all items in a single order

@@ -78,6 +78,10 @@ test.describe('Settings Page', () => {
   });
 
   test.describe('product settings', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto('/wp-admin/admin.php?page=pdc-pod&tab=product');
+    });
+
     test.afterEach(async ({ page }) => {
       await setSettings(page, {
         apikey: 'test_key_12345',
@@ -112,12 +116,10 @@ test.describe('Settings Page', () => {
     });
 
     test('checkbox state persists across page reloads', async ({ page }) => {
-      // Check the checkbox and save
       await page.getByTestId('pdc-pod-use_preset_copies').check();
       await page.getByRole('button', { name: 'Save Settings' }).click();
 
-      // Navigate away and back
-      await page.goto('/wp-admin/admin.php?page=pdc-pod');
+      await page.goto('/wp-admin/admin.php?page=pdc-pod&tab=product');
 
       await expect(page.getByTestId('pdc-pod-use_preset_copies')).toBeChecked();
     });
@@ -129,17 +131,19 @@ test.describe('Settings Page', () => {
         usePresetCopies: true,
       });
 
+      await page.goto('/wp-admin/admin.php?page=pdc-pod&tab=product');
       await page.getByTestId('pdc-pod-use_preset_copies').check();
-
       await page.getByRole('button', { name: 'Save Settings' }).click();
-
+      
+      await page.goto('/wp-admin/admin.php?page=pdc-pod');
       await expect(page.getByTestId('pdc-pod-apikey')).toHaveValue('combined_test_key');
       await expect(page.getByTestId('pdc-pod-environment')).toHaveValue('stg');
+      await page.goto('/wp-admin/admin.php?page=pdc-pod&tab=product');
       await expect(page.getByTestId('pdc-pod-use_preset_copies')).toBeChecked();
-
-      await page.reload();
-      await expect(page.getByTestId('pdc-pod-apikey')).toHaveValue('combined_test_key');
+      
+      await page.goto('/wp-admin/admin.php?page=pdc-pod');
       await expect(page.getByTestId('pdc-pod-environment')).toHaveValue('stg');
+      await page.goto('/wp-admin/admin.php?page=pdc-pod&tab=product');
       await expect(page.getByTestId('pdc-pod-use_preset_copies')).toBeChecked();
     });
   });

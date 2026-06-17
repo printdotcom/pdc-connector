@@ -57,7 +57,7 @@ class Preset {
 	/**
 	 * Accessory IDs mapped to their quantities.
 	 *
-	 * @since 1.6.0
+	 * @since 1.5.0
 	 * @var array<string, int>
 	 */
 	public array $accessory_ids;
@@ -65,7 +65,7 @@ class Preset {
 	/**
 	 * Resolved accessory objects for this preset.
 	 *
-	 * @since 1.6.0
+	 * @since 1.5.0
 	 * @var Accessory[]
 	 */
 	public array $accessories;
@@ -80,13 +80,13 @@ class Preset {
 	public function __construct( $raw_preset ) {
 		$this->id            = $raw_preset->id;
 		$this->sku           = $raw_preset->sku;
-		$this->title	     = __( 'Untitled', 'pdc-pod' );
+		$this->title         = __( 'Untitled', 'pdc-pod' );
 		$this->configuration = array();
 		$this->accessory_ids = array();
 		$this->accessories   = array();
 
-		if (isset($raw_preset->title) && isset($raw_preset->title->en)) {
-			$this->title         = $raw_preset->title->en;
+		if ( isset( $raw_preset->title ) && isset( $raw_preset->title->en ) ) {
+			$this->title = $raw_preset->title->en;
 		}
 
 		if ( isset( $raw_preset->configuration ) ) {
@@ -106,7 +106,7 @@ class Preset {
 	/**
 	 * Sets the resolved accessories for this preset.
 	 *
-	 * @since 1.6.0
+	 * @since 1.5.0
 	 *
 	 * @param Accessory[] $accessories The resolved accessories.
 	 */
@@ -117,7 +117,7 @@ class Preset {
 	/**
 	 * Overrides the copy count in the configuration.
 	 *
-	 * @since 1.6.0
+	 * @since 1.5.0
 	 *
 	 * @param int $copies The number of copies.
 	 */
