@@ -610,7 +610,7 @@ class AdminCore {
 	/**
 	 * REST callback to purchase all purchasable items in a WooCommerce order.
 	 *
-	 * @since 1.6.0
+	 * @since 1.5.0
 	 *
 	 * @param \WP_REST_Request $request The REST request.
 	 * @return \WP_REST_Response|\WP_Error REST response or error.
