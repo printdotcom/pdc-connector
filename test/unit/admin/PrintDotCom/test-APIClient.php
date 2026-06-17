@@ -13,6 +13,7 @@
 namespace PdcPod\Tests;
 
 use PdcPod\Admin\PrintDotCom\APIClient;
+use PdcPod\Admin\PrintDotCom\Preset;
 use WP_Mock;
 use WP_Mock\Tools\TestCase;
 
@@ -111,11 +112,11 @@ class Test_APIClient extends TestCase {
 
 		$body = json_encode( [
 			'items' => [
-				[ 'sku' => 'test-posters', 'title' => [ 'en' => 'Poster B1' ], 'id' => '1' ],
-				[ 'sku' => 'test-posters', 'title' => [ 'en' => 'Poster A2' ], 'id' => '2' ],
-				[ 'sku' => 'test-posters', 'title' => [ 'en' => 'Poster A10' ], 'id' => '3' ],
-				[ 'sku' => 'test-posters', 'title' => [ 'en' => 'Poster A1' ], 'id' => '4' ],
-				[ 'sku' => 'test-posters', 'title' => [ 'en' => 'Poster A0' ], 'id' => '5' ],
+				[ 'sku' => 'test-posters', 'title' => [ 'en' => 'Poster B1' ], 'id' => '1', 'configuration' => [ 'copies' => 1 ] ],
+				[ 'sku' => 'test-posters', 'title' => [ 'en' => 'Poster A2' ], 'id' => '2', 'configuration' => [ 'copies' => 1 ] ],
+				[ 'sku' => 'test-posters', 'title' => [ 'en' => 'Poster A10' ], 'id' => '3', 'configuration' => [ 'copies' => 1 ] ],
+				[ 'sku' => 'test-posters', 'title' => [ 'en' => 'Poster A1' ], 'id' => '4', 'configuration' => [ 'copies' => 1 ] ],
+				[ 'sku' => 'test-posters', 'title' => [ 'en' => 'Poster A0' ], 'id' => '5', 'configuration' => [ 'copies' => 1 ] ],
 			],
 		] );
 
@@ -147,7 +148,7 @@ class Test_APIClient extends TestCase {
 		putenv( 'PDC_POD_API_BASE_URL=https://testapi.print.com' );
 		putenv( 'PDC_POD_API_KEY=fake-key' );
 
-		$preset_body = '{"sku":"poster-a4","configuration":{"copies":1}}';
+		$preset_body = '{"id":"preset-id-123","sku":"poster-a4","title":{"en":"A4 Poster"},"configuration":{"copies":1}}';
 
 		WP_Mock::userFunction( 'wp_remote_request', [ 'return' => [] ] );
 		WP_Mock::userFunction( 'is_wp_error', [ 'return' => false ] );
@@ -158,11 +159,10 @@ class Test_APIClient extends TestCase {
 		$reflection = new \ReflectionMethod( APIClient::class, 'get_preset_by_id' );
 		$result     = $reflection->invoke( $client, 'preset-id-123' );
 
-		$this->assertIsArray( $result );
-		$this->assertArrayHasKey( 'sku', $result );
-		$this->assertArrayHasKey( 'options', $result );
-		$this->assertArrayNotHasKey( 'accessories', $result );
-		$this->assertEquals( 'poster-a4', $result['sku'] );
+		$this->assertInstanceOf( Preset::class, $result );
+		$this->assertEquals( 'poster-a4', $result->sku );
+		$this->assertNotEmpty( $result->configuration );
+		$this->assertEmpty( $result->accessories );
 
 		putenv( 'PDC_POD_API_BASE_URL' );
 		putenv( 'PDC_POD_API_KEY' );
@@ -178,7 +178,7 @@ class Test_APIClient extends TestCase {
 		putenv( 'PDC_POD_API_BASE_URL=https://testapi.print.com' );
 		putenv( 'PDC_POD_API_KEY=fake-key' );
 
-		$preset_body      = '{"sku":"poster-a4","configuration":{"copies":1,"_accessories":{"acc-001":2}}}';
+		$preset_body      = '{"id":"preset-id-123","sku":"poster-a4","title":{"en":"A4 Poster"},"configuration":{"copies":1,"_accessories":{"acc-001":2}}}';
 		$accessories_body = '[{"id":"acc-001","sku":"envelope","configuration":{"size":"A4"}}]';
 
 		WP_Mock::userFunction( 'wp_remote_request', [ 'return' => [] ] );
@@ -193,15 +193,16 @@ class Test_APIClient extends TestCase {
 		$reflection = new \ReflectionMethod( APIClient::class, 'get_preset_by_id' );
 		$result     = $reflection->invoke( $client, 'preset-id-123' );
 
-		$this->assertArrayHasKey( 'accessories', $result );
-		$this->assertCount( 1, $result['accessories'] );
+		$this->assertInstanceOf( Preset::class, $result );
+		$this->assertNotEmpty( $result->accessories );
+		$this->assertCount( 1, $result->accessories );
 
-		$resolved = $result['accessories'][0];
-		$this->assertEquals( 'acc-001', $resolved->id );
+		$resolved = $result->accessories[0];
+		$this->assertEquals( 'acc-001', $resolved->accessory_id );
 		$this->assertEquals( 'envelope', $resolved->sku );
 		$this->assertEquals( 2, $resolved->copies );
 
-		$this->assertFalse( property_exists( $result['options'], '_accessories' ) );
+		$this->assertFalse( property_exists( $result->configuration, '_accessories' ) );
 
 		putenv( 'PDC_POD_API_BASE_URL' );
 		putenv( 'PDC_POD_API_KEY' );
@@ -217,7 +218,7 @@ class Test_APIClient extends TestCase {
 		putenv( 'PDC_POD_API_BASE_URL=https://testapi.print.com' );
 		putenv( 'PDC_POD_API_KEY=fake-key' );
 
-		$preset_body      = '{"sku":"poster-a4","configuration":{"copies":1,"_accessories":{"missing-acc":1}}}';
+		$preset_body      = '{"id":"preset-id-123","sku":"poster-a4","title":{"en":"A4 Poster"},"configuration":{"copies":1,"_accessories":{"missing-acc":1}}}';
 		$accessories_body = '[{"id":"other-acc","sku":"tube","configuration":{}}]';
 
 		// Suppress error-level logging to avoid Logger singleton instantiation.
@@ -241,8 +242,8 @@ class Test_APIClient extends TestCase {
 		$reflection = new \ReflectionMethod( APIClient::class, 'get_preset_by_id' );
 		$result     = $reflection->invoke( $client, 'preset-id-123' );
 
-		$this->assertIsArray( $result );
-		$this->assertArrayNotHasKey( 'accessories', $result );
+		$this->assertInstanceOf( Preset::class, $result );
+		$this->assertEmpty( $result->accessories );
 
 		putenv( 'PDC_POD_API_BASE_URL' );
 		putenv( 'PDC_POD_API_KEY' );
@@ -258,7 +259,7 @@ class Test_APIClient extends TestCase {
 		putenv( 'PDC_POD_API_BASE_URL=https://testapi.print.com' );
 		putenv( 'PDC_POD_API_KEY=fake-key' );
 
-		$preset_body      = '{"sku":"poster-a4","configuration":{"copies":1,"_accessories":{"acc-001":2}}}';
+		$preset_body      = '{"id":"preset-id-123","sku":"poster-a4","title":{"en":"A4 Poster"},"configuration":{"copies":1,"_accessories":{"acc-001":2}}}';
 		$accessories_body = '[{"id":"acc-001","sku":"envelope","configuration":{"size":"A4"}}]';
 
 		WP_Mock::userFunction( 'wp_remote_request', [ 'return' => [] ] );
@@ -326,7 +327,7 @@ class Test_APIClient extends TestCase {
 		putenv( 'PDC_POD_API_BASE_URL=https://testapi.print.com' );
 		putenv( 'PDC_POD_API_KEY=fake-key' );
 
-		$preset_body = '{"sku":"poster-a4","configuration":{"copies":1}}';
+		$preset_body = '{"id":"preset-id-123","sku":"poster-a4","title":{"en":"A4 Poster"},"configuration":{"copies":1}}';
 
 		WP_Mock::userFunction( 'wp_remote_request', [ 'return' => [] ] );
 		WP_Mock::userFunction( 'is_wp_error', [ 'return' => false ] );
