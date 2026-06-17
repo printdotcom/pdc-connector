@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Admin HTML partial: order metabox
  *
@@ -29,8 +28,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php
 			$pdc_pod_meta_key_pdf_url   = $this->get_meta_key( 'pdf_url' );
 			$pdc_pod_meta_key_preset_id = $this->get_meta_key( 'preset_id' );
-			$items_count                = 0;
-			$items_ready                = 0;
+			$pdc_pod_items_count        = 0;
+			$pdc_pod_items_ready        = 0;
 			foreach ( $order->get_items() as $pdc_pod_order_item_product ) {
 				$pdc_pod_order_item_id          = $pdc_pod_order_item_product->get_id();
 				$pdc_pod_order_item             = wc_get_order_item_meta( $pdc_pod_order_item_id, $this->get_meta_key( 'order_item' ), true );
@@ -48,9 +47,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 				$pdc_pod_filename     = basename( $pdc_pod_pdf_url );
 				$pdc_pod_can_purchase = $pdc_pod_has_file && $pdc_pod_has_preset;
 
-				++$items_count;
+				++$pdc_pod_items_count;
 				if ( $pdc_pod_can_purchase && empty( $pdc_pod_purchase_date ) ) {
-					++$items_ready;
+					++$pdc_pod_items_ready;
 				}
 				?>
 				<div class="table-row" id="pdc_order_item_<?php echo esc_attr( $pdc_pod_order_item_id ); ?>">
@@ -58,7 +57,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<div class="table-cell">
 							<?php if ( $pdc_pod_order_item_number ) { ?>
 								<span><strong><?php esc_html_e( 'Order item number', 'pdc-pod' ); ?></strong> #<?php echo esc_html( $pdc_pod_order_item_number ); ?></span><br>
-								<span data-testid="pdc-ordered-copies-<?php echo esc_attr( $items_count ); ?>"><strong><?php esc_html_e( 'Copies', 'pdc-pod' ); ?></strong> <?php echo esc_html( $pdc_pod_order_item->options->copies ); ?></span><br>
+								<span data-testid="pdc-ordered-copies-<?php echo esc_attr( $pdc_pod_items_count ); ?>"><strong><?php esc_html_e( 'Copies', 'pdc-pod' ); ?></strong> <?php echo esc_html( $pdc_pod_order_item->options->copies ); ?></span><br>
 								<span><strong><?php esc_html_e( 'Purchase Date', 'pdc-pod' ); ?></strong> <?php echo esc_html( $pdc_pod_purchase_date ); ?></span><br>
 								<span><strong><?php esc_html_e( 'Item Status', 'pdc-pod' ); ?></strong> <?php echo esc_html( $pdc_pod_order_item_status ); ?></span><br>
 								<span><strong><?php esc_html_e( 'Price', 'pdc-pod' ); ?></strong> <?php echo wp_kses_post( wc_price( $pdc_pod_order_item_grand_total ) ); ?></span><br>
@@ -86,7 +85,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 									<input type="text" class="hidden" id="js-pdc-order-pdf-<?php echo esc_attr( $pdc_pod_order_item_id ); ?>" placeholder="<?php esc_attr_e( 'http://', 'pdc-pod' ); ?>" name="<?php echo esc_attr( $pdc_pod_meta_key_pdf_url ); ?>" value="<?php echo esc_attr( $pdc_pod_pdf_url ); ?>" />
 									<button
 										type="button"
-										id="pdc-file-upload-<?php echo esc_attr( $items_count ); ?>"
+										id="pdc-file-upload-<?php echo esc_attr( $pdc_pod_items_count ); ?>"
 										data-order-item-id="<?php echo esc_attr( $pdc_pod_order_item_id ); ?>"
 										class="button button-secondary js-pdc-file-upload">
 										<?php
@@ -100,8 +99,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 									<button
 										type="button"
-										id="pdc-order-<?php echo esc_attr( $items_count ); ?>"
-										data-testid="pdc-purchase-orderitem-<?php echo esc_attr( $items_count ); ?>"
+										id="pdc-order-<?php echo esc_attr( $pdc_pod_items_count ); ?>"
+										data-testid="pdc-purchase-orderitem-<?php echo esc_attr( $pdc_pod_items_count ); ?>"
 										data-order-item-id="<?php echo esc_attr( $pdc_pod_order_item_id ); ?>"
 										class="button button-primary js-pdc-purchase-orderitem"
 										<?php
@@ -143,17 +142,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 					data-testid="pdc-pod-purchase-all"
 					id="js-pdc-purchase-all"
 					<?php
-					if ( 0 === $items_ready ) {
+					if ( 0 === $pdc_pod_items_ready ) {
 						echo 'disabled';
 					}
 					?>
 					>
 					<?php
-					if ( $items_ready > 0 ) {
-						printf(
-							/* translators: %d: number of items ready for purchase */
-							esc_html( _n( 'Purchase %d item', 'Purchase all %d items', $items_ready, 'pdc-pod' ) ),
-							number_format_i18n( $items_ready )
+					if ( $pdc_pod_items_ready > 0 ) {
+						echo esc_html(
+							sprintf(
+								/* translators: %d: number of items ready for purchase */
+								_n( 'Purchase %d item', 'Purchase all %d items', $pdc_pod_items_ready, 'pdc-pod' ),
+								number_format_i18n( $pdc_pod_items_ready )
+							)
 						);
 					} else {
 						esc_html_e( 'No items to purchase', 'pdc-pod' );

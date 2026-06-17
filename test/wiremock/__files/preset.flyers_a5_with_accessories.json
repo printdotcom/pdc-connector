@@ -1,0 +1,12 @@
+{
+  "id": "flyers_a5_with_accessories",
+  "sku": "flyers",
+  "configuration": {
+    "size": "a5",
+    "copies": 500,
+    "variants": [],
+    "_accessories": {
+      "acc-001": 1
+    }
+  }
+}

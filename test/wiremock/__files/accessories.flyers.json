@@ -1,0 +1,10 @@
+[
+  {
+    "id": "acc-001",
+    "sku": "envelopes",
+    "configuration": {
+      "size": "a5",
+      "copies": 1
+    }
+  }
+]
