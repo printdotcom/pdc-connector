@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - admin settings UI
+- support for WordPress 7 and PHP 8.4
 
 ## [1.4.0]
 
