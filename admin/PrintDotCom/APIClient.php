@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Print.com API client (admin)
  *
@@ -472,7 +471,7 @@ class APIClient {
 		$order_item_shipment = array(
 			array(
 				'address' => $shipping_address_payload,
-				'copies'  => $preset->configuration->copies,
+				'copies'  => $preset->configuration['copies'],
 			),
 		);
 

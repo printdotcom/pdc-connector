@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Print.com Accessory model
  *

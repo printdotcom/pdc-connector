@@ -50,9 +50,9 @@ class Preset {
 	 * The preset configuration.
 	 *
 	 * @since 1.0.0
-	 * @var object
+	 * @var array<string, int|string>
 	 */
-	public object $configuration;
+	public array $configuration;
 
 	/**
 	 * Accessory IDs mapped to their quantities.
@@ -75,25 +75,32 @@ class Preset {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param object $raw_preset   The preset retrieved from the API
+	 * @param object $raw_preset   The preset retrieved from the API.
 	 */
 	public function __construct( $raw_preset ) {
-		$this->id    = $raw_preset->id;
-		$this->sku   = $raw_preset->sku;
-		$this->title = $raw_preset->title->en;
-
-		$preset_configuration = $raw_preset->configuration;
-		unset( $preset_configuration->variants );
-		unset( $preset_configuration->deliveryPromise ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-
+		$this->id            = $raw_preset->id;
+		$this->sku           = $raw_preset->sku;
+		$this->title	     = __( 'Untitled', 'pdc-pod' );
+		$this->configuration = array();
 		$this->accessory_ids = array();
 		$this->accessories   = array();
-		if ( isset( $preset_configuration->_accessories ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			$this->accessory_ids = (array) $preset_configuration->_accessories; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			unset( $preset_configuration->_accessories ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+
+		if (isset($raw_preset->title) && isset($raw_preset->title->en)) {
+			$this->title         = $raw_preset->title->en;
 		}
 
-		$this->configuration = $preset_configuration;
+		if ( isset( $raw_preset->configuration ) ) {
+			$preset_configuration = $raw_preset->configuration;
+			unset( $preset_configuration->variants );
+			unset( $preset_configuration->deliveryPromise ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+
+			if ( isset( $preset_configuration->_accessories ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				$this->accessory_ids = (array) $preset_configuration->_accessories; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				unset( $preset_configuration->_accessories ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			}
+
+			$this->configuration = (array) $preset_configuration;
+		}
 	}
 
 	/**
@@ -115,6 +122,6 @@ class Preset {
 	 * @param int $copies The number of copies.
 	 */
 	public function set_copies( $copies ) {
-		$this->configuration->copies = $copies;
+		$this->configuration['copies'] = $copies;
 	}
 }

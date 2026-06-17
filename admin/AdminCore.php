@@ -284,6 +284,17 @@ class AdminCore {
 		return apply_filters( 'pdc_pod_order_item_pdf_url', $pdf_url, $pdc_pod_order_item_id );
 	}
 
+	/**
+	 * Retrieves the preset ID for a given order item.
+	 *
+	 * Falls back to the variation or product preset if the order item has no
+	 * preset metadata directly set.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $pdc_pod_order_item_id The WooCommerce order item ID.
+	 * @return string The preset ID, or an empty string if not found.
+	 */
 	public function get_preset_id_by_order_item_id( $pdc_pod_order_item_id ) {
 		$pdc_pod_preset_id = wc_get_order_item_meta( $pdc_pod_order_item_id, Core::get_meta_key( 'preset_id' ), true );
 		if ( empty( $pdc_pod_preset_id ) ) {
@@ -579,6 +590,14 @@ class AdminCore {
 		);
 	}
 
+	/**
+	 * REST callback to purchase all purchasable items in a WooCommerce order.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param \WP_REST_Request $request The REST request.
+	 * @return \WP_REST_Response|\WP_Error REST response or error.
+	 */
 	public function pdc_purchase_order( \WP_REST_Request $request ) {
 		$order_id = $request->get_param( 'id' );
 
@@ -624,7 +643,7 @@ class AdminCore {
 
 		$pdc_order = $result->order;
 		foreach ( $pdc_order->items as $pdc_order_item ) {
-			$order_item_id = (int) $pdc_order_item->customerReference;
+			$order_item_id = (int) $pdc_order_item->customerReference; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$order_item    = $order->get_item( $order_item_id );
 
 			if ( $order_item ) {
@@ -637,7 +656,7 @@ class AdminCore {
 		$note = sprintf(
 			/* translators: %s: Print.com order number */
 			__( 'Order purchased at Print.com with order number: %s.', 'pdc-pod' ),
-			$pdc_order->orderNumber
+			$pdc_order->orderNumber // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		);
 		$order->add_order_note( $note );
 
@@ -704,7 +723,7 @@ class AdminCore {
 	 * Sets an order item to 'production' when the webhook event is received.
 	 *
 	 * @since 1.0.0
-	 * @param object $payload   The body of the webhook
+	 * @param object $payload   The body of the webhook.
 	 * @return void
 	 */
 	private function on_webhook_in_production( $payload ) {
@@ -913,7 +932,7 @@ class AdminCore {
 		$note = sprintf(
 			// translators: placeholder is the order number.
 			__( 'Item purchased at Print.com with order number: %s.', 'pdc-pod' ),
-			$pdc_order->orderNumber
+			$pdc_order->orderNumber // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		);
 		$order->add_order_note( $note );
 
@@ -924,6 +943,15 @@ class AdminCore {
 		);
 	}
 
+	/**
+	 * Updates WooCommerce order item metadata after a successful Print.com purchase.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param \WC_Order_Item $order_item The WooCommerce order item.
+	 * @param object         $pdc_order  The Print.com order response object.
+	 * @return void
+	 */
 	private function update_order_item( $order_item, $pdc_order ) {
 		$order_item->update_meta_data( $this->get_meta_key( 'order' ), $pdc_order );
 		$order_item->update_meta_data( $this->get_meta_key( 'purchase_date' ), gmdate( 'c' ) );
@@ -936,8 +964,8 @@ class AdminCore {
 		$order_item_id  = (string) $order_item->get_id();
 		$pdc_order_item = null;
 		foreach ( $pdc_order->items as $item ) {
-			$item_reference = isset( $item->customerReference ) ? $item->customerReference : '';
-			if ( $item_reference === $order_item_id ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			$item_reference = isset( $item->customerReference ) ? $item->customerReference : ''; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			if ( $item_reference === $order_item_id ) {
 				$pdc_order_item = $item;
 				break;
 			}
@@ -1039,6 +1067,12 @@ class AdminCore {
 		}
 	}
 
+	/**
+	 * REST callback to trigger a download of the plugin log file.
+	 *
+	 * @since 1.2.0
+	 * @return void
+	 */
 	public function download_logs() {
 		$logger = Logger::get_instance();
 		$logger->download_log();

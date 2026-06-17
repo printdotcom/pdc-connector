@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Logger
  *
@@ -12,16 +11,26 @@
 
 namespace PdcPod\Includes;
 
+/**
+ * Singleton logger for the PDC Pod plugin.
+ *
+ * @since 1.2.0
+ */
 class Logger {
 
-
 	/**
-	 * @var Logger The single instance of the class
+	 * The single instance of the class.
+	 *
+	 * @since 1.2.0
+	 * @var Logger
 	 */
 	private static $instance = null;
 
 	/**
-	 * @var string The absolute path to the log file
+	 * The absolute path to the log file.
+	 *
+	 * @since 1.2.0
+	 * @var string
 	 */
 	private $log_file;
 
@@ -39,7 +48,7 @@ class Logger {
 	 * @return Logger
 	 */
 	public static function get_instance() {
-		if ( self::$instance === null ) {
+		if ( null === self::$instance ) {
 			self::$instance = new self();
 		}
 		return self::$instance;
@@ -62,9 +71,9 @@ class Logger {
 		if ( ! file_exists( $dir ) ) {
 			wp_mkdir_p( $dir );
 
-			// Protect the directory from direct browser access
-			file_put_contents( $dir . '/index.php', '<?php // Silence is golden' );
-			file_put_contents( $dir . '/.htaccess', 'Deny from all' );
+			// Protect the directory from direct browser access.
+			file_put_contents( $dir . '/index.php', '<?php // Silence is golden' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+			file_put_contents( $dir . '/.htaccess', 'Deny from all' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 		}
 	}
 
@@ -108,7 +117,7 @@ class Logger {
 		$context_str = ! empty( $context ) ? ' ' . wp_json_encode( $context ) : '';
 		$log_entry   = "[{$timestamp}] [{$level_str}] {$message}{$context_str}" . PHP_EOL;
 
-		error_log( $log_entry, 3, $instance->log_file );
+		error_log( $log_entry, 3, $instance->log_file ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 	}
 
 	/**
@@ -176,7 +185,7 @@ class Logger {
 		$log_content = "=== Print.com Log ===\n";
 
 		if ( file_exists( $this->log_file ) ) {
-			$log_content .= file_get_contents( $this->log_file );
+			$log_content .= file_get_contents( $this->log_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		} else {
 			$log_content .= "No log entries found. The log file does not exist yet.\n";
 		}
@@ -195,7 +204,7 @@ class Logger {
 		header( 'Pragma: public' );
 		header( 'Content-Length: ' . strlen( $final_output ) );
 
-		echo $final_output;
+		echo $final_output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		exit;
 	}
 
@@ -205,7 +214,7 @@ class Logger {
 	 */
 	public function clear_log() {
 		if ( file_exists( $this->log_file ) ) {
-			$cleared = file_put_contents( $this->log_file, '' ) !== false;
+			$cleared = file_put_contents( $this->log_file, '' ) !== false; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 
 			if ( $cleared ) {
 				self::log( 'Log file manually cleared.', 'debug' );
