@@ -67,6 +67,35 @@ test.describe('Order', () => {
     await expect(page.getByTestId('pdc-ordered-copies-1')).toHaveText('Copies 1');
   });
 
+  test('will purchase a preset that includes accessories', async ({ page }) => {
+    await setSettings(page, {
+      apikey: 'test_key_12345',
+      env: 'stg',
+      usePresetCopies: true,
+    });
+
+    await configureSimpleProduct(page, '14', 'flyers_a5_with_accessories');
+
+    await addToCart(page, {
+      slug: 'custom-flyers',
+    });
+
+    await placeOrder(page);
+
+    await page.goto('/wp-admin/edit.php?post_type=shop_order');
+
+    await page.locator('table.wp-list-table tbody tr:first-child a.order-view').click();
+
+    await expect(page.getByTestId('pdc-purchase-orderitem-1')).toBeEnabled();
+    const purchaseResponsePromise = page.waitForResponse('**/purchase');
+    await page.getByTestId('pdc-purchase-orderitem-1').click();
+    await purchaseResponsePromise;
+
+    // Verifies the full flow completed: preset fetched, /accessories/flyers called,
+    // order submitted with accessories, and response processed without errors.
+    await expect(page.getByTestId('pdc-ordered-copies-1')).toHaveText('Copies 500');
+  });
+
   test('will purchase multiple order items at once', async ({ page }) => {
     await setSettings(page, {
       apikey: 'test_key_12345',

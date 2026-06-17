@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/accessories/flyers",
+    "headers": {
+      "authorization": {
+        "equalTo": "PrintApiKey test_key_12345"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    },
+    "bodyFileName": "accessories.flyers.json"
+  }
+}

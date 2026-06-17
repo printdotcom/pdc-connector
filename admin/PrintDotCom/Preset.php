@@ -47,17 +47,81 @@ class Preset {
 	public string $title;
 
 	/**
+	 * The preset configuration.
+	 *
+	 * @since 1.0.0
+	 * @var array<string, int|string>
+	 */
+	public array $configuration;
+
+	/**
+	 * Accessory IDs mapped to their quantities.
+	 *
+	 * @since 1.6.0
+	 * @var array<string, int>
+	 */
+	public array $accessory_ids;
+
+	/**
+	 * Resolved accessory objects for this preset.
+	 *
+	 * @since 1.6.0
+	 * @var Accessory[]
+	 */
+	public array $accessories;
+
+	/**
 	 * Constructs a new Preset instance.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $sku   The product SKU.
-	 * @param string $title The preset title.
-	 * @param string $id    The preset identifier.
+	 * @param object $raw_preset   The preset retrieved from the API.
 	 */
-	public function __construct( $sku, $title, $id ) {
-		$this->id    = $id;
-		$this->sku   = $sku ?? '';
-		$this->title = $title ?? '';
+	public function __construct( $raw_preset ) {
+		$this->id            = $raw_preset->id;
+		$this->sku           = $raw_preset->sku;
+		$this->title	     = __( 'Untitled', 'pdc-pod' );
+		$this->configuration = array();
+		$this->accessory_ids = array();
+		$this->accessories   = array();
+
+		if (isset($raw_preset->title) && isset($raw_preset->title->en)) {
+			$this->title         = $raw_preset->title->en;
+		}
+
+		if ( isset( $raw_preset->configuration ) ) {
+			$preset_configuration = $raw_preset->configuration;
+			unset( $preset_configuration->variants );
+			unset( $preset_configuration->deliveryPromise ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+
+			if ( isset( $preset_configuration->_accessories ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				$this->accessory_ids = (array) $preset_configuration->_accessories; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				unset( $preset_configuration->_accessories ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			}
+
+			$this->configuration = (array) $preset_configuration;
+		}
+	}
+
+	/**
+	 * Sets the resolved accessories for this preset.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param Accessory[] $accessories The resolved accessories.
+	 */
+	public function set_accessories( $accessories ) {
+		$this->accessories = $accessories;
+	}
+
+	/**
+	 * Overrides the copy count in the configuration.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param int $copies The number of copies.
+	 */
+	public function set_copies( $copies ) {
+		$this->configuration['copies'] = $copies;
 	}
 }

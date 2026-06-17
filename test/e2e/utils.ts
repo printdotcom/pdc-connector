@@ -49,7 +49,7 @@ export async function setSettings(page, settings: Settings) {
   await page.getByRole('button', { name: 'Save Settings' }).click();
 }
 
-export async function configureSimpleProduct(page, productID: string) {
+export async function configureSimpleProduct(page, productID: string, presetID: string = 'flyers_a5') {
   const productURL = `/wp-admin/post.php?post=${productID}&action=edit`;
   await page.goto(productURL);
   await page.getByRole('link', { name: 'Print.com' }).click();
@@ -63,7 +63,7 @@ export async function configureSimpleProduct(page, productID: string) {
   });
 
   // select preset
-  await page.getByTestId('pdc-preset-id').selectOption('flyers_a5');
+  await page.getByTestId('pdc-preset-id').selectOption(presetID);
 
   // pdf file = fixture
   await page.getByRole('link', { name: 'Choose file' }).click();
