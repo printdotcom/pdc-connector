@@ -77,6 +77,12 @@ class Settings
 			PDC_POD_NAME . '-general',
 		);
 		add_settings_section(
+			PDC_POD_NAME . '-purchasing',
+			'Purchasing',
+			array($this, 'section_purchasing'),
+			PDC_POD_NAME . '-general',
+		);
+		add_settings_section(
 			PDC_POD_NAME . '-product',
 			'Product',
 			array($this, 'section_product'),
@@ -98,7 +104,6 @@ class Settings
 	 */
 	public function register_settings()
 	{
-		// API key setting: simple string sanitized via sanitize_text_field.
 		register_setting(
 			PDC_POD_NAME . '-general-options',
 			PDC_POD_NAME . '-api_key',
@@ -108,7 +113,6 @@ class Settings
 				'sanitize_callback' => array($this, 'sanitize_api_key'),
 			)
 		);
-		// Environment setting: only allow 'stg' or 'prod'.
 		register_setting(
 			PDC_POD_NAME . '-general-options',
 			PDC_POD_NAME . '-env',
@@ -116,6 +120,19 @@ class Settings
 				'type'              => 'string',
 				'default'           => 'stg',
 				'sanitize_callback' => array($this, 'sanitize_env'),
+			)
+		);
+		
+		register_setting(
+			PDC_POD_NAME . '-general-options',
+			PDC_POD_NAME . '-purchasing',
+			array(
+				'type'              => 'array',
+				'default'           => array(
+					'purchase-payment' => 'banktransfer',
+					'auto-purchase'    => 'manual'
+				),
+				'sanitize_callback' => array($this, 'sanitize_purchasing'),
 			)
 		);
 		// Product configuration: array of options; currently supports a boolean flag.
@@ -230,6 +247,33 @@ class Settings
 	}
 
 	/**
+	 * Sanitizes the purchasing configuration option values.
+	 *
+	 * Currently supports:
+	 * - purchase-payment: string. Payment method when purchasing.
+	 * - auto-purchase: string. Method of purchasing.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed $value Raw option value.
+	 * @return array Sanitized configuration array.
+	 */
+	public function sanitize_purchasing($value)
+	{
+		$sanitized = array();
+		if ( is_array($value) ) {
+			if (isset($value['purchase-payment'])) {
+				$sanitized['purchase-payment'] = is_string($value['purchase-payment']) ? strtolower(sanitize_text_field($value['purchase-payment'])) : 'banktransfer';
+			}
+
+			if (isset($value['auto-purchase'])) {
+				$sanitized['auto-purchase'] = is_string($value['auto-purchase']) ? strtolower(sanitize_text_field($value['auto-purchase'])) : 'manual';
+			}
+		}
+		return $sanitized;
+	}
+
+	/**
 	 * Creates the settings page
 	 *
 	 * @since       1.0.0
@@ -237,7 +281,7 @@ class Settings
 	 */
 	public function page_general_settings()
 	{
-		include __DIR__ . 'partials/' . PDC_POD_NAME . '-admin-general.php';
+		include __DIR__ . '/partials/' . PDC_POD_NAME . '-admin-general.php';
 	}
 
 	/**
@@ -248,7 +292,18 @@ class Settings
 	 */
 	public function section_credentials()
 	{
-		include __DIR__ . 'partials/' . PDC_POD_NAME . '-admin-section-credentials.php';
+		include __DIR__ . '/partials/' . PDC_POD_NAME . '-admin-section-credentials.php';
+	}
+
+	/**
+	 * Creates the purchasing section
+	 *
+	 * @since       1.0.0
+	 * @return      void
+	 */
+	public function section_purchasing()
+	{
+		include __DIR__ . '/partials/' . PDC_POD_NAME . '-admin-section-purchasing.php';
 	}
 
 	/**
@@ -259,7 +314,7 @@ class Settings
 	 */
 	public function section_product()
 	{
-		include __DIR__ . 'partials/' . PDC_POD_NAME . '-admin-section-product.php';
+		include __DIR__ . '/partials/' . PDC_POD_NAME . '-admin-section-product.php';
 	}
 
 	/**

@@ -102,8 +102,8 @@
 
 .pdc-pod-settings-head strong {
 	font-weight: 600;
-    font-size: 16px;
-    color: #070707;
+	font-size: 16px;
+	color: #070707;
 }
 
 .pdc-pod-settings .nav-tab {
@@ -127,4 +127,18 @@
 
 .pdc-pod-settings .nav-tab-active {
 	border-bottom: 2px solid var(--wp-admin-theme-color, #3858e9);
+}
+
+.pdc-pod-settings .form-table th {
+	font-weight: normal;
+}
+
+.pdc-pod-settings .form-table th label {
+	font-weight: bold;
+}
+
+.pdc-pod-settings .form-table th span {
+	display: inline-block;
+	font-size: .8rem;
+	color: #3c434a;
 }
