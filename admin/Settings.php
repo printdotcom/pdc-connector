@@ -273,9 +273,15 @@ class Settings
 		include __DIR__ . '/partials/' . PDC_POD_NAME . '-admin-section-support.php';
 	}
 
+
+	/**
+	 * Registers settings related rest api endpoints
+	 *
+	 * @since       1.0.0
+	 * @return      void
+	 */
 	public function register_pdc_endpoints()
 	{
-
 		register_rest_route(
 			'pdc/v1',
 			'/verify',

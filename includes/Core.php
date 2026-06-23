@@ -131,13 +131,11 @@ class Core {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new \PdcPod\Admin\AdminCore( new APIClient() );
+		$pdc_api_client = new APIClient();
 
+		$plugin_admin = new \PdcPod\Admin\AdminCore( $pdc_api_client );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_menu_pages' );
-		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_sections' );
-		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_settings' );
 		$this->loader->add_filter( 'woocommerce_product_data_tabs', $plugin_admin, 'add_product_data_tab' );
 		$this->loader->add_action( 'woocommerce_product_data_panels', $plugin_admin, 'render_product_data_tab' );
 		$this->loader->add_action( 'woocommerce_variation_options', $plugin_admin, 'render_variation_data_fields', 10, 3 );
@@ -147,6 +145,13 @@ class Core {
 		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'pdc_order_meta_box' );
 		$this->loader->add_action( 'woocommerce_process_shop_order_meta', $plugin_admin, 'on_order_save' );
 		$this->loader->add_action( 'rest_api_init', $plugin_admin, 'register_pdc_endpoints' );
+
+		$plugin_settings = new \PdcPod\Admin\Settings( $pdc_api_client );
+
+		$this->loader->add_action( 'admin_menu', $plugin_settings, 'add_menu_pages' );
+		$this->loader->add_action( 'admin_init', $plugin_settings, 'register_sections' );
+		$this->loader->add_action( 'admin_init', $plugin_settings, 'register_settings' );
+		$this->loader->add_action( 'rest_api_init', $plugin_settings, 'register_pdc_endpoints' );
 	}
 
 	/**
