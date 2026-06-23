@@ -456,7 +456,7 @@ class APIClient
 	 * @param string                 $pdc_pod_preset_id  The Print.com preset ID.
 	 * @param string                 $pdc_pod_pdf_url    The PDF URL for the print item.
 	 * @param array                  $shipping_address   The WooCommerce shipping address array.
-	 * @param array                  $purchase_args      Configuration arguments (e.g., use_preset_copies).
+	 * @param array                  $purchase_args      Configuration arguments (e.g., use_preset_copies, purchase_payment).
 	 * @return array|\WP_Error Prepared item array or WP_Error on failure.
 	 */
 	private function prepare_order_item($order, $order_item, $pdc_pod_preset_id, $pdc_pod_pdf_url, $shipping_address, $purchase_args)
@@ -586,6 +586,7 @@ class APIClient
 		$order_request = array(
 			'customerReference' => (string) $order_id,
 			'webhookUrl'        => esc_url_raw($webhook_url),
+			'paymentMethod'     => isset($purchase_args['purchase-payment']) ? $purchase_args['purchase-payment'] : 'banktransfer',
 			'items'             => $order_request_items,
 		);
 

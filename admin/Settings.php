@@ -77,12 +77,6 @@ class Settings
 			PDC_POD_NAME . '-general',
 		);
 		add_settings_section(
-			PDC_POD_NAME . '-purchasing',
-			'Purchasing',
-			array($this, 'section_purchasing'),
-			PDC_POD_NAME . '-general',
-		);
-		add_settings_section(
 			PDC_POD_NAME . '-product',
 			'Product',
 			array($this, 'section_product'),
@@ -122,19 +116,7 @@ class Settings
 				'sanitize_callback' => array($this, 'sanitize_env'),
 			)
 		);
-		
-		register_setting(
-			PDC_POD_NAME . '-general-options',
-			PDC_POD_NAME . '-purchasing',
-			array(
-				'type'              => 'array',
-				'default'           => array(
-					'purchase-payment' => 'banktransfer',
-					'auto-purchase'    => 'manual'
-				),
-				'sanitize_callback' => array($this, 'sanitize_purchasing'),
-			)
-		);
+
 		// Product configuration: array of options; currently supports a boolean flag.
 		register_setting(
 			PDC_POD_NAME . '-product-options',
@@ -142,7 +124,7 @@ class Settings
 			array(
 				'type'              => 'array',
 				'default'           => array('use_preset_copies' => false),
-				'sanitize_callback' => array($this, 'sanitize_product'),
+				'sanitize_callback' => array($this, 'sanitize_product_config'),
 			)
 		);
 		// Log level setting: controls which messages are written to the log.
@@ -227,26 +209,6 @@ class Settings
 	}
 
 	/**
-	 * Sanitizes the product configuration option value.
-	 *
-	 * Currently supports:
-	 * - use_preset_copies: bool. Checkbox style input.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param mixed $value Raw option value.
-	 * @return array Sanitized configuration array.
-	 */
-	public function sanitize_product($value)
-	{
-		$sanitized = array('use_preset_copies' => false);
-		if (is_array($value)) {
-			$sanitized['use_preset_copies'] = ! empty($value['use_preset_copies']) ? (bool) intval($value['use_preset_copies']) : false;
-		}
-		return $sanitized;
-	}
-
-	/**
 	 * Sanitizes the purchasing configuration option values.
 	 *
 	 * Currently supports:
@@ -258,16 +220,20 @@ class Settings
 	 * @param mixed $value Raw option value.
 	 * @return array Sanitized configuration array.
 	 */
-	public function sanitize_purchasing($value)
+	public function sanitize_product_config($value)
 	{
-		$sanitized = array();
+		$sanitized = array(
+			'use_preset_copies' => false,
+			'purchase-payment' => 'banktransfer',
+			'auto-purchase'    => 'manual'
+		);
 		if ( is_array($value) ) {
-			if (isset($value['purchase-payment'])) {
-				$sanitized['purchase-payment'] = is_string($value['purchase-payment']) ? strtolower(sanitize_text_field($value['purchase-payment'])) : 'banktransfer';
+			if (isset($value['purchase-payment']) && is_string($value['purchase-payment'])) {
+				$sanitized['purchase-payment'] = strtolower(sanitize_text_field($value['purchase-payment']));
 			}
 
-			if (isset($value['auto-purchase'])) {
-				$sanitized['auto-purchase'] = is_string($value['auto-purchase']) ? strtolower(sanitize_text_field($value['auto-purchase'])) : 'manual';
+			if (isset($value['auto-purchase']) && is_string($value['auto-purchase'])) {
+				$sanitized['auto-purchase'] = strtolower(sanitize_text_field($value['auto-purchase']));
 			}
 		}
 		return $sanitized;
