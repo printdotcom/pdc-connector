@@ -586,7 +586,7 @@ class APIClient
 		$order_request = array(
 			'customerReference' => (string) $order_id,
 			'webhookUrl'        => esc_url_raw($webhook_url),
-			'paymentMethod'     => isset($purchase_args['purchase-payment']) ? $purchase_args['purchase-payment'] : 'banktransfer',
+			'paymentMethod'     => $this->get_purchase_payment($purchase_args),
 			'items'             => $order_request_items,
 		);
 
@@ -617,5 +617,16 @@ class APIClient
 		}
 
 		return json_decode($result);
+	}
+
+	/**
+	 * Get the payment method for purchasing.
+	 * 
+	 * @param array     $purchase_args
+	 * 
+	 * @return void
+	 */
+	private function get_purchase_payment($purchase_args) {
+		return isset($purchase_args['purchase-payment']) ? $purchase_args['purchase-payment'] : 'banktransfer';
 	}
 }

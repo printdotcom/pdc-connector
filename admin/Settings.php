@@ -228,6 +228,10 @@ class Settings
 			'auto-purchase'    => 'manual'
 		);
 		if ( is_array($value) ) {
+			if (isset($value['use_preset_copies']) && is_string($value['use_preset_copies'])) {
+				$sanitized['use_preset_copies'] = strtolower(sanitize_text_field($value['use_preset_copies']));
+			}
+
 			if (isset($value['purchase-payment']) && is_string($value['purchase-payment'])) {
 				$sanitized['purchase-payment'] = strtolower(sanitize_text_field($value['purchase-payment']));
 			}
